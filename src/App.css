@@ -612,6 +612,19 @@ h1 {
     position: relative;
   }
 }
+/* ---- Not-found page ---- */
+.not-found {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background-color: var(--dark-blue);
+  text-align: center;
+  padding: 24px;
+}
+
 /* ---- Reduced motion ----
    With prefers-reduced-motion every scene shows its resting state: the sky
    stays daytime, the campfire is lit but still, the leg sprite holds one

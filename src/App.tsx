@@ -7,8 +7,18 @@ import { aboutMeContent } from './data/content';
 import { projects } from './data/projects';
 import { BREAKPOINTS } from './utils/useBreakpoint';
 import { watchReducedMotion } from './utils/reducedMotion';
+import { usePageMeta } from './utils/usePageMeta';
+import { HOME_DESCRIPTION, HOME_TITLE, SHARE_DESCRIPTION, SHARE_TITLE } from './data/site';
 
 function App() {
+  usePageMeta({
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    path: '/',
+    shareTitle: SHARE_TITLE,
+    shareDescription: SHARE_DESCRIPTION,
+  });
+
   // Console easter egg
   useEffect(() => {
     const styles = [

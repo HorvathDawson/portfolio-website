@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.css'
 import App from './App.tsx'
+import { NotFound } from './components/NotFound.tsx'
 
 // The A40 build log pulls in marked, KaTeX and ~150 KB of roadmap data, so it
 // is split into its own chunks and only downloaded when a blog route is visited.
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/a40" element={<A40Blog />} />
           <Route path="/a40/roadmap" element={<A40Roadmap />} />
           <Route path="/a40/:slug" element={<A40Blog />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
