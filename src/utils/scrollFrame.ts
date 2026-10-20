@@ -74,3 +74,14 @@ export function onScrollFrameWhileVisible(
     unsubscribe?.();
   };
 }
+
+/**
+ * Signed distance of `el`'s centre from the viewport centre, in half-viewport
+ * heights: 0 when centred, 1 when its centre is at the bottom edge, -1 at
+ * the top edge.
+ */
+export function centerOffset(el: Element): number {
+  const rect = el.getBoundingClientRect();
+  const half = window.innerHeight / 2;
+  return (rect.top + rect.height / 2 - half) / half;
+}

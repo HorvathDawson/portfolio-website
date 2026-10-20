@@ -1,7 +1,7 @@
 import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './index.css'
+import './App.css'
 import App from './App.tsx'
 
 // The A40 build log pulls in marked, KaTeX and ~150 KB of roadmap data, so it

@@ -1,25 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { onScrollFrame } from '../../utils/scrollFrame';
-
-export interface ProjectConfig {
-  id: string;
-  category: string;
-  title: string;
-  description: string;
-  link?: string;
-  buttonText?: string;
-  downloadable?: boolean;
-  /** When true, link uses client-side routing instead of opening a new tab. */
-  internal?: boolean;
-}
-
-interface BaseProjectItemProps {
-  config: ProjectConfig;
-  className?: string;
-  customAnimations?: (element: HTMLDivElement) => void | (() => void);
-  children: React.ReactNode;
-}
+import { centerOffset, onScrollFrame, onScrollFrameWhileVisible } from '../utils/scrollFrame';
+import type { Project } from '../data/projects';
 
 interface HoverHandlers {
   enter: () => void;
@@ -82,13 +64,29 @@ const setOpacity = (elements: NodeListOf<HTMLElement>, value: string) => {
   elements.forEach((el) => { el.style.opacity = value; });
 };
 
-export const BaseProjectItem: React.FC<BaseProjectItemProps> = ({
-  config,
-  className = '',
-  customAnimations,
-  children
-}) => {
+/** Internal links use client-side routing; external ones open in a new tab. */
+const ProjectLink: React.FC<{ project: Project; className?: string; children: React.ReactNode }> = ({
+  project,
+  className,
+  children,
+}) =>
+  project.internal ? (
+    <Link to={project.link!} className={className}>{children}</Link>
+  ) : (
+    <a
+      href={project.link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+      {...(project.downloadable ? { download: true } : {})}
+    >
+      {children}
+    </a>
+  );
+
+export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   const itemRef = useRef<HTMLDivElement>(null);
+  const { animation } = project;
 
   useEffect(() => {
     const item = itemRef.current;
@@ -99,7 +97,7 @@ export const BaseProjectItem: React.FC<BaseProjectItemProps> = ({
     const foregrounds = item.querySelectorAll<HTMLElement>('.foreground-layer');
     const splashes = item.querySelectorAll<HTMLElement>('.splash-layer');
 
-    // On stacked (<=991px) layouts CSS forces the coloured layers and glow on.
+    // On stacked layouts CSS forces the coloured layers and glow on.
     const unregister = registerCard(item, {
       enter: () => {
         setOpacity(backgrounds, '0');
@@ -120,68 +118,49 @@ export const BaseProjectItem: React.FC<BaseProjectItemProps> = ({
     item.addEventListener('mouseenter', onMouseEnter);
     item.addEventListener('mouseleave', onMouseLeave);
 
-    // Apply custom animations if provided. If the function returns a cleanup, call it on unmount.
-    const customCleanup = customAnimations?.(item);
+    // Scroll animation: measure the static media frame (the animated parts
+    // move, so they can't be measured) and transform each [data-scroll] part.
+    const frame = item.querySelector<HTMLElement>('.project-media-frame');
+    const parts = item.querySelectorAll<HTMLElement>('[data-scroll]');
+    const stopAnimation = animation && frame && parts.length
+      ? onScrollFrameWhileVisible(frame, () => {
+          const offset = centerOffset(frame);
+          parts.forEach((part) => { part.style.transform = animation(offset, part); });
+        })
+      : undefined;
 
     return () => {
       item.removeEventListener('mouseenter', onMouseEnter);
       item.removeEventListener('mouseleave', onMouseLeave);
       unregister();
-      if (typeof customCleanup === 'function') customCleanup();
+      stopAnimation?.();
     };
-  }, [customAnimations]);
-
-  const rootClass = ['project-card', config.id, className];
+  }, [animation]);
 
   return (
-    <div ref={itemRef} className={rootClass.filter(Boolean).join(' ')} role="listitem" aria-label={config.title}>
+    <div ref={itemRef} className={`project-card ${project.id}`} role="listitem" aria-label={project.title}>
       <div className="project-card-overlay" aria-hidden="true" />
       <div className="project-card-content content-width-constrained">
-        <p className="project-category">{config.category}</p>
+        <p className="project-category">{project.category}</p>
         <h2 className="section-title">
-          {config.link ? (
-            config.internal ? (
-              <Link to={config.link}>
-                <span className="text-highlighted">{config.title}</span>
-              </Link>
-            ) : (
-              <a href={config.link} target="_blank" rel="noopener noreferrer">
-                <span className="text-highlighted">{config.title}</span>
-              </a>
-            )
+          {project.link ? (
+            <ProjectLink project={project}>
+              <span className="text-highlighted">{project.title}</span>
+            </ProjectLink>
           ) : (
-            <span className="text-highlighted">{config.title}</span>
+            <span className="text-highlighted">{project.title}</span>
           )}
         </h2>
-        <p className="about-description">{config.description}</p>
-        
-        {/* Simplified Button Logic */}
-        {config.link && config.buttonText && (
-          config.internal ? (
-            <Link
-              to={config.link}
-              className="project-cta-button button"
-              style={{ display: 'inline-block', marginTop: '18px' }}
-            >
-              {config.buttonText}
-            </Link>
-          ) : (
-            <a
-              href={config.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="project-cta-button button"
-              {...(config.downloadable ? { download: true } : {})}
-              style={{ display: 'inline-block', marginTop: '18px' }}
-            >
-              {config.buttonText}
-            </a>
-          )
+        <p className="about-description">{project.description}</p>
+        {project.link && project.buttonText && (
+          <ProjectLink project={project} className="project-cta-button button">
+            {project.buttonText}
+          </ProjectLink>
         )}
       </div>
       <div className="project-card-media" aria-hidden="true">
         <div className="project-media-frame">
-          {children}
+          {project.visual}
         </div>
       </div>
     </div>

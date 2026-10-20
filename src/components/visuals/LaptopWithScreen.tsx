@@ -1,60 +1,19 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
+import { ArtLayer } from './ArtLayer';
+import { useContainFit } from '../../utils/useContainFit';
 
-export interface LaptopWithScreenProps {
-  className?: string;
-  forceHover?: boolean;
-}
+const ART = '/assets/projects/self-driving-car';
 
-export const LaptopWithScreen: React.FC<LaptopWithScreenProps> = ({
-  className = '',
-  forceHover
-}) => {
+/** Laptop whose lid (`data-scroll`) is rotated open by the card's scroll animation. */
+export const LaptopWithScreen: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const effectiveForceHover = forceHover ?? false;
 
-  useEffect(() => {
-    const container = containerRef.current;
-    const content = contentRef.current;
-    if (!container || !content) return;
-
-    const updateSize = () => {
-      if (!container || !content) return;
-      const parent = container.parentElement;
-      if (!parent) return;
-
-      const parentRect = parent.getBoundingClientRect();
-      const parentWidth = parentRect.width;
-      const parentHeight = parentRect.height;
-      if (parentWidth === 0 || parentHeight === 0) return;
-
-      const targetAspectRatio = 1000 / 700; 
-      const parentAspectRatio = parentWidth / parentHeight;
-      let width, height;
-
-      if (parentAspectRatio > targetAspectRatio) {
-        height = parentHeight;
-        width = height * targetAspectRatio;
-      } else {
-        width = parentWidth;
-        height = width / targetAspectRatio;
-      }
-      content.style.width = `${width}px`;
-      content.style.height = `${height}px`;
-    };
-
-    // ResizeObserver also fires once on observe, so this sets the initial size.
-    const observer = new ResizeObserver(updateSize);
-    if (container.parentElement) observer.observe(container.parentElement);
-
-    return () => observer.disconnect();
-  }, []);
+  useContainFit(containerRef, contentRef, 1000 / 700);
 
   return (
     <div
       ref={containerRef}
-      data-laptop-with-screen
-      className={className}
       style={{
         position: 'absolute',
         inset: 0,
@@ -76,19 +35,17 @@ export const LaptopWithScreen: React.FC<LaptopWithScreenProps> = ({
           overflow: 'visible'
         }}
       >
-        {/* === SCREEN CONTAINER === */}
+        {/* Lid: z-index keeps it above the keyboard at any rotation */}
         <div
-          data-laptop-screen
+          data-scroll
           style={{
             position: 'absolute',
             width: '100%',
             height: '100%',
             top: '-30%',
-            transformOrigin: '50% 100%', 
-            transformStyle: 'preserve-3d', // Keep this internal 3D for the screen itself
-            // FORCE VISIBILITY: High z-index ensures it sits on top of the keyboard 
-            // and the background, regardless of rotation angle.
-            zIndex: 20 
+            transformOrigin: '50% 100%',
+            transformStyle: 'preserve-3d',
+            zIndex: 20
           }}
         >
           <div
@@ -101,23 +58,26 @@ export const LaptopWithScreen: React.FC<LaptopWithScreenProps> = ({
               transform: 'translate(-50%, -100%)',
             }}
           >
-            <img src="/assets/projects/self-driving-car/computer-colored.svg" alt="" className="foreground-layer" loading="lazy" style={{ opacity: effectiveForceHover ? 1 : 0, position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 3 }} />
-            <img src="/assets/projects/self-driving-car/computer-outline.svg" alt="" className="background-layer" loading="lazy" style={{ opacity: effectiveForceHover ? 0 : 1, position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 1 }} />
-            <img src="/assets/projects/self-driving-car/simulation-demo.webp" alt="" className="splash-layer computer-screen" loading="lazy" decoding="async" style={{ opacity: effectiveForceHover ? 1 : 0, position: 'absolute', top: '10%', left: '4%', width: '92%', height: '84%', objectFit: 'cover', objectPosition: 'center', zIndex: 6 }} />
+            <ArtLayer layer="foreground" src={`${ART}/computer-colored.svg`} style={{ zIndex: 3 }} />
+            <ArtLayer layer="background" src={`${ART}/computer-outline.svg`} style={{ zIndex: 1 }} />
+            <ArtLayer
+              layer="splash"
+              className="computer-screen"
+              src={`${ART}/simulation-demo.webp`}
+              style={{ top: '10%', left: '4%', width: '92%', height: '84%', objectFit: 'cover', objectPosition: 'center', zIndex: 6 }}
+            />
           </div>
         </div>
 
-        {/* === KEYBOARD CONTAINER === */}
+        {/* Keyboard */}
         <div
-          data-laptop-keyboard
           style={{
             position: 'absolute',
             width: '100%',
             height: '100%',
             top: '70%',
             transformOrigin: '50% 50%',
-            // Lower z-index means it will always be behind the screen
-            zIndex: 10 
+            zIndex: 10
           }}
         >
           <div
@@ -131,8 +91,8 @@ export const LaptopWithScreen: React.FC<LaptopWithScreenProps> = ({
               zIndex: 10
             }}
           >
-             <img src="/assets/projects/self-driving-car/keyboard-colored.svg" alt="" className="foreground-layer" loading="lazy" style={{ opacity: effectiveForceHover ? 1 : 0, position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 10 }} />
-             <img src="/assets/projects/self-driving-car/keyboard-outline.svg" alt="" className="background-layer" loading="lazy" style={{ opacity: effectiveForceHover ? 0 : 1, position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 10 }} />
+            <ArtLayer layer="foreground" src={`${ART}/keyboard-colored.svg`} style={{ zIndex: 10 }} />
+            <ArtLayer layer="background" src={`${ART}/keyboard-outline.svg`} style={{ zIndex: 10 }} />
           </div>
         </div>
       </div>

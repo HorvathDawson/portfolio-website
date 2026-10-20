@@ -1,3 +1,60 @@
+/* Document base. The root background is the canvas colour (seen when the
+   page overscrolls); body and the page layers paint over it. */
+:root {
+  color-scheme: light dark;
+  background-color: #242424;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links render at regular weight, including linked h2 titles. */
+a {
+  font-weight: 500;
+}
+
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
 :root {
   --warm-white: #fcf7f0;
   --orange-red: #ed601a;
@@ -134,9 +191,26 @@ html {
 }
 
 .app-container {
+  background-color: #FEDCC8;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
   height: auto;
   overflow-y: visible;
   overflow-x: hidden;
+}
+
+/* Page content below the header; sits above the bottom edge of the header. */
+.parallax-foreground {
+  background-image: url("/assets/header/foreground-tile.webp");
+  background-repeat: repeat;
+  background-position: top center;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  margin-top: -2px;
+  padding-top: 50px;
+  padding-bottom: 0;
 }
 
 /* ---- Focus-visible ring for keyboard navigation ---- */
@@ -332,6 +406,11 @@ textarea.form-select {
     position: absolute;
     inset: 0%;
   }
+}
+
+.project-card-content .project-cta-button {
+  display: inline-block;
+  margin-top: 18px;
 }
 
 .project-card-content.content-width-constrained {

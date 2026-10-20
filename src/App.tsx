@@ -1,46 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ParallaxHeader } from './components/ParallaxHeader';
 import { AboutMe } from './components/AboutMe';
 import { ContactForm } from './components/ContactForm';
+import { ProjectCard } from './components/ProjectCard';
 import { aboutMeContent, parallaxLayers } from './data/content';
-import {
-  BCFishingProject,
-  OpenSim2RealProject,
-  SelfDrivingCarProject,
-  Robot253Project,
-  A40AustinProject,
-  BuellProject,
-  FumeExtractorProject,
-  Esk8Project,
-  ThreeDPrinterProject,
-  ResumeProject
-} from './components/projects';
-import './App.css';
-
-// 1. CONTAINER STYLE
-const appContainerStyle: React.CSSProperties = {
-  backgroundColor: '#FEDCC8',
-  minHeight: '100vh',
-  width: '100%',
-  position: 'relative',
-  overflowX: 'hidden',
-};
-
-// 2. CONTENT STYLE
-// This sits strictly BELOW the header.
-// We add zIndex to ensure it sits on top of any background artifacts.
-const mainContentStyle: React.CSSProperties = {
-  backgroundImage: 'url("/assets/header/foreground-tile.webp")',
-  backgroundRepeat: 'repeat',
-  backgroundPosition: 'top center',
-  // backgroundSize: 'cover',
-  position: 'relative',
-  zIndex: 10, // Ensures content sits on top of the bottom of the parallax header
-  width: '100%',
-  marginTop: '-2px',
-  paddingTop: '50px', // Spacing between header and first text
-  paddingBottom: '0px'
-};
+import { projects } from './data/projects';
+import { BREAKPOINTS } from './utils/useBreakpoint';
 
 function App() {
   const [ready, setReady] = useState(false);
@@ -122,7 +87,7 @@ function App() {
 
     const applyOffset = () => {
       mouseAnimationFrame = 0;
-      if (window.innerWidth <= 991) return;
+      if (window.innerWidth <= BREAKPOINTS.tablet) return;
 
       const offsetX = (mouseX - window.innerWidth / 2) * 0.002;
       const offsetY = (mouseY - window.innerHeight / 2) * 0.002;
@@ -147,7 +112,7 @@ function App() {
   }, []);
 
   return (
-    <div className="app-container" style={appContainerStyle}>
+    <div className="app-container">
 
       {/* Skip-to-content link for keyboard users */}
       <a href="#main-content" className="skip-link">
@@ -170,24 +135,14 @@ function App() {
         <ParallaxHeader />
       </header>
 
-      {/* Main Content Area */}
-      <main id="main-content" className="parallax-foreground" style={mainContentStyle}>
+      <main id="main-content" className="parallax-foreground">
         <div className="main-content home">
           <AboutMe content={aboutMeContent} />
 
           <section className="projects-content" aria-label="Projects">
             <div className="projects-section">
               <div className="projects-grid" role="list">
-                <BCFishingProject />
-                <OpenSim2RealProject />
-                <A40AustinProject />
-                <SelfDrivingCarProject />
-                <Robot253Project />
-                <BuellProject />
-                <FumeExtractorProject />
-                <Esk8Project />
-                <ThreeDPrinterProject />
-                <ResumeProject />
+                {projects.map((project) => <ProjectCard key={project.id} project={project} />)}
               </div>
               <ContactForm />
             </div>
