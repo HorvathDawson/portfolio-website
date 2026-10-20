@@ -107,35 +107,67 @@ button:focus {
   top: 0;
 }
 
-/* ---- Loading overlay ---- */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: var(--purple);
+/* ---- Parallax header ----
+   A 3:2 frame as wide as the page but no taller than the viewport and no
+   wider than the 3000px art. It shows a blurred placeholder of the scene
+   until every layer has decoded, then the layers fade in together
+   (.is-revealed) as the placeholder fades out (.is-complete). If decoding
+   is slow the layers are revealed early over the placeholder. index.html
+   renders the same empty frame so the placeholder is there on first paint. */
+.parallax-header {
+  position: relative;
+  width: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
+  overflow: hidden;
+  z-index: 0;
+  background: url("/assets/header/foreground-tile.webp") repeat center;
 }
 
-.loading-overlay.loaded {
+.parallax-frame {
+  position: relative;
+  width: min(100%, 150vh, 3000px);
+  aspect-ratio: 3 / 2;
+}
+
+.parallax-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("./assets/header-placeholder.webp") center / 100% 100% no-repeat;
+  transition: opacity 0.5s ease;
+}
+
+.parallax-frame.is-complete::after {
   opacity: 0;
-  visibility: hidden;
+}
+
+.parallax-layer {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.25);
-  border-top-color: var(--warm-white);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+.parallax-frame.is-revealed .parallax-layer {
+  opacity: 1;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.parallax-layer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The pre-app copy of the header in index.html is only for the home page. */
+:root:not([data-boot-route="home"]) .boot-only {
+  display: none;
+}
+
+.boot-only .parallax-foreground {
+  min-height: 100vh;
 }
 
 /* ---- Parallax header sky (day/night cycle) ----

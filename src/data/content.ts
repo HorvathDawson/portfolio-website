@@ -1,11 +1,3 @@
-// data/content.ts
-
-export interface ParallaxLayer {
-  id: string;
-  src: string;
-  depth: number;
-}
-
 export interface AboutMeContent {
   title: string;
   description: string;
@@ -13,13 +5,26 @@ export interface AboutMeContent {
   logsImage: string;
 }
 
-export const parallaxLayers: ParallaxLayer[] = [
-  { id: 'layer0', src: '/assets/header/layer-0.webp', depth: 0.1 },
-  { id: 'layer1', src: '/assets/header/layer-1.webp', depth: 0.2 },
-  { id: 'layer2', src: '/assets/header/layer-2.webp', depth: 0.3 },
-  { id: 'layer3', src: '/assets/header/layer-3.webp', depth: 0.4 },
-  { id: 'layer4', src: '/assets/header/layer-4.webp', depth: 0.5 },
-  { id: 'layer5', src: '/assets/header/layer-5.webp', depth: 0.6 },
+/**
+ * Parallax header art: 3000x2000 layers (back to front) with 1500w copies
+ * for phones, both written by scripts/make-header-images.py. Desktop
+ * (above BREAKPOINTS.tablet) always gets the full art; smaller screens pick
+ * by the header's rendered width (3:2, no taller than the viewport).
+ */
+export const HEADER_SIZES = '(min-width: 992px) 3000px, min(100vw, 150vh)';
+
+export const headerSrcSet = (src: string) =>
+  `${src.replace(/\.webp$/, '-1500.webp')} 1500w, ${src} 3000w`;
+
+export const HEADER_TILE = '/assets/header/foreground-tile.webp';
+
+export const parallaxLayers = [
+  '/assets/header/layer-0.webp',
+  '/assets/header/layer-1.webp',
+  '/assets/header/layer-2.webp',
+  '/assets/header/layer-3.webp',
+  '/assets/header/layer-4.webp',
+  '/assets/header/layer-5.webp',
 ];
 
 export const aboutMeContent: AboutMeContent = {

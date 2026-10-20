@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="Portfolio of Dawson: A showcase of robotics, software engineering, self-driving cars, and DIY fabrication projects." />
     <meta name="theme-color" content="#7038cf" />
+    <!-- header-preload -->
     <meta property="og:title" content="Dawson Horvath — Engineering Portfolio" />
     <meta property="og:description" content="Robotics, software engineering, self-driving cars, and DIY fabrication projects." />
     <meta property="og:type" content="website" />
@@ -12,23 +13,20 @@
     <title>Dawson's Portfolio | Engineering &amp; Design</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" />
+    <!-- Fonts load without blocking first paint (the header frame below needs none). -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" /></noscript>
 
-    <!-- Prefetch parallax header images. They're only used on the home page,
-         so `prefetch` (low-priority, idle-time) is correct here rather than
-         `preload` — preload warns on every other route because the resources
-         aren't consumed within the load window. -->
-    <link rel="prefetch" as="image" href="/assets/header/layer-0.webp">
-    <link rel="prefetch" as="image" href="/assets/header/layer-1.webp">
-    <link rel="prefetch" as="image" href="/assets/header/layer-2.webp">
-    <link rel="prefetch" as="image" href="/assets/header/layer-3.webp">
-    <link rel="prefetch" as="image" href="/assets/header/layer-4.webp">
-    <link rel="prefetch" as="image" href="/assets/header/layer-5.webp">
-    <link rel="prefetch" as="image" href="/assets/header/foreground-tile.webp">
   </head>
   <body>
     <noscript>You need JavaScript enabled to view this portfolio.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Shown until the app mounts (home page only); matches ParallaxHeader's frame. -->
+      <div class="app-container boot-only">
+        <header><div class="parallax-header"><div class="parallax-frame"></div></div></header>
+        <main class="parallax-foreground"></main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
