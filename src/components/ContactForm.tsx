@@ -145,6 +145,7 @@ export const ContactForm: React.FC = () => {
           className="form-input contact-name-field"
           type="text"
           name="fullName"
+          autoComplete="name"
           value={formData.fullName}
           onChange={handleInputChange}
           placeholder="Leeroy Jenkins"
@@ -161,6 +162,7 @@ export const ContactForm: React.FC = () => {
           className="form-input contact-email-field"
           type="email"
           name="email"
+          autoComplete="email"
           value={formData.email}
           onChange={handleInputChange}
           placeholder="leeroy@example.com"
