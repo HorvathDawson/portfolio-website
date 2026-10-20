@@ -2,34 +2,36 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ContactLinks } from './ContactLinks';
 import './ContactForm.css';
 
-const RECAPTCHA_SITE_KEY = '6LeBU6gqAAAAAEJDe5diUdowY2Q0cwpk0GyEdSdy';
-const RECAPTCHA_ONLOAD = '__onRecaptchaLoad';
+// Cloudflare Turnstile; the matching secret is the Worker's TURNSTILE_SECRET.
+const TURNSTILE_SITE_KEY = '0x4AAAAAAFeUOlHDjf8q6XJb';
+const TURNSTILE_ONLOAD = '__onTurnstileLoad';
 
-interface ReCaptcha {
-  render: (container: HTMLElement, params: { sitekey: string }) => number;
-  getResponse: (widgetId?: number) => string;
+interface Turnstile {
+  render: (container: HTMLElement, params: { sitekey: string; theme?: 'light' | 'dark' | 'auto' }) => string;
+  getResponse: (widgetId: string) => string | undefined;
+  reset: (widgetId: string) => void;
 }
 
 declare global {
   interface Window {
-    grecaptcha?: ReCaptcha;
-    [RECAPTCHA_ONLOAD]?: () => void;
+    turnstile?: Turnstile;
+    [TURNSTILE_ONLOAD]?: () => void;
   }
 }
 
-// The reCAPTCHA script is shared by every mount of the form, so load it once.
-let recaptchaReady: Promise<ReCaptcha> | null = null;
+// The Turnstile script is shared by every mount of the form, so load it once.
+let turnstileReady: Promise<Turnstile> | null = null;
 
-function loadRecaptcha(): Promise<ReCaptcha> {
-  recaptchaReady ??= new Promise((resolve) => {
-    window[RECAPTCHA_ONLOAD] = () => resolve(window.grecaptcha!);
+function loadTurnstile(): Promise<Turnstile> {
+  turnstileReady ??= new Promise((resolve) => {
+    window[TURNSTILE_ONLOAD] = () => resolve(window.turnstile!);
     const script = document.createElement('script');
-    script.src = `https://www.google.com/recaptcha/api.js?onload=${RECAPTCHA_ONLOAD}&render=explicit`;
+    script.src = `https://challenges.cloudflare.com/turnstile/v0/api.js?onload=${TURNSTILE_ONLOAD}&render=explicit`;
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
   });
-  return recaptchaReady;
+  return turnstileReady;
 }
 
 interface ContactFormData {
@@ -45,23 +47,25 @@ export const ContactForm: React.FC = () => {
     message: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const recaptchaRef = useRef<HTMLDivElement>(null);
-  const recaptchaWidgetId = useRef<number | null>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const turnstileWidgetId = useRef<string | null>(null);
 
-  // reCAPTCHA is heavy and the form sits at the bottom of the page, so only
-  // fetch it once the form is getting close to the viewport.
+  // The form sits at the bottom of the page, so only fetch Turnstile once
+  // the form is getting close to the viewport.
   useEffect(() => {
-    const container = recaptchaRef.current;
+    const container = turnstileRef.current;
     if (!container) return;
 
     let cancelled = false;
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) return;
       observer.disconnect();
-      loadRecaptcha().then((grecaptcha) => {
-        if (cancelled || recaptchaWidgetId.current !== null) return;
-        recaptchaWidgetId.current = grecaptcha.render(container, { sitekey: RECAPTCHA_SITE_KEY });
+      loadTurnstile().then((turnstile) => {
+        if (cancelled || turnstileWidgetId.current !== null) return;
+        turnstileWidgetId.current = turnstile.render(container, { sitekey: TURNSTILE_SITE_KEY, theme: 'light' });
       });
     }, { rootMargin: '800px' });
     observer.observe(container);
@@ -82,37 +86,35 @@ export const ContactForm: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Sent to the site Worker (worker/index.ts), which emails it via Cloudflare Email Routing.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Check if reCAPTCHA is loaded and verified
-    const widgetId = recaptchaWidgetId.current;
-    const recaptchaResponse = widgetId !== null ? window.grecaptcha?.getResponse(widgetId) : '';
-    
-    if (!recaptchaResponse) {
-      alert('Please complete the reCAPTCHA.');
+    setError(null);
+
+    const widgetId = turnstileWidgetId.current;
+    const token = widgetId !== null ? window.turnstile?.getResponse(widgetId) : undefined;
+    if (!token) {
+      setError('Please complete the verification.');
       return;
     }
 
-    const googleFormData = new FormData();
-    // Map state keys to the Google Form entry IDs
-    googleFormData.append('entry.2005620554', formData.fullName);
-    googleFormData.append('entry.1045781291', formData.email);
-    googleFormData.append('entry.839337160', formData.message);
-    googleFormData.append('entry.670876903', recaptchaResponse);
-
-    fetch('https://docs.google.com/forms/d/e/1FAIpQLSd-ORTakZ4IOBgNYOtuETuGr5X5I9a8xMa0kjfiJJVOyTIASg/formResponse', {
-      method: 'POST',
-      body: googleFormData,
-      mode: 'no-cors',
-    })
-    .then(() => {
-        setIsSubmitted(true);
-    })
-    .catch(() => {
-        // Because of 'no-cors', errors are hard to catch, but good to have
-        alert("There was an error submitting the form.");
-    });
+    setIsSending(true);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: formData.fullName, email: formData.email, message: formData.message, token }),
+      });
+      const result = await res.json().catch(() => ({})) as { ok?: boolean; error?: string };
+      if (!res.ok || !result.ok) throw new Error(result.error ?? 'There was an error submitting the form.');
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'There was an error submitting the form.');
+      // Turnstile tokens are single-use, so a retry needs a fresh one.
+      if (widgetId !== null) window.turnstile?.reset(widgetId);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (isSubmitted) {
@@ -181,17 +183,20 @@ export const ContactForm: React.FC = () => {
         />
 
         <div
-          ref={recaptchaRef}
-          className="contact-recaptcha-field"
-          aria-label="reCAPTCHA verification"
+          ref={turnstileRef}
+          className="contact-verification-field"
+          aria-label="Verification"
         />
 
         <input
           id="contact-form-submit"
           type="submit"
           className="project-cta-button button"
-          value="Submit"
+          value={isSending ? 'Sending…' : 'Submit'}
+          disabled={isSending}
         />
+
+        {error && <p className="contact-error" role="alert">{error}</p>}
       </form>
     </div>
   );

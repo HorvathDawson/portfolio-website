@@ -55,11 +55,22 @@
 #contact-form-message-label { grid-area: 3/1/4/3; }
 .contact-message-field   { grid-area: 4/1/5/3; }
 
-/* Reserve the widget's height before reCAPTCHA loads */
-.contact-recaptcha-field {
+/* Reserve the widget's height before Turnstile loads */
+.contact-verification-field {
   grid-area: 5/1/6/2;
-  min-height: 78px;
+  min-height: 65px;
   margin-bottom: 20px;
+}
+
+.contact-error {
+  grid-area: 6/1/7/3;
+  margin: 0;
+  color: var(--gold);
+}
+
+#contact-form-submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 #contact-form-submit {
@@ -80,7 +91,8 @@
   .contact-email-field     { grid-area: 4/1/5/2; }
   #contact-form-message-label { grid-area: 5/1/6/2; }
   .contact-message-field   { grid-area: 6/1/7/2; }
-  .contact-recaptcha-field { grid-area: 7/1/8/2; }
+  .contact-verification-field { grid-area: 7/1/8/2; }
+  .contact-error { grid-area: 9/1/10/2; }
 
   #contact-form-submit {
     grid-area: 8/1/9/2;

@@ -13,6 +13,21 @@ npm run lint
 npm run preview  # build, then serve dist/ with wrangler
 ```
 
+## Contact form
+
+The form posts to `/api/contact` on the site Worker. It needs Email Routing on
+`dawsonhorvath.com` with the recipient verified as a destination, and three
+Worker secrets (Workers & Pages → personal-website → Settings → Variables and
+Secrets, type *Secret*):
+
+- `CONTACT_FROM`: sending address on the domain (e.g. `contact@dawsonhorvath.com`)
+- `CONTACT_TO`: the verified destination address
+- `TURNSTILE_SECRET`: the Turnstile widget's secret key
+
+For local testing copy `.dev.vars.example` to `.dev.vars` and run `npm run preview`.
+After changing `wrangler.jsonc`, regenerate the Worker types with
+`npx wrangler types worker/worker-configuration.d.ts`.
+
 ## Layout
 
 - `src/App.tsx`: home page (parallax header, about, project cards, contact form)
@@ -25,6 +40,8 @@ npm run preview  # build, then serve dist/ with wrangler
 - `src/utils/scrollFrame.ts`: shared, rAF-batched scroll subscription used by all scroll effects
 - `src/utils/reducedMotion.ts`: the one `prefers-reduced-motion` check (CSS side at the end of `App.css`)
 - `vite.plugins.ts`: home-page header preloads, `<head>` metadata, `sitemap.xml`
+- `worker/index.ts`: the site Worker; handles `POST /api/contact` (Turnstile check, then
+  email via Cloudflare Email Routing). Static files never reach it.
 - `public/assets/`: images; home page artwork is WebP
 
 ## Assets

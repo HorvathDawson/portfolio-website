@@ -5,10 +5,20 @@
   "observability": {
     "enabled": true
   },
+  // Only /api/* reaches the Worker; everything else is served straight from dist/.
+  "main": "worker/index.ts",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
   },
+  // Contact form mail, via Email Routing on dawsonhorvath.com. The sender,
+  // recipient and Turnstile secret are Worker secrets (CONTACT_FROM,
+  // CONTACT_TO, TURNSTILE_SECRET) so the addresses stay out of the repo.
+  "send_email": [
+    { "name": "SEND_EMAIL" }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]
