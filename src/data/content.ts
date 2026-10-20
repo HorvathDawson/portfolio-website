@@ -1,14 +1,23 @@
-import { GITHUB_URL } from './site';
+import { GITHUB_URL, LINKEDIN_URL } from './site';
 
-export interface ContactLink {
-  label: string;
-  href: string;
-  icon: 'github';
-}
+export type ContactLink =
+  | { label: string; icon: 'github' | 'linkedin'; href: string }
+  | {
+      label: string;
+      icon: 'email';
+      /**
+       * [user, domain], each reversed then base64-encoded. ContactLinks joins
+       * them only when clicked, so the address never appears in the HTML or
+       * bundle for scrapers to find.
+       */
+      email: [string, string];
+    };
 
-/** Public profiles shown under About and beside the contact form. */
+/** Shown under About and beside the contact form. */
 export const contactLinks: ContactLink[] = [
-  { label: 'GitHub', href: GITHUB_URL, icon: 'github' },
+  { label: 'GitHub', icon: 'github', href: GITHUB_URL },
+  { label: 'LinkedIn', icon: 'linkedin', href: LINKEDIN_URL },
+  { label: 'Email', icon: 'email', email: ['bm9zd2FkLmh0YXZyb2g=', 'bW9jLmxpYW1n'] },
 ];
 
 export interface AboutMeContent {

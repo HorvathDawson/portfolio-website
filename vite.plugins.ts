@@ -4,7 +4,7 @@ import path from 'node:path'
 import type { Plugin } from 'vite'
 import { HEADER_SIZES, HEADER_TILE, headerSrcSet, parallaxLayers } from './src/data/content'
 import {
-  GITHUB_URL, HOME_DESCRIPTION, HOME_TITLE, OG_IMAGE, SHARE_DESCRIPTION, SHARE_TITLE, SITE_NAME, SITE_URL, absoluteUrl,
+  GITHUB_URL, HOME_DESCRIPTION, LINKEDIN_URL, HOME_TITLE, OG_IMAGE, SHARE_DESCRIPTION, SHARE_TITLE, SITE_NAME, SITE_URL, absoluteUrl,
 } from './src/data/site'
 import { postSlug } from './src/blog/postSlug'
 
@@ -51,7 +51,7 @@ export function siteMeta(): Plugin {
         '@id': `${SITE_URL}/#person`,
         name: SITE_NAME,
         url: `${SITE_URL}/`,
-        sameAs: [GITHUB_URL],
+        sameAs: [GITHUB_URL, LINKEDIN_URL],
         alumniOf: { '@type': 'CollegeOrUniversity', name: 'University of British Columbia' },
       },
     ],

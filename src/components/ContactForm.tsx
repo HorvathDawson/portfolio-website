@@ -161,7 +161,7 @@ export const ContactForm: React.FC = () => {
           name="email"
           value={formData.email}
           onChange={handleInputChange}
-          placeholder="JenkinsLeeroy@gmail.com"
+          placeholder="leeroy@example.com"
           maxLength={256}
           required
           aria-required="true"

@@ -24,5 +24,6 @@ export const OG_IMAGE = {
 
 /** Public profiles, used for the contact links and the Person schema's sameAs. */
 export const GITHUB_URL = 'https://github.com/HorvathDawson';
+export const LINKEDIN_URL = 'https://www.linkedin.com/in/horvathdawson/';
 
 export const absoluteUrl = (path: string) => new URL(path, SITE_URL).href;
