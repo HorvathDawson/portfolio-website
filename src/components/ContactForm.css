@@ -14,6 +14,14 @@
   }
 }
 
+.contact-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 24px;
+}
+
 /* Overrides the generic .form-input look from App.css */
 #contact-form .form-input {
   background-color: var(--warm-white);

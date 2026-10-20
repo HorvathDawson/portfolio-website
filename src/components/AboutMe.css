@@ -44,6 +44,10 @@
   word-break: break-word;
 }
 
+.about-contact-links {
+  justify-content: center;
+}
+
 .about-paragraph {
   margin-bottom: 1.5em;
   font-size: 18px;

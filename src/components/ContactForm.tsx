@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { ContactLinks } from './ContactLinks';
 import './ContactForm.css';
 
 const RECAPTCHA_SITE_KEY = '6LeBU6gqAAAAAEJDe5diUdowY2Q0cwpk0GyEdSdy';
@@ -125,7 +126,10 @@ export const ContactForm: React.FC = () => {
 
   return (
     <div className="contact-section">
-      <h2 className="section-title">Contact Me</h2>
+      <div className="contact-heading">
+        <h2 className="section-title">Contact Me</h2>
+        <ContactLinks />
+      </div>
       <form
         id="contact-form"
         onSubmit={handleSubmit}

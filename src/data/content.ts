@@ -1,3 +1,16 @@
+import { GITHUB_URL } from './site';
+
+export interface ContactLink {
+  label: string;
+  href: string;
+  icon: 'github';
+}
+
+/** Public profiles shown under About and beside the contact form. */
+export const contactLinks: ContactLink[] = [
+  { label: 'GitHub', href: GITHUB_URL, icon: 'github' },
+];
+
 export interface AboutMeContent {
   title: string;
   description: string;

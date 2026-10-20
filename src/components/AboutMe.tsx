@@ -1,4 +1,5 @@
 import React from 'react';
+import { ContactLinks } from './ContactLinks';
 import './AboutMe.css';
 
 interface AboutMeProps {
@@ -25,6 +26,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ content }) => {
             </p>
           ))}
         </div>
+        <ContactLinks className="about-contact-links" />
       </div>
 
       {/* Tent and campfire scene */}
