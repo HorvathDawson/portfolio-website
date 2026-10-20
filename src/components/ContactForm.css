@@ -1,10 +1,17 @@
-.contact-section {
+.contact-section,
+.contact-thanks {
   margin-top: 150px;
 }
 
 .contact-thanks {
-  margin-top: 150px;
   text-align: center;
+}
+
+@media screen and (max-width: 991px) {
+  .contact-section,
+  .contact-thanks {
+    margin-top: var(--projects-gap);
+  }
 }
 
 /* Overrides the generic .form-input look from App.css */

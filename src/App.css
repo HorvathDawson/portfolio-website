@@ -315,8 +315,8 @@ textarea.form-select {
 }
 
 @media screen and (max-width: 479px) {
-
   .projects-content {
+    padding-top: 80px;
     padding-left: 15px;
     padding-right: 15px;
   }
@@ -332,10 +332,28 @@ textarea.form-select {
 
 .projects-grid {
   grid-column-gap: 30px;
-  grid-row-gap: 213px;
+  grid-row-gap: var(--projects-gap);
   grid-template-columns: 1fr;
   grid-auto-rows: auto;
   display: grid;
+}
+
+/* Space between project cards; on stacked layouts the contact section
+   (ContactForm.css) uses the same gap. */
+.projects-section {
+  --projects-gap: 213px;
+}
+
+@media screen and (max-width: 991px) {
+  .projects-section {
+    --projects-gap: 96px;
+  }
+}
+
+@media screen and (max-width: 479px) {
+  .projects-section {
+    --projects-gap: 72px;
+  }
 }
 
 .project-card {
@@ -377,7 +395,6 @@ textarea.form-select {
     box-shadow: 0 0 86px 6px #7038cfcc;
     justify-content: flex-end;
     height: auto;
-    min-height: 750px;
     max-height: none;
     /* Stacked / narrow layouts: media becomes full-width and defines its own height */
     flex-direction: column;
@@ -394,7 +411,6 @@ textarea.form-select {
   .project-card {
     flex-flow: column;
     align-items: flex-start;
-    min-height: 800px;
   }
 }
 
@@ -427,7 +443,6 @@ textarea.form-select {
 @media screen and (max-width: 991px) {
   .project-card-content {
     width: 100%;
-    min-height: 55%;
   }
 }
 
@@ -501,7 +516,7 @@ h1 {
 @media screen and (max-width: 991px) {
   .project-card-media {
     width: 100%;
-    height: 72vw;
+    height: 65vw;
     max-height: none;
     align-self: stretch;
     order: -1;
