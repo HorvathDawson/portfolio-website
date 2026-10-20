@@ -64,25 +64,30 @@ const setOpacity = (elements: NodeListOf<HTMLElement>, value: string) => {
   elements.forEach((el) => { el.style.opacity = value; });
 };
 
-/** Internal links use client-side routing; external ones open in a new tab. */
-const ProjectLink: React.FC<{ project: Project; className?: string; children: React.ReactNode }> = ({
+/**
+ * Internal links use client-side routing, other sites open in a new tab, and
+ * other pages on this domain (served outside the app, like the resume
+ * generator) are ordinary same-tab links.
+ */
+const ProjectLink: React.FC<{ project: Project; className?: string; tabIndex?: number; children: React.ReactNode }> = ({
   project,
   className,
+  tabIndex,
   children,
-}) =>
-  project.internal ? (
-    <Link to={project.link!} className={className}>{children}</Link>
-  ) : (
+}) => {
+  if (project.internal) return <Link to={project.link!} className={className} tabIndex={tabIndex}>{children}</Link>;
+  const external = /^https?:\/\//.test(project.link!);
+  return (
     <a
       href={project.link}
-      target="_blank"
-      rel="noopener noreferrer"
       className={className}
-      {...(project.downloadable ? { download: true } : {})}
+      tabIndex={tabIndex}
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {children}
     </a>
   );
+};
 
 export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   const itemRef = useRef<HTMLDivElement>(null);
@@ -162,7 +167,14 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
       </div>
       <div className="project-card-media" aria-hidden="true">
         <div className="project-media-frame">
-          {project.visual}
+          {project.linkVisual && project.link ? (
+            // Mouse shortcut only; the title and button are the accessible links.
+            <ProjectLink project={project} className="project-media-link" tabIndex={-1}>
+              {project.visual}
+            </ProjectLink>
+          ) : (
+            project.visual
+          )}
         </div>
       </div>
     </div>
