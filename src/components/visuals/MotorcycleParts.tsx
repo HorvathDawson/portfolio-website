@@ -1,182 +1,46 @@
-import React, { useRef } from 'react';
+import React from 'react';
+import { ArtLayer } from './ArtLayer';
+import { LayeredArt } from './LayeredArt';
 
-export interface MotorcyclePartsProps {
-  className?: string;
-  forceHover?: boolean;
-}
+const ART = '/assets/projects/buell-lightning/engine';
+const PUSH_ROD_MASK = `url("${ART}/push-rods-mask.svg")`;
 
-export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({ 
-  className = '',
-  forceHover
-}) => {
-  const effectiveForceHover = forceHover ?? false;
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Hover behavior is handled by BaseProjectItem via VisualsForceHoverContext.
-  // Visuals should only read `effectiveForceHover` and render accordingly.
-
-  return (
-    <div 
-      ref={containerRef}
-      data-motorcycle-parts
-      className={className}
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-    >
-      <div style={{ width: 900, height: 700, maxWidth: '100%', maxHeight: '100%', position: 'relative' }}>
-        {/* Section view animation - shows on hover */}
-        <img
-          src="/assets/projects/buell-lightning/engine/section-view.gif"
-          alt="Buell motorcycle engine section view"
-          className="foreground-layer"
-          loading="lazy"
-          style={{ 
-            opacity: effectiveForceHover ? 1 : 0,
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            zIndex: 5
-          }}
-        />
-      
-      {/* Static engine case - shows by default */}
-      <img
-        src="/assets/projects/buell-lightning/engine/case.png"
-        alt="Buell motorcycle engine case"
-        className="background-layer"
-        loading="lazy"
-        style={{ 
-          opacity: effectiveForceHover ? 0 : 1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          zIndex: 4
-        }}
-      />
-      
-      {/* Left cylinder - shows by default */}
-      <img
-        src="/assets/projects/buell-lightning/engine/left-cylinder.png"
-        alt="Buell motorcycle left cylinder"
-        className="background-layer"
-        loading="lazy"
-        style={{ 
-          opacity: effectiveForceHover ? 0 : 1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          zIndex: 4
-        }}
-      />
-      
-      {/* Exploding parts - animated by scroll */}
-      <img
-        src="/assets/projects/buell-lightning/engine/cylinder-barrel.png"
-        alt="Buell motorcycle cylinder barrel"
-        data-part="1"
-        className="background-layer"
-        loading="lazy"
-        style={{ 
-          opacity: effectiveForceHover ? 0 : 1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          zIndex: 4
-        }}
-      />
-      <img
-        src="/assets/projects/buell-lightning/engine/rocker-box.png"
-        alt="Buell motorcycle rocker box"
-        data-part="2"
-        className="background-layer"
-        loading="lazy"
-        style={{ 
-          opacity: effectiveForceHover ? 0 : 1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          zIndex: 4
-        }}
-      />
-      <img
-        src="/assets/projects/buell-lightning/engine/rocker-box-top.png"
-        alt="Buell motorcycle rocker box top"
-        data-part="3"
-        className="background-layer"
-        loading="lazy"
-        style={{ 
-          opacity: effectiveForceHover ? 0 : 1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          zIndex: 4
-        }}
-      />
-      <img
-        src="/assets/projects/buell-lightning/engine/push-rods.png"
-        alt="Buell motorcycle push rods"
-        data-part="4"
-        className="background-layer"
-        loading="lazy"
-        style={{ 
-          opacity: effectiveForceHover ? 0 : 1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          zIndex: 6
-        }}
-      />
-      
-      {/* FIX APPLIED: Switched from <img> to <div> with mask-image.
-          This allows backgroundColor to act as the fill color for the SVG shape.
-      */}
-      <div
-        role="img"
-        aria-label="Buell motorcycle push rods bg"
-        data-part="4"
-        className="background-layer"
-        style={{ 
-          opacity: effectiveForceHover ? 0 : 1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 5,
-          // The background color becomes the "fill"
-          backgroundColor: 'var(--dark-blue)',
-          // The mask cuts the div into the shape of the SVG
-          maskImage: 'url("/assets/projects/buell-lightning/engine/push-rods-mask.svg")',
-          WebkitMaskImage: 'url("/assets/projects/buell-lightning/engine/push-rods-mask.svg")',
-          maskSize: 'contain',
-          WebkitMaskSize: 'contain',
-          maskRepeat: 'no-repeat',
-          WebkitMaskRepeat: 'no-repeat',
-          maskPosition: 'center',
-          WebkitMaskPosition: 'center'
-        }}
-      />
-      </div>
-    </div>
-  );
-};
+/**
+ * Buell engine. Parts tagged `data-scroll="<n>"` are pushed apart by the
+ * card's scroll animation, part n moving n steps.
+ */
+export const MotorcycleParts: React.FC = () => (
+  <LayeredArt width={900} height={700}>
+    <ArtLayer layer="foreground" src={`${ART}/section-view.webp`} animated alt="Buell motorcycle engine section view" style={{ zIndex: 5 }} />
+    <ArtLayer layer="background" src={`${ART}/case.webp`} alt="Buell motorcycle engine case" style={{ zIndex: 4 }} />
+    <ArtLayer layer="background" src={`${ART}/left-cylinder.webp`} alt="Buell motorcycle left cylinder" style={{ zIndex: 4 }} />
+    <ArtLayer layer="background" src={`${ART}/cylinder-barrel.webp`} alt="Buell motorcycle cylinder barrel" data-scroll="1" style={{ zIndex: 4 }} />
+    <ArtLayer layer="background" src={`${ART}/rocker-box.webp`} alt="Buell motorcycle rocker box" data-scroll="2" style={{ zIndex: 4 }} />
+    <ArtLayer layer="background" src={`${ART}/rocker-box-top.webp`} alt="Buell motorcycle rocker box top" data-scroll="3" style={{ zIndex: 4 }} />
+    <ArtLayer layer="background" src={`${ART}/push-rods.webp`} alt="Buell motorcycle push rods" data-scroll="4" style={{ zIndex: 6 }} />
+    {/* Dark fill behind the push rods: a mask lets background-color fill the SVG shape */}
+    <div
+      aria-hidden="true"
+      data-scroll="4"
+      className="background-layer"
+      style={{
+        opacity: 1,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 5,
+        backgroundColor: 'var(--dark-blue)',
+        maskImage: PUSH_ROD_MASK,
+        WebkitMaskImage: PUSH_ROD_MASK,
+        maskSize: 'contain',
+        WebkitMaskSize: 'contain',
+        maskRepeat: 'no-repeat',
+        WebkitMaskRepeat: 'no-repeat',
+        maskPosition: 'center',
+        WebkitMaskPosition: 'center'
+      }}
+    />
+  </LayeredArt>
+);

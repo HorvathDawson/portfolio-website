@@ -1,0 +1,110 @@
+/**
+ * Shared, rAF-batched scroll/resize subscription.
+ *
+ * Every scroll-driven effect on the page (parallax header, project card
+ * animations, hover re-checks) subscribes here instead of attaching its own
+ * window listener. All callbacks run together in a single animation frame,
+ * at most once per frame, so the page does one batch of reads/writes per
+ * frame no matter how many effects are mounted.
+ */
+
+import { watchReducedMotion } from './reducedMotion';
+
+type FrameCallback = () => void;
+
+const callbacks = new Set<FrameCallback>();
+let rafId = 0;
+
+const flush = () => {
+  rafId = 0;
+  callbacks.forEach((cb) => cb());
+};
+
+const schedule = () => {
+  if (!rafId) rafId = requestAnimationFrame(flush);
+};
+
+/**
+ * Run `cb` on the next animation frame and again on every frame in which the
+ * window scrolled or resized. Returns an unsubscribe function.
+ */
+export function onScrollFrame(cb: FrameCallback): () => void {
+  if (callbacks.size === 0) {
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule, { passive: true });
+  }
+  callbacks.add(cb);
+  schedule();
+
+  return () => {
+    callbacks.delete(cb);
+    if (callbacks.size === 0) {
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    }
+  };
+}
+
+/**
+ * Like `onScrollFrame`, but only subscribed while `target` is on (or within
+ * `rootMargin` of) the screen, so off-screen effects cost nothing per frame.
+ */
+export function onScrollFrameWhileVisible(
+  target: Element,
+  cb: FrameCallback,
+  rootMargin = '200px',
+): () => void {
+  let unsubscribe: (() => void) | null = null;
+
+  const observer = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+      unsubscribe ??= onScrollFrame(cb);
+    } else if (unsubscribe) {
+      cb(); // settle on the latest position before going idle
+      unsubscribe();
+      unsubscribe = null;
+    }
+  }, { rootMargin });
+  observer.observe(target);
+
+  return () => {
+    observer.disconnect();
+    unsubscribe?.();
+  };
+}
+
+/**
+ * Signed distance of `el`'s centre from the viewport centre, in half-viewport
+ * heights: 0 when centred, 1 when its centre is at the bottom edge, -1 at
+ * the top edge.
+ */
+export function centerOffset(el: Element): number {
+  const rect = el.getBoundingClientRect();
+  const half = window.innerHeight / 2;
+  return (rect.top + rect.height / 2 - half) / half;
+}
+
+/**
+ * Scroll-driven motion. Runs `update` per frame while `target` is near the
+ * viewport, unless the visitor prefers reduced motion, in which case `rest`
+ * runs once to put the scene in its resting state.
+ */
+export function onScrollMotion(target: Element, update: FrameCallback, rest: FrameCallback): () => void {
+  let stop: (() => void) | null = null;
+
+  const unwatch = watchReducedMotion((reduced) => {
+    stop?.();
+    stop = null;
+    if (reduced) rest();
+    else stop = onScrollFrameWhileVisible(target, update);
+  });
+
+  return () => {
+    unwatch();
+    stop?.();
+  };
+}

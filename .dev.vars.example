@@ -1,0 +1,6 @@
+# Copy to .dev.vars for `npm run preview` (wrangler dev). In production these
+# are Worker secrets on the personal-website Worker.
+CONTACT_FROM=contact@dawsonhorvath.com
+CONTACT_TO=you@example.com
+# Cloudflare's always-pass Turnstile test secret
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA

@@ -1,0 +1,56 @@
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-links a,
+.contact-links button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--warm-white);
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: none;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+
+.contact-links button {
+  font: inherit;
+  font-size: 14px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* The revealed address keeps its own case so it reads (and copies) correctly. */
+.contact-email-address {
+  text-transform: none;
+  letter-spacing: 1px;
+}
+
+.contact-links a:hover,
+.contact-links button:hover {
+  color: var(--warm-white);
+  opacity: 1;
+}
+
+.contact-links svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  flex: none;
+}
+
+/* Keyboard focus keeps the gold ring; a mouse click shouldn't box the address. */
+.contact-links button:focus:not(:focus-visible) {
+  outline: none;
+}

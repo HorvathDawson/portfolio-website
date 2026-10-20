@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { allPosts, type Status } from './blogData';
+import { allPosts, buildLogDescription, type Status } from './blogData';
 import {
   roadmap,
   incomingEdges,
@@ -16,6 +16,7 @@ import {
 } from './roadmapData';
 import { computeLayout } from './roadmapLayout';
 import { useBreakpoint } from '../utils/useBreakpoint';
+import { usePageMeta } from '../utils/usePageMeta';
 import './blogStyles.css';
 
 const statusLabel: Record<Status, string> = {
@@ -467,6 +468,7 @@ const ROW_GAP = 80;
 const COL_GAP = 110;
 
 export const A40Roadmap: React.FC = () => {
+  usePageMeta({ title: 'Roadmap · A40 Build Log', description: buildLogDescription, path: '/a40/roadmap' });
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile' || bp === 'tablet';
   const colW = isMobile ? COL_W_MOBILE : COL_W_DESKTOP;
@@ -513,7 +515,6 @@ export const A40Roadmap: React.FC = () => {
       setIsolatedId(id);
     }
     // Only run once on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Sync URL hash with the active task so links can be shared / refreshed.
@@ -895,6 +896,8 @@ export const A40Roadmap: React.FC = () => {
     }
 
     setEdgeGeoms(geoms);
+    // `zoom` moves the rendered nodes, so edges must be re-measured when it changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, isolatedSet, isolatedId, expandDownstream, zoom]);
 
   useEffect(() => {

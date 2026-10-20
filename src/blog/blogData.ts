@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import markedKatex from 'marked-katex-extension';
+import { postSlug } from './postSlug';
 
 marked.use(markedKatex({ throwOnError: false, nonStandard: true }));
 
@@ -19,6 +20,8 @@ export interface BlogPostMeta {
 
 export interface BlogPost extends BlogPostMeta {
   html: string;
+  /** Plain-text opening of the post, for meta descriptions. */
+  excerpt: string;
 }
 
 export interface Epic {
@@ -60,12 +63,28 @@ function parseTags(raw: string | undefined): string[] {
   return raw.replace(/^\[|\]$/g, '').split(',').map(t => t.trim()).filter(Boolean);
 }
 
+const ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
+
+/** First paragraph of rendered HTML as plain text, cut to about `max` characters. */
+function excerpt(html: string, max = 160): string {
+  const text = (html.match(/<p>([\s\S]*?)<\/p>/)?.[1] ?? '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&(amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e])
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length <= max) return text;
+  return text.slice(0, text.lastIndexOf(' ', max - 1)).replace(/[,;:.\s]+$/, '') + '…';
+}
+
 /** Convert raw Markdown (with frontmatter) into a BlogPost. */
 export function parsePost(raw: string, slug: string): BlogPost {
   const { meta, body } = parseFrontmatter(raw);
   const rawKind = meta.kind as PostKind | undefined;
   const kind: PostKind | undefined =
     rawKind === 'log' || rawKind === 'reference' || rawKind === 'tutorial' ? rawKind : undefined;
+  // Lazy-load post images so long posts don't download every plot up front.
+  const html = (marked.parse(body, { async: false }) as string)
+    .replace(/<img /g, '<img loading="lazy" decoding="async" ');
   return {
     slug,
     title: meta.title ?? slug,
@@ -74,7 +93,8 @@ export function parsePost(raw: string, slug: string): BlogPost {
     tags: parseTags(meta.tags),
     epic: meta.epic ?? 'planning',
     kind,
-    html: marked.parse(body, { async: false }) as string,
+    html,
+    excerpt: excerpt(html),
   };
 }
 
@@ -83,12 +103,11 @@ export function parsePost(raw: string, slug: string): BlogPost {
 const modules = import.meta.glob('/content/a40/*.md', { eager: true, query: '?raw', import: 'default' }) as Record<string, string>;
 
 export const allPosts: BlogPost[] = Object.entries(modules)
-  .map(([path, raw]) => {
-    const filename = path.split('/').pop()!.replace('.md', '');
-    const slug = filename.replace(/^\d+-/, '');
-    return parsePost(raw, slug);
-  })
+  .map(([path, raw]) => parsePost(raw, postSlug(path)))
   .sort((a, b) => a.date.localeCompare(b.date));
+
+/** Meta description for the build log as a whole: the overview post's opening. */
+export const buildLogDescription = (allPosts.find((p) => p.slug === 'overview') ?? allPosts[0]).excerpt;
 
 /** Posts grouped by epic, ordered by epic.order then post date. */
 export function postsByEpic(): { epic: Epic; posts: BlogPost[] }[] {

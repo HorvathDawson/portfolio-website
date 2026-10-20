@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { allPosts, postsByEpic, type BlogPost, type Epic } from './blogData';
+import { allPosts, buildLogDescription, postsByEpic, type BlogPost, type Epic } from './blogData';
 import { useBreakpoint } from '../utils/useBreakpoint';
+import { usePageMeta } from '../utils/usePageMeta';
+import { SITE_NAME, SITE_URL, absoluteUrl } from '../data/site';
 import './blogStyles.css';
 import 'katex/dist/katex.min.css';
 
@@ -158,6 +160,32 @@ export const A40Blog: React.FC = () => {
   const activePost = activeIndex >= 0 ? allPosts[activeIndex] : allPosts[0];
   const prev = activeIndex > 0 ? allPosts[activeIndex - 1] : null;
   const next = activeIndex < allPosts.length - 1 ? allPosts[activeIndex + 1] : null;
+
+  // An unknown slug falls back to the first post; keep that URL out of search.
+  const showingPost = Boolean(slug) && activeIndex >= 0;
+  const postPath = `/a40/${activePost.slug}`;
+  usePageMeta(showingPost ? {
+    title: `${activePost.title} · A40 Build Log`,
+    description: activePost.excerpt,
+    path: postPath,
+    type: 'article',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: activePost.title,
+      datePublished: activePost.date,
+      description: activePost.excerpt,
+      url: absoluteUrl(postPath),
+      mainEntityOfPage: absoluteUrl(postPath),
+      isPartOf: { '@type': 'Blog', name: 'A40 Build Log', url: absoluteUrl('/a40') },
+      author: { '@type': 'Person', '@id': `${SITE_URL}/#person`, name: SITE_NAME, url: `${SITE_URL}/` },
+    },
+  } : {
+    title: 'A40 Build Log',
+    description: buildLogDescription,
+    path: '/a40',
+    noindex: Boolean(slug),
+  });
 
   const selectPost = (s: string) => navigate(`/a40/${s}`);
   const goToList = () => navigate('/a40');

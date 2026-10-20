@@ -1,78 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ParallaxHeader } from './components/ParallaxHeader';
 import { AboutMe } from './components/AboutMe';
 import { ContactForm } from './components/ContactForm';
-import { aboutMeContent, parallaxLayers } from './data/content';
-import {
-  BCFishingProject,
-  OpenSim2RealProject,
-  SelfDrivingCarProject,
-  Robot253Project,
-  A40AustinProject,
-  BuellProject,
-  FumeExtractorProject,
-  Esk8Project,
-  ThreeDPrinterProject,
-  ResumeProject
-} from './components/projects';
-import './App.css';
+import { ProjectCard } from './components/ProjectCard';
+import { aboutMeContent } from './data/content';
+import { projects } from './data/projects';
+import { BREAKPOINTS } from './utils/useBreakpoint';
+import { watchReducedMotion } from './utils/reducedMotion';
+import { usePageMeta } from './utils/usePageMeta';
+import { HOME_DESCRIPTION, HOME_TITLE, SHARE_DESCRIPTION, SHARE_TITLE } from './data/site';
 
 function App() {
-  const [ready, setReady] = useState(false);
+  usePageMeta({
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    path: '/',
+    shareTitle: SHARE_TITLE,
+    shareDescription: SHARE_DESCRIPTION,
+  });
 
-  // Preload all parallax header images before revealing the site
+  // Console easter egg
   useEffect(() => {
-    let imagesReady = false;
-    let minTimeReady = false;
-
-    const tryReveal = () => {
-      if (imagesReady && minTimeReady) setReady(true);
-    };
-
-    // Minimum time so fast loads don't flash the spinner
-    const timer = setTimeout(() => {
-      minTimeReady = true;
-      tryReveal();
-    }, 400);
-
-    const srcs = parallaxLayers.map((l) => l.src);
-    let loaded = 0;
-    const total = srcs.length;
-
-    const onLoad = () => {
-      loaded++;
-      if (loaded >= total) {
-        imagesReady = true;
-        tryReveal();
-      }
-    };
-
-    srcs.forEach((src) => {
-      const img = new Image();
-      img.onload = onLoad;
-      img.onerror = onLoad;
-      img.src = src;
-    });
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // --- NEW: SEO Metadata & Console Easter Eggs ---
-  useEffect(() => {
-    // 1. SEO / Metadata Injection
-    document.title = "Dawson's Portfolio | Engineering & Design";
-
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', 'Portfolio of Dawson: A showcase of robotics, software engineering, self-driving cars, and DIY fabrication projects.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = "description";
-      meta.content = "Portfolio of Dawson: A showcase of robotics, software engineering, self-driving cars, and DIY fabrication projects.";
-      document.head.appendChild(meta);
-    }
-
-    // 2. Console Easter Egg
     const styles = [
       'color: #ff4500',
       'background: #2a2a2a',
@@ -86,9 +34,9 @@ function App() {
     (
       )
      ( )  .   
-      |  /_\  
+      |  /_\\  
     __|__/_|__ 
-   /_________\ 
+   /_________\\ 
      |     |   
    
    Hey there, explorer! 🌲 
@@ -100,114 +48,75 @@ function App() {
     console.log(`%c 🏕️ Welcome to the Portfolio! `, styles);
     console.log(funMessage);
     console.log("Built with React, TypeScript, and a lot of coffee ☕");
-
   }, []);
-  // ----------------------------------------------
 
+  // Cards drift slightly with the mouse (desktop only, and not for reduced motion).
   useEffect(() => {
-    // Mouse tracking for shuffle effect (Project Cards)
-    let mouseAnimationFrame: number;
+    const cards = document.querySelectorAll<HTMLElement>('.project-card-media');
+    let frame = 0;
+    let mouseX = 0;
+    let mouseY = 0;
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const mouseX = event.clientX;
-      const mouseY = event.clientY;
+    const applyOffset = () => {
+      frame = 0;
+      if (window.innerWidth <= BREAKPOINTS.tablet) return;
 
-      if (mouseAnimationFrame) return;
-
-      mouseAnimationFrame = requestAnimationFrame(() => {
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        const offsetX = (mouseX - centerX) * 0.002;
-        const offsetY = (mouseY - centerY) * 0.002;
-
-        if (window.innerWidth > 991) {
-          document.querySelectorAll('.project-card-media').forEach((element) => {
-            (element as HTMLElement).style.transform = `translate3d(${offsetX}%, ${offsetY}%, 0)`;
-          });
-        }
-
-        mouseAnimationFrame = 0;
+      const offsetX = (mouseX - window.innerWidth / 2) * 0.002;
+      const offsetY = (mouseY - window.innerHeight / 2) * 0.002;
+      const transform = `translate3d(${offsetX}%, ${offsetY}%, 0)`;
+      cards.forEach((element) => {
+        element.style.transform = transform;
       });
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
+    const handleMouseMove = (event: MouseEvent) => {
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+      if (!frame) frame = requestAnimationFrame(applyOffset);
+    };
 
-    // Cleanup
-    return () => {
+    const detach = () => {
       document.removeEventListener('mousemove', handleMouseMove);
-      if (mouseAnimationFrame) {
-        cancelAnimationFrame(mouseAnimationFrame);
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+    };
+
+    const unwatch = watchReducedMotion((reduced) => {
+      if (reduced) {
+        detach();
+        cards.forEach((element) => { element.style.transform = ''; });
+      } else {
+        document.addEventListener('mousemove', handleMouseMove, { passive: true });
       }
+    });
+
+    return () => {
+      unwatch();
+      detach();
     };
   }, []);
 
-  // 1. CONTAINER STYLE
-  const appContainerStyle: React.CSSProperties = {
-    backgroundColor: '#FEDCC8',
-    minHeight: '100vh',
-    width: '100%',
-    position: 'relative',
-    overflowX: 'hidden',
-  };
-
-  // 2. CONTENT STYLE
-  // This sits strictly BELOW the header.
-  // We add zIndex to ensure it sits on top of any background artifacts.
-  const mainContentStyle: React.CSSProperties = {
-    backgroundImage: 'url("/assets/header/foreground-tile.png")',
-    backgroundRepeat: 'repeat',
-    backgroundPosition: 'top center',
-    // backgroundSize: 'cover',
-    position: 'relative',
-    zIndex: 10, // Ensures content sits on top of the bottom of the parallax header
-    width: '100%',
-    marginTop: '-2px',
-    paddingTop: '50px', // Spacing between header and first text
-    paddingBottom: '0px'
-  };
-
   return (
-    <div className="app-container" style={appContainerStyle}>
+    <div className="app-container">
 
       {/* Skip-to-content link for keyboard users */}
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
 
-      {/* Loading overlay — hides content until header images are ready */}
-      <div
-        className={`loading-overlay${ready ? ' loaded' : ''}`}
-        role="status"
-        aria-live="polite"
-        aria-label="Loading"
-      >
-        <div className="loading-spinner" aria-hidden="true" />
-        <span className="sr-only">{ready ? 'Content loaded' : 'Loading portfolio…'}</span>
-      </div>
-
       {/* Decorative parallax header */}
       <header aria-label="Decorative parallax landscape">
         <ParallaxHeader />
       </header>
 
-      {/* Main Content Area */}
-      <main id="main-content" className="parallax-foreground" style={mainContentStyle}>
+      <main id="main-content" className="parallax-foreground">
         <div className="main-content home">
           <AboutMe content={aboutMeContent} />
 
           <section className="projects-content" aria-label="Projects">
             <div className="projects-section">
               <div className="projects-grid" role="list">
-                <BCFishingProject />
-                <OpenSim2RealProject />
-                <A40AustinProject />
-                <SelfDrivingCarProject />
-                <Robot253Project />
-                <BuellProject />
-                <FumeExtractorProject />
-                <Esk8Project />
-                <ThreeDPrinterProject />
-                <ResumeProject />
+                {projects.map((project) => <ProjectCard key={project.id} project={project} />)}
               </div>
               <ContactForm />
             </div>

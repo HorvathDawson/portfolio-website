@@ -1,4 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useCallback, useRef } from 'react';
+import { AnimatedImage } from './AnimatedImage';
+import { ArtLayer } from './ArtLayer';
+import { useContainFit } from '../../utils/useContainFit';
+
+const ART = '/assets/projects/bc-fishing-regulations';
+const ASPECT = 354.24 / 294.66;
 
 /**
  * Compute a CSS matrix3d that maps a w×h rectangle to an arbitrary quadrilateral.
@@ -31,85 +37,29 @@ function computeWarpMatrix(
   return `matrix3d(${a/w},${d/w},0,${g/w},${b/h},${e/h},0,${ph/h},0,0,1,0,${c},${f},0,1)`;
 }
 
-export interface DesktopDisplayProps {
-  className?: string;
-  forceHover?: boolean;
-}
-
-export const DesktopDisplay: React.FC<DesktopDisplayProps> = ({
-  className = '',
-  forceHover
-}) => {
+export const DesktopDisplay: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
-  const effectiveForceHover = forceHover ?? false;
 
-  useEffect(() => {
-    const container = containerRef.current;
-    const content = contentRef.current;
-    if (!container || !content) return;
-
-    const updateSize = () => {
-      if (!container || !content) return;
-      const parent = container.parentElement;
-      if (!parent) return;
-
-      const parentRect = parent.getBoundingClientRect();
-      const parentWidth = parentRect.width;
-      const parentHeight = parentRect.height;
-      if (parentWidth === 0 || parentHeight === 0) return;
-
-      const targetAspectRatio = 354.24 / 294.66;
-      const parentAspectRatio = parentWidth / parentHeight;
-      let width, height;
-
-      if (parentAspectRatio > targetAspectRatio) {
-        height = parentHeight;
-        width = height * targetAspectRatio;
-      } else {
-        width = parentWidth;
-        height = width / targetAspectRatio;
-      }
-      content.style.width = `${width}px`;
-      content.style.height = `${height}px`;
-
-      // Update screen warp transform based on actual rendered size
-      const screenEl = screenRef.current;
-      if (screenEl) {
-        const sw = width * 1;   // screen width (60% of content)
-        const sh = height * 1;  // screen height (52% of content)
-
-        // Destination corners: [topLeft, topRight, bottomRight, bottomLeft]
-        // Defined as pixel coords within the screen div's own space.
-        // Adjust these to match the monitor's screen shape in the SVG.
-        const dst: [number, number][] = [
-          [sw * 0.01, sh * 0.18],    // top-left
-          [sw * 0.97, sh * 0.05],            // top-right (narrower → facing left)
-          [sw * 0.99, sh * 0.92],    // bottom-right
-          [sw * 0, sh *0.85],                   // bottom-left (anchor)
-        ];
-
-        screenEl.style.transform = computeWarpMatrix(sw, sh, dst);
-      }
-    };
-
-    const observer = new ResizeObserver(updateSize);
-    if (container.parentElement instanceof Node) observer.observe(container.parentElement as Element);
-    window.addEventListener('resize', updateSize);
-    requestAnimationFrame(updateSize);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', updateSize);
-    };
+  // Warp the screen recording onto the monitor's (angled) screen outline.
+  const warpScreen = useCallback((w: number, h: number) => {
+    const screen = screenRef.current;
+    if (!screen) return;
+    screen.style.transform = computeWarpMatrix(w, h, [
+      [w * 0.01, h * 0.18], // top-left
+      [w * 0.97, h * 0.05], // top-right (narrower, so the monitor faces left)
+      [w * 0.99, h * 0.92], // bottom-right
+      [w * 0, h * 0.85],    // bottom-left
+    ]);
   }, []);
+
+  useContainFit(containerRef, contentRef, ASPECT, warpScreen);
 
   return (
     <div
       ref={containerRef}
-      data-desktop-display
-      className={className}
+      data-scroll
       style={{
         position: 'absolute',
         inset: 0,
@@ -129,54 +79,31 @@ export const DesktopDisplay: React.FC<DesktopDisplayProps> = ({
           overflow: 'visible'
         }}
       >
-        <img
-          src="/assets/projects/bc-fishing-regulations/desktop-colored.svg"
-          alt=""
-          className="foreground-layer"
-          loading="lazy"
-          style={{
-            opacity: effectiveForceHover ? 1 : 0,
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            zIndex: 3
-          }}
-        />
-        <img
-          src="/assets/projects/bc-fishing-regulations/desktop-outline.svg"
-          alt=""
-          className="background-layer"
-          loading="lazy"
-          style={{
-            opacity: effectiveForceHover ? 0 : 1,
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            zIndex: 1
-          }}
-        />
-        {/* Screen area — place a GIF or screenshot of canifishthis.ca here */}
+        <ArtLayer layer="foreground" src={`${ART}/desktop-colored.svg`} style={{ zIndex: 3 }} />
+        <ArtLayer layer="background" src={`${ART}/desktop-outline.svg`} style={{ zIndex: 1 }} />
+        {/* Demo recording of canifishthis.ca, warped onto the monitor */}
         <div
           ref={screenRef}
           className="splash-layer computer-screen"
           style={{
-            opacity: effectiveForceHover ? 1 : 0,
+            opacity: 0,
             position: 'absolute',
             top: '-5.5%',
             left: '24%',
             width: '70%',
             height: '75%',
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
-            backgroundImage: 'url(/assets/projects/bc-fishing-regulations/website-demo.gif)',
             transformOrigin: '0 0',
             zIndex: 2147483647
           }}
-        />
+        >
+          {/* An <img> (rather than a CSS background) so the animation is lazy-loaded */}
+          <AnimatedImage
+            src={`${ART}/website-demo.webp`}
+            loading="lazy"
+            decoding="async"
+            style={{ display: 'block', width: '100%', height: '100%', objectFit: 'fill' }}
+          />
+        </div>
       </div>
     </div>
   );

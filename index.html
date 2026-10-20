@@ -3,46 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Portfolio of Dawson Horvath — mechatronic and software engineer showcasing robotics, self-driving cars, and DIY fabrication projects." />
     <meta name="theme-color" content="#7038cf" />
-    <meta property="og:title" content="Dawson Horvath — Engineering Portfolio" />
-    <meta property="og:description" content="Robotics, software engineering, self-driving cars, and DIY fabrication projects." />
-    <meta property="og:type" content="website" />
-    <link rel="icon" type="image/png" href="/assets/about/tent.png" sizes="16x16" />
-    <title>Dawson Horvath</title>
-    <script src="https://unpkg.com/gifler@0.1.0/gifler.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
-    <script>
-      WebFont.load({
-        google: {
-          families: [
-            "Open Sans:300,300italic,400,400italic,600,600italic,700,700italic,800,800italic",
-            "Space Mono:regular,italic,700,700italic",
-            "Karla:regular,italic,700,700italic",
-            "Frank Ruhl Libre:300,regular,500,700,900",
-            "Playfair Display:regular,italic,700,700italic,900,900italic",
-            "Lora:regular,italic,700,700italic"
-          ]
-        }
-      });
-    </script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    
-    <!-- Prefetch parallax header images. They're only used on the home page,
-         so `prefetch` (low-priority, idle-time) is correct here rather than
-         `preload` — preload warns on every other route because the resources
-         aren't consumed within the load window. -->
-    <link rel="prefetch" as="image" href="/assets/header/foreground-tile.png">
-    <link rel="prefetch" as="image" href="/assets/header/layer-0.png">
-    <link rel="prefetch" as="image" href="/assets/header/layer-1.png">
-    <link rel="prefetch" as="image" href="/assets/header/layer-2.png">
-    <link rel="prefetch" as="image" href="/assets/header/layer-3.png">
-    <link rel="prefetch" as="image" href="/assets/header/layer-4.png">
-    <link rel="prefetch" as="image" href="/assets/header/layer-5.png">
+    <!-- header-preload -->
+    <!-- site-meta -->
+    <link rel="icon" type="image/png" href="/assets/about/favicon.png" sizes="64x64" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts load without blocking first paint (the header frame below needs none). -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" /></noscript>
+
   </head>
   <body>
     <noscript>You need JavaScript enabled to view this portfolio.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Shown until the app mounts (home page only); matches ParallaxHeader's frame. -->
+      <div class="app-container boot-only">
+        <header><div class="parallax-header"><div class="parallax-frame"></div></div></header>
+        <main class="parallax-foreground"></main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
