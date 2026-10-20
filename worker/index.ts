@@ -113,7 +113,15 @@ export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
     if (pathname === '/resume-generator' || pathname.startsWith('/resume-generator/')) {
-      return env.RESUME_GENERATOR.fetch(request);
+      try {
+        return await env.RESUME_GENERATOR.fetch(request);
+      } catch (err) {
+        console.error('resume-generator: service binding failed', err);
+        return new Response('The resume generator is unavailable right now. Please try again later.', {
+          status: 502,
+          headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+        });
+      }
     }
     if (pathname === '/api/contact') return handleContact(request, env as ContactEnv);
     if (pathname.startsWith('/api/')) return fail(404, 'Not found.');
