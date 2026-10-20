@@ -565,3 +565,22 @@ h1 {
     position: relative;
   }
 }
+/* ---- Reduced motion ----
+   With prefers-reduced-motion every scene shows its resting state: the sky
+   stays daytime, the campfire is lit but still, the leg sprite holds one
+   frame. JS-driven motion checks the same query in utils/reducedMotion.ts. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+  }
+
+  .glow-base {
+    opacity: 0.65;
+  }
+}

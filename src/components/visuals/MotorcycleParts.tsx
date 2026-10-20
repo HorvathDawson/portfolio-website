@@ -11,7 +11,7 @@ const PUSH_ROD_MASK = `url("${ART}/push-rods-mask.svg")`;
  */
 export const MotorcycleParts: React.FC = () => (
   <LayeredArt width={900} height={700}>
-    <ArtLayer layer="foreground" src={`${ART}/section-view.webp`} alt="Buell motorcycle engine section view" style={{ zIndex: 5 }} />
+    <ArtLayer layer="foreground" src={`${ART}/section-view.webp`} animated alt="Buell motorcycle engine section view" style={{ zIndex: 5 }} />
     <ArtLayer layer="background" src={`${ART}/case.webp`} alt="Buell motorcycle engine case" style={{ zIndex: 4 }} />
     <ArtLayer layer="background" src={`${ART}/left-cylinder.webp`} alt="Buell motorcycle left cylinder" style={{ zIndex: 4 }} />
     <ArtLayer layer="background" src={`${ART}/cylinder-barrel.webp`} alt="Buell motorcycle cylinder barrel" data-scroll="1" style={{ zIndex: 4 }} />

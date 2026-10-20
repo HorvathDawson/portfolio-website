@@ -6,6 +6,7 @@ import { ProjectCard } from './components/ProjectCard';
 import { aboutMeContent, parallaxLayers } from './data/content';
 import { projects } from './data/projects';
 import { BREAKPOINTS } from './utils/useBreakpoint';
+import { watchReducedMotion } from './utils/reducedMotion';
 
 function App() {
   const [ready, setReady] = useState(false);
@@ -78,15 +79,15 @@ function App() {
     console.log("Built with React, TypeScript, and a lot of coffee ☕");
   }, []);
 
+  // Cards drift slightly with the mouse (desktop only, and not for reduced motion).
   useEffect(() => {
-    // Mouse tracking for shuffle effect (Project Cards), desktop only
     const cards = document.querySelectorAll<HTMLElement>('.project-card-media');
-    let mouseAnimationFrame = 0;
+    let frame = 0;
     let mouseX = 0;
     let mouseY = 0;
 
     const applyOffset = () => {
-      mouseAnimationFrame = 0;
+      frame = 0;
       if (window.innerWidth <= BREAKPOINTS.tablet) return;
 
       const offsetX = (mouseX - window.innerWidth / 2) * 0.002;
@@ -100,14 +101,27 @@ function App() {
     const handleMouseMove = (event: MouseEvent) => {
       mouseX = event.clientX;
       mouseY = event.clientY;
-      if (!mouseAnimationFrame) mouseAnimationFrame = requestAnimationFrame(applyOffset);
+      if (!frame) frame = requestAnimationFrame(applyOffset);
     };
 
-    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+    const detach = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+    };
+
+    const unwatch = watchReducedMotion((reduced) => {
+      if (reduced) {
+        detach();
+        cards.forEach((element) => { element.style.transform = ''; });
+      } else {
+        document.addEventListener('mousemove', handleMouseMove, { passive: true });
+      }
+    });
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      if (mouseAnimationFrame) cancelAnimationFrame(mouseAnimationFrame);
+      unwatch();
+      detach();
     };
   }, []);
 

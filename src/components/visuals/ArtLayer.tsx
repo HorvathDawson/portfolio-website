@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatedImage } from './AnimatedImage';
 
 /**
  * Card art is drawn as stacked layers that ProjectCard cross-fades on hover:
@@ -11,6 +12,8 @@ type ArtLayerKind = 'background' | 'foreground' | 'splash';
 interface ArtLayerProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   layer: ArtLayerKind;
+  /** Animated WebP with a reduced-motion still (see AnimatedImage). */
+  animated?: boolean;
 }
 
 const restOpacity: Record<ArtLayerKind, number> = {
@@ -19,21 +22,23 @@ const restOpacity: Record<ArtLayerKind, number> = {
   splash: 0,
 };
 
-export const ArtLayer: React.FC<ArtLayerProps> = ({ layer, alt = '', style, className, ...img }) => (
-  <img
-    alt={alt}
-    className={[`${layer}-layer`, className].filter(Boolean).join(' ')}
-    loading="lazy"
-    decoding="async"
-    style={{
-      position: 'absolute',
-      inset: 0,
-      width: '100%',
-      height: '100%',
-      objectFit: 'contain',
-      opacity: restOpacity[layer],
-      ...style,
-    }}
-    {...img}
-  />
-);
+export const ArtLayer: React.FC<ArtLayerProps> = ({ layer, animated, alt = '', style, className, ...img }) => {
+  const Img = animated ? AnimatedImage : 'img';
+  return (
+    <Img
+      alt={alt}
+      className={[`${layer}-layer`, className].filter(Boolean).join(' ')}
+      loading="lazy"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'contain',
+        opacity: restOpacity[layer],
+        ...style,
+      }}
+      {...img}
+    />
+  );
+};

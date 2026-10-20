@@ -64,6 +64,7 @@ export const LaptopWithScreen: React.FC = () => {
               layer="splash"
               className="computer-screen"
               src={`${ART}/simulation-demo.webp`}
+              animated
               style={{ top: '10%', left: '4%', width: '92%', height: '84%', objectFit: 'cover', objectPosition: 'center', zIndex: 6 }}
             />
           </div>

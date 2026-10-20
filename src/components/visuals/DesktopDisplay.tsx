@@ -1,4 +1,5 @@
 import React, { useCallback, useRef } from 'react';
+import { AnimatedImage } from './AnimatedImage';
 import { ArtLayer } from './ArtLayer';
 import { useContainFit } from '../../utils/useContainFit';
 
@@ -96,9 +97,8 @@ export const DesktopDisplay: React.FC = () => {
           }}
         >
           {/* An <img> (rather than a CSS background) so the animation is lazy-loaded */}
-          <img
+          <AnimatedImage
             src={`${ART}/website-demo.webp`}
-            alt=""
             loading="lazy"
             decoding="async"
             style={{ display: 'block', width: '100%', height: '100%', objectFit: 'fill' }}

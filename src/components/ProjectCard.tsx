@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { centerOffset, onScrollFrame, onScrollFrameWhileVisible } from '../utils/scrollFrame';
+import { centerOffset, onScrollFrame, onScrollMotion } from '../utils/scrollFrame';
 import type { Project } from '../data/projects';
 
 interface HoverHandlers {
@@ -122,12 +122,14 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     // move, so they can't be measured) and transform each [data-scroll] part.
     const frame = item.querySelector<HTMLElement>('.project-media-frame');
     const parts = item.querySelectorAll<HTMLElement>('[data-scroll]');
-    const stopAnimation = animation && frame && parts.length
-      ? onScrollFrameWhileVisible(frame, () => {
-          const offset = centerOffset(frame);
-          parts.forEach((part) => { part.style.transform = animation(offset, part); });
-        })
-      : undefined;
+    let stopAnimation: (() => void) | undefined;
+    if (animation && frame && parts.length) {
+      const animate = (offset: number) => {
+        parts.forEach((part) => { part.style.transform = animation(offset, part); });
+      };
+      // Reduced motion holds the centred pose.
+      stopAnimation = onScrollMotion(frame, () => animate(centerOffset(frame)), () => animate(0));
+    }
 
     return () => {
       item.removeEventListener('mouseenter', onMouseEnter);

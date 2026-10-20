@@ -33,6 +33,7 @@ export const FumeExtractorArm: React.FC = () => (
       <ArtLayer
         layer="splash"
         src={`${ART}/fumes.webp`}
+        animated
         alt="Fume animation"
         style={{
           position: 'relative',

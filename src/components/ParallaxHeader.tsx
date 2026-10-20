@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { parallaxLayers } from '../data/content';
-import { onScrollFrameWhileVisible } from '../utils/scrollFrame';
+import { onScrollMotion } from '../utils/scrollFrame';
 
 // CONFIGURATION
 const MAX_PARALLAX_LAG = 0.85;
@@ -57,15 +57,19 @@ export const ParallaxHeader: React.FC = () => {
 
     // Only runs on frames where the page scrolled, and only while the header
     // is near the viewport (instead of a permanent rAF loop).
-    return onScrollFrameWhileVisible(container, () => {
-      const scrollY = window.scrollY;
-      layerRefs.current.forEach((layer, index) => {
-        const speed = layerSpeeds[index];
-        if (layer && speed !== 0) {
-          layer.style.transform = `translate3d(0, ${scrollY * speed}px, 0)`;
-        }
-      });
-    });
+    return onScrollMotion(
+      container,
+      () => {
+        const scrollY = window.scrollY;
+        layerRefs.current.forEach((layer, index) => {
+          const speed = layerSpeeds[index];
+          if (layer && speed !== 0) {
+            layer.style.transform = `translate3d(0, ${scrollY * speed}px, 0)`;
+          }
+        });
+      },
+      () => layerRefs.current.forEach((layer) => { if (layer) layer.style.transform = ''; }),
+    );
   }, []);
 
   return (

@@ -8,6 +8,8 @@
  * frame no matter how many effects are mounted.
  */
 
+import { watchReducedMotion } from './reducedMotion';
+
 type FrameCallback = () => void;
 
 const callbacks = new Set<FrameCallback>();
@@ -84,4 +86,25 @@ export function centerOffset(el: Element): number {
   const rect = el.getBoundingClientRect();
   const half = window.innerHeight / 2;
   return (rect.top + rect.height / 2 - half) / half;
+}
+
+/**
+ * Scroll-driven motion. Runs `update` per frame while `target` is near the
+ * viewport, unless the visitor prefers reduced motion, in which case `rest`
+ * runs once to put the scene in its resting state.
+ */
+export function onScrollMotion(target: Element, update: FrameCallback, rest: FrameCallback): () => void {
+  let stop: (() => void) | null = null;
+
+  const unwatch = watchReducedMotion((reduced) => {
+    stop?.();
+    stop = null;
+    if (reduced) rest();
+    else stop = onScrollFrameWhileVisible(target, update);
+  });
+
+  return () => {
+    unwatch();
+    stop?.();
+  };
 }
