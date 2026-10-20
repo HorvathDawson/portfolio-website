@@ -4,7 +4,7 @@ import path from 'node:path'
 import type { Plugin } from 'vite'
 import { HEADER_SIZES, HEADER_TILE, headerSrcSet, parallaxLayers } from './src/data/content'
 import {
-  GITHUB_URL, HOME_DESCRIPTION, LINKEDIN_URL, HOME_TITLE, OG_IMAGE, SHARE_DESCRIPTION, SHARE_TITLE, SITE_NAME, SITE_URL, absoluteUrl,
+  GITHUB_URL, HOME_DESCRIPTION, LINKEDIN_URL, RESUME_GENERATOR_PATH, HOME_TITLE, OG_IMAGE, SHARE_DESCRIPTION, SHARE_TITLE, SITE_NAME, SITE_URL, absoluteUrl,
 } from './src/data/site'
 import { postSlug } from './src/blog/postSlug'
 
@@ -81,7 +81,7 @@ export function siteMeta(): Plugin {
   }
 }
 
-/** Emit sitemap.xml: the home page, the build log, the roadmap and every post. */
+/** Emit sitemap.xml: the home page, the resume generator, the build log, the roadmap and every post. */
 export function sitemap(postsDir: string): Plugin {
   return {
     name: 'sitemap',
@@ -92,7 +92,7 @@ export function sitemap(postsDir: string): Plugin {
         const date = raw.match(/^date:\s*["']?(\d{4}-\d{2}-\d{2})/m)?.[1]
         return { path: `/a40/${postSlug(file)}`, lastmod: date }
       })
-      const urls = [{ path: '/' }, { path: '/a40' }, { path: '/a40/roadmap' }, ...posts]
+      const urls = [{ path: '/' }, { path: RESUME_GENERATOR_PATH }, { path: '/a40' }, { path: '/a40/roadmap' }, ...posts]
       const body = urls
         .map((u: { path: string; lastmod?: string }) =>
           `  <url><loc>${absoluteUrl(u.path)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}</url>`)

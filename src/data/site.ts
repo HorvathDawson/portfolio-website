@@ -27,3 +27,12 @@ export const GITHUB_URL = 'https://github.com/HorvathDawson';
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/horvathdawson/';
 
 export const absoluteUrl = (path: string) => new URL(path, SITE_URL).href;
+
+/**
+ * The resume, served by the resume-generator app at /resume-generator/
+ * (a separate Worker; see wrangler.jsonc). The data is its resumes/dawson.json.
+ */
+export const RESUME_GENERATOR_PATH = '/resume-generator/';
+export const RESUME_VIEW_PATH = `${RESUME_GENERATOR_PATH}?resume=dawson&mode=view`;
+/** The pages, scaled to fit and scrolling a page at a time, for the tablet on the Resume card. */
+export const RESUME_EMBED_PATH = `${RESUME_GENERATOR_PATH}?resume=dawson&mode=embed`;

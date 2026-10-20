@@ -6,6 +6,7 @@ import { LaptopWithScreen } from '../components/visuals/LaptopWithScreen';
 import { MotorcycleParts } from '../components/visuals/MotorcycleParts';
 import { FumeExtractorArm } from '../components/visuals/FumeExtractorArm';
 import { TabletDisplay } from '../components/visuals/TabletDisplay';
+import { RESUME_VIEW_PATH } from './site';
 
 /**
  * Transform for one `[data-scroll]` part of a card's visual, given the card's
@@ -20,10 +21,11 @@ export interface Project {
   description: string;
   link?: string;
   buttonText?: string;
-  downloadable?: boolean;
   /** When true, link uses client-side routing instead of opening a new tab. */
   internal?: boolean;
   visual: ReactElement;
+  /** Clicking the visual also follows the link. */
+  linkVisual?: boolean;
   animation?: ScrollAnimation;
 }
 
@@ -160,9 +162,9 @@ export const projects: Project[] = [
     category: 'Offline Website',
     title: 'Resume',
     description: 'If you feel inclined to take the experience offline.',
-    link: '/assets/resume/resume.pdf',
-    buttonText: 'Download Resume',
-    downloadable: true,
+    link: RESUME_VIEW_PATH,
+    buttonText: 'View Resume',
     visual: <TabletDisplay />,
+    linkVisual: true,
   },
 ];

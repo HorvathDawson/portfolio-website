@@ -538,7 +538,14 @@ h1 {
   overflow: hidden;
 }
 
-.project-media-frame>* {
+/* Wraps a card visual in its link without affecting layout. */
+.project-media-frame > .project-media-link {
+  display: contents;
+  cursor: pointer;
+}
+
+.project-media-frame > :not(.project-media-link),
+.project-media-link > * {
   max-width: 100%;
   max-height: 100%;
   box-sizing: border-box;

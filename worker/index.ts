@@ -1,6 +1,10 @@
 /**
  * Site Worker. Static files are served from dist/ without reaching this code
- * (see run_worker_first in wrangler.jsonc); it only handles /api/*.
+ * (see run_worker_first in wrangler.jsonc); it only handles /api/* and
+ * /resume-generator/*.
+ *
+ * /resume-generator/*: forwarded to the resume-generator Worker (its own repo
+ * and deploy) over the RESUME_GENERATOR service binding.
  *
  * POST /api/contact: checks the Cloudflare Turnstile token, then emails the
  * message through Email Routing.
@@ -108,6 +112,9 @@ async function handleContact(request: Request, env: ContactEnv): Promise<Respons
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
+    if (pathname === '/resume-generator' || pathname.startsWith('/resume-generator/')) {
+      return env.RESUME_GENERATOR.fetch(request);
+    }
     if (pathname === '/api/contact') return handleContact(request, env as ContactEnv);
     if (pathname.startsWith('/api/')) return fail(404, 'Not found.');
     return env.ASSETS.fetch(request);
