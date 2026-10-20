@@ -1,8 +1,8 @@
 import React from 'react';
 
 // Import your Sprite Sheets
-import bodySprite from '/assets/projects/opensim2real/leg-colored-spritesheet.png';
-import edgeSprite from '/assets/projects/opensim2real/leg-outline-spritesheet.png';
+import bodySprite from '/assets/projects/opensim2real/leg-colored-spritesheet.webp';
+import edgeSprite from '/assets/projects/opensim2real/leg-outline-spritesheet.webp';
 
 export interface SpinningLegProps {
   className?: string;

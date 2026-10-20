@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { BaseProjectItem, type ProjectConfig } from './BaseProjectItem';
+import { onScrollFrameWhileVisible } from '../../utils/scrollFrame';
 import { VintageCarDisplay } from '../visuals';
 
 const projectConfig: ProjectConfig = {
@@ -28,55 +29,38 @@ export const A40AustinProject: React.FC = () => {
 
     if (!car || !frame) return;
 
-    let raf = 0;
-
-    const onScroll = () => {
-      if (raf) return;
+    const update = () => {
+      // Measure the STATIC frame relative to the viewport
+      const rect = frame.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const windowCenterY = windowHeight / 2;
       
-      raf = requestAnimationFrame(() => {
-        // Measure the STATIC frame relative to the viewport
-        const rect = frame.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const windowCenterY = windowHeight / 2;
-        
-        // Calculate where the center of the frame is
-        const itemCenterY = rect.top + rect.height / 2;
-        
-        // Calculate Distance from Center
-        // Positive = Below center (scrolling in)
-        // Negative = Above center (scrolled past)
-        const distanceToCenter = itemCenterY - windowCenterY;
-        
-        // Calculate Factor (0 to 1)
-        // We clamp it at 0 so it stops moving once it reaches the center/top
-        let factor = distanceToCenter / windowCenterY;
-        factor = Math.max(0, factor); 
+      // Calculate where the center of the frame is
+      const itemCenterY = rect.top + rect.height / 2;
+      
+      // Calculate Distance from Center
+      // Positive = Below center (scrolling in)
+      // Negative = Above center (scrolled past)
+      const distanceToCenter = itemCenterY - windowCenterY;
+      
+      // Calculate Factor (0 to 1)
+      // We clamp it at 0 so it stops moving once it reaches the center/top
+      let factor = distanceToCenter / windowCenterY;
+      factor = Math.max(0, factor); 
 
-        // Animation Values
-        // Start 200px to the left, 100px down
-        const baseDistance = -200; 
-        
-        const translateX = baseDistance * factor;
-        const translateY = 100 * factor;
+      // Animation Values
+      // Start 200px to the left, 100px down
+      const baseDistance = -200; 
+      
+      const translateX = baseDistance * factor;
+      const translateY = 100 * factor;
 
-        // Apply transform to the CAR
-        car.style.transform = `translate3d(${translateX}px, ${translateY}px, 0)`;
-
-        raf = 0;
-      });
+      // Apply transform to the CAR
+      car.style.transform = `translate3d(${translateX}px, ${translateY}px, 0)`;
     };
 
-    // Attach to window (since we fixed the scroll container earlier)
-    window.addEventListener('scroll', onScroll, { passive: true });
-    
-    // Initial call to align
-    onScroll();
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    // Recompute on scroll, only while the card is near the viewport
+    return onScrollFrameWhileVisible(frame, update);
   }, []);
 
   return (

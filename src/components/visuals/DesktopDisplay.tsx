@@ -77,8 +77,8 @@ export const DesktopDisplay: React.FC<DesktopDisplayProps> = ({
       // Update screen warp transform based on actual rendered size
       const screenEl = screenRef.current;
       if (screenEl) {
-        const sw = width * 1;   // screen width (60% of content)
-        const sh = height * 1;  // screen height (52% of content)
+        const sw = width;
+        const sh = height;
 
         // Destination corners: [topLeft, topRight, bottomRight, bottomLeft]
         // Defined as pixel coords within the screen div's own space.
@@ -94,15 +94,11 @@ export const DesktopDisplay: React.FC<DesktopDisplayProps> = ({
       }
     };
 
+    // ResizeObserver also fires once on observe, so this sets the initial size.
     const observer = new ResizeObserver(updateSize);
-    if (container.parentElement instanceof Node) observer.observe(container.parentElement as Element);
-    window.addEventListener('resize', updateSize);
-    requestAnimationFrame(updateSize);
+    if (container.parentElement) observer.observe(container.parentElement);
 
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', updateSize);
-    };
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -159,7 +155,7 @@ export const DesktopDisplay: React.FC<DesktopDisplayProps> = ({
             zIndex: 1
           }}
         />
-        {/* Screen area — place a GIF or screenshot of canifishthis.ca here */}
+        {/* Screen area: demo recording of canifishthis.ca, warped onto the monitor */}
         <div
           ref={screenRef}
           className="splash-layer computer-screen"
@@ -170,13 +166,19 @@ export const DesktopDisplay: React.FC<DesktopDisplayProps> = ({
             left: '24%',
             width: '70%',
             height: '75%',
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
-            backgroundImage: 'url(/assets/projects/bc-fishing-regulations/website-demo.gif)',
             transformOrigin: '0 0',
             zIndex: 2147483647
           }}
-        />
+        >
+          {/* An <img> (rather than a CSS background) so the animation is lazy-loaded */}
+          <img
+            src="/assets/projects/bc-fishing-regulations/website-demo.webp"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style={{ display: 'block', width: '100%', height: '100%', objectFit: 'fill' }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 
 export interface RobotDisplayProps {
   className?: string;
@@ -9,13 +9,10 @@ export const RobotDisplay: React.FC<RobotDisplayProps> = ({
   className = '',
   forceHover
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const effectiveForceHover = forceHover ?? false;
 
-  // Hover behavior is handled by BaseProjectItem via VisualsForceHoverContext.
-  // Visuals should only read `effectiveForceHover` and render accordingly.
-
-  // size and position props are intentionally ignored — visuals fill the media viewport
+  // Hover behaviour is driven by BaseProjectItem, which toggles the
+  // foreground/background/splash layer opacities directly.
 
   const containerStyles = {
     position: 'absolute' as const,
@@ -50,7 +47,6 @@ export const RobotDisplay: React.FC<RobotDisplayProps> = ({
 
   return (
     <div 
-      ref={containerRef}
       data-robot-display
       className={className}
       style={containerStyles}
@@ -59,7 +55,7 @@ export const RobotDisplay: React.FC<RobotDisplayProps> = ({
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
         {/* Robot foreground - shows on hover */}
         <img
-          src="/assets/projects/competition-robot/colored.png"
+          src="/assets/projects/competition-robot/colored.webp"
           alt="Robot 253 foreground"
           className="foreground-layer"
           loading="lazy"
@@ -67,7 +63,7 @@ export const RobotDisplay: React.FC<RobotDisplayProps> = ({
         />
         {/* Robot background - shows by default */}
         <img
-          src="/assets/projects/competition-robot/outline.png"
+          src="/assets/projects/competition-robot/outline.webp"
           alt="Robot 253 background"
           className="background-layer"
           loading="lazy"
@@ -75,7 +71,7 @@ export const RobotDisplay: React.FC<RobotDisplayProps> = ({
         />
         {/* Robot splash overlay - shows on hover */}
         <img
-          src="/assets/projects/competition-robot/glow.png"
+          src="/assets/projects/competition-robot/glow.webp"
           alt="Robot 253 splash"
           className="splash-layer"
           loading="lazy"

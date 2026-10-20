@@ -1,4 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+const RECAPTCHA_SITE_KEY = '6LeBU6gqAAAAAEJDe5diUdowY2Q0cwpk0GyEdSdy';
+const RECAPTCHA_ONLOAD = '__onRecaptchaLoad';
+
+interface ReCaptcha {
+  render: (container: HTMLElement, params: { sitekey: string }) => number;
+  getResponse: (widgetId?: number) => string;
+}
+
+declare global {
+  interface Window {
+    grecaptcha?: ReCaptcha;
+    [RECAPTCHA_ONLOAD]?: () => void;
+  }
+}
+
+// The reCAPTCHA script is shared by every mount of the form, so load it once.
+let recaptchaReady: Promise<ReCaptcha> | null = null;
+
+function loadRecaptcha(): Promise<ReCaptcha> {
+  recaptchaReady ??= new Promise((resolve) => {
+    window[RECAPTCHA_ONLOAD] = () => resolve(window.grecaptcha!);
+    const script = document.createElement('script');
+    script.src = `https://www.google.com/recaptcha/api.js?onload=${RECAPTCHA_ONLOAD}&render=explicit`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  });
+  return recaptchaReady;
+}
 
 interface ContactFormData {
   fullName: string;
@@ -14,16 +44,29 @@ export const ContactForm: React.FC = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // 1. FIX: Load ReCAPTCHA script dynamically when component mounts
+  const recaptchaRef = useRef<HTMLDivElement>(null);
+  const recaptchaWidgetId = useRef<number | null>(null);
+
+  // reCAPTCHA is heavy and the form sits at the bottom of the page, so only
+  // fetch it once the form is getting close to the viewport.
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = "https://www.google.com/recaptcha/api.js";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
+    const container = recaptchaRef.current;
+    if (!container) return;
+
+    let cancelled = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      loadRecaptcha().then((grecaptcha) => {
+        if (cancelled || recaptchaWidgetId.current !== null) return;
+        recaptchaWidgetId.current = grecaptcha.render(container, { sitekey: RECAPTCHA_SITE_KEY });
+      });
+    }, { rootMargin: '800px' });
+    observer.observe(container);
 
     return () => {
-      document.body.removeChild(script);
+      cancelled = true;
+      observer.disconnect();
     };
   }, []);
 
@@ -41,8 +84,8 @@ export const ContactForm: React.FC = () => {
     e.preventDefault();
     
     // Check if reCAPTCHA is loaded and verified
-    // Note: window.grecaptcha might need a type definition or (window as any)
-    const recaptchaResponse = (window as any).grecaptcha?.getResponse();
+    const widgetId = recaptchaWidgetId.current;
+    const recaptchaResponse = widgetId !== null ? window.grecaptcha?.getResponse(widgetId) : '';
     
     if (!recaptchaResponse) {
       alert('Please complete the reCAPTCHA.');
@@ -50,7 +93,7 @@ export const ContactForm: React.FC = () => {
     }
 
     const googleFormData = new FormData();
-    // 2. FIX: Map your clean state keys to Google Entry IDs here, upon submission
+    // Map state keys to the Google Form entry IDs
     googleFormData.append('entry.2005620554', formData.fullName);
     googleFormData.append('entry.1045781291', formData.email);
     googleFormData.append('entry.839337160', formData.message);
@@ -167,7 +210,6 @@ export const ContactForm: React.FC = () => {
             className="form-input contact-name-field"
             style={inputStyle}
             type="text"
-            /* 3. FIX: Name matches State key now */
             name="fullName" 
             value={formData.fullName}
             onChange={handleInputChange}
@@ -185,7 +227,6 @@ export const ContactForm: React.FC = () => {
             className="form-input contact-email-field"
             style={inputStyle}
             type="email"
-            /* 3. FIX: Name matches State key now */
             name="email"
             value={formData.email}
             onChange={handleInputChange}
@@ -202,7 +243,6 @@ export const ContactForm: React.FC = () => {
             id="message"
             className="textarea form-input contact-message-field"
             style={textareaStyle}
-            /* 3. FIX: Name matches State key now */
             name="message"
             value={formData.message}
             onChange={handleInputChange}
@@ -211,8 +251,8 @@ export const ContactForm: React.FC = () => {
           />
 
           {/* ReCAPTCHA Container */}
-          <div className="g-recaptcha contact-recaptcha-field" 
-               data-sitekey="6LeBU6gqAAAAAEJDe5diUdowY2Q0cwpk0GyEdSdy"
+          <div ref={recaptchaRef}
+               className="contact-recaptcha-field"
                aria-label="reCAPTCHA verification"></div>
 
           <input 

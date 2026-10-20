@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 
 export interface MotorcyclePartsProps {
   className?: string;
@@ -10,14 +10,12 @@ export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({
   forceHover
 }) => {
   const effectiveForceHover = forceHover ?? false;
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Hover behavior is handled by BaseProjectItem via VisualsForceHoverContext.
-  // Visuals should only read `effectiveForceHover` and render accordingly.
+  // Hover behaviour is driven by BaseProjectItem, which toggles the
+  // foreground/background/splash layer opacities directly.
 
   return (
     <div 
-      ref={containerRef}
       data-motorcycle-parts
       className={className}
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
@@ -25,7 +23,7 @@ export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({
       <div style={{ width: 900, height: 700, maxWidth: '100%', maxHeight: '100%', position: 'relative' }}>
         {/* Section view animation - shows on hover */}
         <img
-          src="/assets/projects/buell-lightning/engine/section-view.gif"
+          src="/assets/projects/buell-lightning/engine/section-view.webp"
           alt="Buell motorcycle engine section view"
           className="foreground-layer"
           loading="lazy"
@@ -43,7 +41,7 @@ export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({
       
       {/* Static engine case - shows by default */}
       <img
-        src="/assets/projects/buell-lightning/engine/case.png"
+        src="/assets/projects/buell-lightning/engine/case.webp"
         alt="Buell motorcycle engine case"
         className="background-layer"
         loading="lazy"
@@ -61,7 +59,7 @@ export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({
       
       {/* Left cylinder - shows by default */}
       <img
-        src="/assets/projects/buell-lightning/engine/left-cylinder.png"
+        src="/assets/projects/buell-lightning/engine/left-cylinder.webp"
         alt="Buell motorcycle left cylinder"
         className="background-layer"
         loading="lazy"
@@ -79,7 +77,7 @@ export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({
       
       {/* Exploding parts - animated by scroll */}
       <img
-        src="/assets/projects/buell-lightning/engine/cylinder-barrel.png"
+        src="/assets/projects/buell-lightning/engine/cylinder-barrel.webp"
         alt="Buell motorcycle cylinder barrel"
         data-part="1"
         className="background-layer"
@@ -96,7 +94,7 @@ export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({
         }}
       />
       <img
-        src="/assets/projects/buell-lightning/engine/rocker-box.png"
+        src="/assets/projects/buell-lightning/engine/rocker-box.webp"
         alt="Buell motorcycle rocker box"
         data-part="2"
         className="background-layer"
@@ -113,7 +111,7 @@ export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({
         }}
       />
       <img
-        src="/assets/projects/buell-lightning/engine/rocker-box-top.png"
+        src="/assets/projects/buell-lightning/engine/rocker-box-top.webp"
         alt="Buell motorcycle rocker box top"
         data-part="3"
         className="background-layer"
@@ -130,7 +128,7 @@ export const MotorcycleParts: React.FC<MotorcyclePartsProps> = ({
         }}
       />
       <img
-        src="/assets/projects/buell-lightning/engine/push-rods.png"
+        src="/assets/projects/buell-lightning/engine/push-rods.webp"
         alt="Buell motorcycle push rods"
         data-part="4"
         className="background-layer"

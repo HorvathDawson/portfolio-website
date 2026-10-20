@@ -13,7 +13,6 @@ export const LaptopWithScreen: React.FC<LaptopWithScreenProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const effectiveForceHover = forceHover ?? false;
 
-  // ... (Keep existing useEffect resize logic exactly as is) ...
   useEffect(() => {
     const container = containerRef.current;
     const content = contentRef.current;
@@ -44,40 +43,11 @@ export const LaptopWithScreen: React.FC<LaptopWithScreenProps> = ({
       content.style.height = `${height}px`;
     };
 
+    // ResizeObserver also fires once on observe, so this sets the initial size.
     const observer = new ResizeObserver(updateSize);
-    if (container.parentElement instanceof Node) observer.observe(container.parentElement as Element);
-    window.addEventListener('resize', updateSize);
-    requestAnimationFrame(updateSize);
+    if (container.parentElement) observer.observe(container.parentElement);
 
-    const handleMouseEnter = () => {
-      if (effectiveForceHover) return;
-      const foregrounds = container.querySelectorAll('.foreground-layer') as NodeListOf<HTMLElement>;
-      const backgrounds = container.querySelectorAll('.background-layer') as NodeListOf<HTMLElement>;
-      const screens = container.querySelectorAll('.computer-screen') as NodeListOf<HTMLElement>;
-      foregrounds.forEach(el => el.style.opacity = '1');
-      backgrounds.forEach(el => el.style.opacity = '0');
-      screens.forEach(el => el.style.opacity = '1');
-    };
-
-    const handleMouseLeave = () => {
-      if (effectiveForceHover) return;
-      const foregrounds = container.querySelectorAll('.foreground-layer') as NodeListOf<HTMLElement>;
-      const backgrounds = container.querySelectorAll('.background-layer') as NodeListOf<HTMLElement>;
-      const screens = container.querySelectorAll('.computer-screen') as NodeListOf<HTMLElement>;
-      foregrounds.forEach(el => el.style.opacity = '0');
-      backgrounds.forEach(el => el.style.opacity = '1');
-      screens.forEach(el => el.style.opacity = '0');
-    };
-
-    container.addEventListener('mouseenter', handleMouseEnter);
-    container.addEventListener('mouseleave', handleMouseLeave);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', updateSize);
-      container.removeEventListener('mouseenter', handleMouseEnter);
-      container.removeEventListener('mouseleave', handleMouseLeave);
-    };
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -101,9 +71,8 @@ export const LaptopWithScreen: React.FC<LaptopWithScreenProps> = ({
         style={{
           position: 'relative',
           aspectRatio: '10 / 7',
-          // KEY CHANGE: Removed 'preserve-3d'. 
-          // This flattens the scene. The browser will render layers based strictly on z-index.
-        //   perspective: '1000px', 
+          // No preserve-3d/perspective here: the scene stays flat so layers
+          // stack strictly by z-index.
           overflow: 'visible'
         }}
       >
@@ -134,7 +103,7 @@ export const LaptopWithScreen: React.FC<LaptopWithScreenProps> = ({
           >
             <img src="/assets/projects/self-driving-car/computer-colored.svg" alt="" className="foreground-layer" loading="lazy" style={{ opacity: effectiveForceHover ? 1 : 0, position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 3 }} />
             <img src="/assets/projects/self-driving-car/computer-outline.svg" alt="" className="background-layer" loading="lazy" style={{ opacity: effectiveForceHover ? 0 : 1, position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 1 }} />
-            <div className="splash-layer computer-screen" style={{ opacity: effectiveForceHover ? 1 : 0, position: 'absolute', top: '10%', left: '4%', width: '92%', height: '84%', backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: 'url(/assets/projects/self-driving-car/simulation-demo.gif)', zIndex: 6 }} />
+            <img src="/assets/projects/self-driving-car/simulation-demo.webp" alt="" className="splash-layer computer-screen" loading="lazy" decoding="async" style={{ opacity: effectiveForceHover ? 1 : 0, position: 'absolute', top: '10%', left: '4%', width: '92%', height: '84%', objectFit: 'cover', objectPosition: 'center', zIndex: 6 }} />
           </div>
         </div>
 

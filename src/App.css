@@ -81,6 +81,31 @@
   to { transform: rotate(360deg); }
 }
 
+/* ---- Parallax header sky (day/night cycle) ----
+   The night colour fades in via opacity on a pseudo-element, which the
+   compositor can animate without repainting the whole header every frame. */
+.parallax-sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--warm-white);
+}
+
+.parallax-sky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--dark-blue);
+  opacity: 0;
+  animation: dayNightCycle 90s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes dayNightCycle {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
 html,
 body {
   background-color: var(--purple);
@@ -256,6 +281,10 @@ textarea.form-select {
   flex-direction: row;
 }
 
+.project-card.is-hovered {
+  box-shadow: 0 0 86px 6px #7038cfcc;
+}
+
 @media screen and (min-width: 1181px) and (max-width: 1400px) {
   .project-card {
     height: clamp(400px, 34vw, 480px);
@@ -270,6 +299,8 @@ textarea.form-select {
 
 @media screen and (max-width: 991px) {
   .project-card {
+    /* No hover on stacked layouts, so the glow is always on */
+    box-shadow: 0 0 86px 6px #7038cfcc;
     justify-content: flex-end;
     height: auto;
     min-height: 750px;

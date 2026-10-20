@@ -2,9 +2,6 @@ import React from 'react';
 
 export interface SkateboardDisplayProps {
   className?: string;
-}
-export interface SkateboardDisplayProps {
-  className?: string;
   forceHover?: boolean;
 }
 
@@ -17,7 +14,7 @@ export const SkateboardDisplay: React.FC<SkateboardDisplayProps> = ({
     <div data-skateboard-display className={className} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
       <div style={{ width: 900, height: 600, maxWidth: '100%', maxHeight: '100%', position: 'relative' }}>
         <img
-          src="/assets/projects/electric-skateboard/colored.png"
+          src="/assets/projects/electric-skateboard/colored.webp"
           alt=""
           className="foreground-layer"
           loading="lazy"

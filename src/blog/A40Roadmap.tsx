@@ -513,7 +513,6 @@ export const A40Roadmap: React.FC = () => {
       setIsolatedId(id);
     }
     // Only run once on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Sync URL hash with the active task so links can be shared / refreshed.
@@ -895,6 +894,8 @@ export const A40Roadmap: React.FC = () => {
     }
 
     setEdgeGeoms(geoms);
+    // `zoom` moves the rendered nodes, so edges must be re-measured when it changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, isolatedSet, isolatedId, expandDownstream, zoom]);
 
   useEffect(() => {

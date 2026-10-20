@@ -1,5 +1,4 @@
-import React, { useRef } from 'react';
-// import { useVisualsForceHover } from './VisualsContext';
+import React from 'react';
 
 export interface FumeExtractorArmProps {
   className?: string;
@@ -10,15 +9,13 @@ export const FumeExtractorArm: React.FC<FumeExtractorArmProps> = ({
   className = '',
   forceHover
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const effectiveForceHover = forceHover ?? false;
 
-  // Hover behavior is handled by BaseProjectItem via VisualsForceHoverContext.
-  // Visuals should only read `effectiveForceHover` and render accordingly.
+  // Hover behaviour is driven by BaseProjectItem, which toggles the
+  // foreground/background/splash layer opacities directly.
 
   return (
     <div 
-      ref={containerRef}
       className={`fume-extractor-arm ${className}`.trim()}
       style={{ 
         position: 'absolute',
@@ -43,7 +40,7 @@ export const FumeExtractorArm: React.FC<FumeExtractorArmProps> = ({
       >
         {/* Arm foreground - shows on hover */}
         <img
-          src="/assets/projects/fume-extractor/arm-colored.png"
+          src="/assets/projects/fume-extractor/arm-colored.webp"
           alt="Fume extractor arm"
           className="foreground-layer"
           loading="lazy"
@@ -60,7 +57,7 @@ export const FumeExtractorArm: React.FC<FumeExtractorArmProps> = ({
         />
       {/* Arm edge - shows by default */}
       <img
-        src="/assets/projects/fume-extractor/arm-outline.png"
+        src="/assets/projects/fume-extractor/arm-outline.webp"
         alt="Fume extractor arm outline"
         className="background-layer"
         loading="lazy"
@@ -77,7 +74,7 @@ export const FumeExtractorArm: React.FC<FumeExtractorArmProps> = ({
       />
       {/* Splash overlay - shows on hover */}
       <img
-        src="/assets/projects/fume-extractor/glow.png"
+        src="/assets/projects/fume-extractor/glow.webp"
         alt="Fume extractor glow"
         className="splash-layer"
         loading="lazy"
@@ -94,7 +91,7 @@ export const FumeExtractorArm: React.FC<FumeExtractorArmProps> = ({
       />
         {/* Fume animation - shows on hover */}
         <img
-          src="/assets/projects/fume-extractor/fumes.gif"
+          src="/assets/projects/fume-extractor/fumes.webp"
           alt="Fume animation"
           className="splash-layer"
           loading="lazy"

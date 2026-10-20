@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { BaseProjectItem, type ProjectConfig } from './BaseProjectItem';
+import { onScrollFrameWhileVisible } from '../../utils/scrollFrame';
 import { DesktopDisplay } from '../visuals/DesktopDisplay';
 
 const projectConfig: ProjectConfig = {
@@ -18,35 +19,22 @@ export const BCFishingProject: React.FC = () => {
 
     if (!display || !frame) return;
 
-    let raf = 0;
+    const update = () => {
+      const rect = frame.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const windowCenterY = windowHeight / 2;
+      const itemCenterY = rect.top + rect.height / 2;
+      const distanceToCenter = itemCenterY - windowCenterY;
 
-    const onScroll = () => {
-      if (raf) return;
+      let factor = distanceToCenter / windowCenterY;
+      factor = Math.max(0, factor);
 
-      raf = requestAnimationFrame(() => {
-        const rect = frame.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const windowCenterY = windowHeight / 2;
-        const itemCenterY = rect.top + rect.height / 2;
-        const distanceToCenter = itemCenterY - windowCenterY;
-
-        let factor = distanceToCenter / windowCenterY;
-        factor = Math.max(0, factor);
-
-        const translateY = 60 * factor;
-        display.style.transform = `translate3d(0, ${translateY}px, 0)`;
-
-        raf = 0;
-      });
+      const translateY = 60 * factor;
+      display.style.transform = `translate3d(0, ${translateY}px, 0)`;
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    // Recompute on scroll, only while the card is near the viewport
+    return onScrollFrameWhileVisible(frame, update);
   }, []);
 
   return (

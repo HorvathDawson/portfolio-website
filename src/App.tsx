@@ -17,6 +17,31 @@ import {
 } from './components/projects';
 import './App.css';
 
+// 1. CONTAINER STYLE
+const appContainerStyle: React.CSSProperties = {
+  backgroundColor: '#FEDCC8',
+  minHeight: '100vh',
+  width: '100%',
+  position: 'relative',
+  overflowX: 'hidden',
+};
+
+// 2. CONTENT STYLE
+// This sits strictly BELOW the header.
+// We add zIndex to ensure it sits on top of any background artifacts.
+const mainContentStyle: React.CSSProperties = {
+  backgroundImage: 'url("/assets/header/foreground-tile.webp")',
+  backgroundRepeat: 'repeat',
+  backgroundPosition: 'top center',
+  // backgroundSize: 'cover',
+  position: 'relative',
+  zIndex: 10, // Ensures content sits on top of the bottom of the parallax header
+  width: '100%',
+  marginTop: '-2px',
+  paddingTop: '50px', // Spacing between header and first text
+  paddingBottom: '0px'
+};
+
 function App() {
   const [ready, setReady] = useState(false);
 
@@ -57,22 +82,8 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // --- NEW: SEO Metadata & Console Easter Eggs ---
+  // Console easter egg
   useEffect(() => {
-    // 1. SEO / Metadata Injection
-    document.title = "Dawson's Portfolio | Engineering & Design";
-
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', 'Portfolio of Dawson: A showcase of robotics, software engineering, self-driving cars, and DIY fabrication projects.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = "description";
-      meta.content = "Portfolio of Dawson: A showcase of robotics, software engineering, self-driving cars, and DIY fabrication projects.";
-      document.head.appendChild(meta);
-    }
-
-    // 2. Console Easter Egg
     const styles = [
       'color: #ff4500',
       'background: #2a2a2a',
@@ -86,9 +97,9 @@ function App() {
     (
       )
      ( )  .   
-      |  /_\  
+      |  /_\\  
     __|__/_|__ 
-   /_________\ 
+   /_________\\ 
      |     |   
    
    Hey there, explorer! 🌲 
@@ -100,71 +111,40 @@ function App() {
     console.log(`%c 🏕️ Welcome to the Portfolio! `, styles);
     console.log(funMessage);
     console.log("Built with React, TypeScript, and a lot of coffee ☕");
-
   }, []);
-  // ----------------------------------------------
 
   useEffect(() => {
-    // Mouse tracking for shuffle effect (Project Cards)
-    let mouseAnimationFrame: number;
+    // Mouse tracking for shuffle effect (Project Cards), desktop only
+    const cards = document.querySelectorAll<HTMLElement>('.project-card-media');
+    let mouseAnimationFrame = 0;
+    let mouseX = 0;
+    let mouseY = 0;
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const mouseX = event.clientX;
-      const mouseY = event.clientY;
+    const applyOffset = () => {
+      mouseAnimationFrame = 0;
+      if (window.innerWidth <= 991) return;
 
-      if (mouseAnimationFrame) return;
-
-      mouseAnimationFrame = requestAnimationFrame(() => {
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        const offsetX = (mouseX - centerX) * 0.002;
-        const offsetY = (mouseY - centerY) * 0.002;
-
-        if (window.innerWidth > 991) {
-          document.querySelectorAll('.project-card-media').forEach((element) => {
-            (element as HTMLElement).style.transform = `translate3d(${offsetX}%, ${offsetY}%, 0)`;
-          });
-        }
-
-        mouseAnimationFrame = 0;
+      const offsetX = (mouseX - window.innerWidth / 2) * 0.002;
+      const offsetY = (mouseY - window.innerHeight / 2) * 0.002;
+      const transform = `translate3d(${offsetX}%, ${offsetY}%, 0)`;
+      cards.forEach((element) => {
+        element.style.transform = transform;
       });
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
+    const handleMouseMove = (event: MouseEvent) => {
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+      if (!mouseAnimationFrame) mouseAnimationFrame = requestAnimationFrame(applyOffset);
+    };
 
-    // Cleanup
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
-      if (mouseAnimationFrame) {
-        cancelAnimationFrame(mouseAnimationFrame);
-      }
+      if (mouseAnimationFrame) cancelAnimationFrame(mouseAnimationFrame);
     };
   }, []);
-
-  // 1. CONTAINER STYLE
-  const appContainerStyle: React.CSSProperties = {
-    backgroundColor: '#FEDCC8',
-    minHeight: '100vh',
-    width: '100%',
-    position: 'relative',
-    overflowX: 'hidden',
-  };
-
-  // 2. CONTENT STYLE
-  // This sits strictly BELOW the header.
-  // We add zIndex to ensure it sits on top of any background artifacts.
-  const mainContentStyle: React.CSSProperties = {
-    backgroundImage: 'url("/assets/header/foreground-tile.png")',
-    backgroundRepeat: 'repeat',
-    backgroundPosition: 'top center',
-    // backgroundSize: 'cover',
-    position: 'relative',
-    zIndex: 10, // Ensures content sits on top of the bottom of the parallax header
-    width: '100%',
-    marginTop: '-2px',
-    paddingTop: '50px', // Spacing between header and first text
-    paddingBottom: '0px'
-  };
 
   return (
     <div className="app-container" style={appContainerStyle}>

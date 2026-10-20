@@ -74,7 +74,9 @@ export function parsePost(raw: string, slug: string): BlogPost {
     tags: parseTags(meta.tags),
     epic: meta.epic ?? 'planning',
     kind,
-    html: marked.parse(body, { async: false }) as string,
+    // Lazy-load post images so long posts don't download every plot up front.
+    html: (marked.parse(body, { async: false }) as string)
+      .replace(/<img /g, '<img loading="lazy" decoding="async" '),
   };
 }
 

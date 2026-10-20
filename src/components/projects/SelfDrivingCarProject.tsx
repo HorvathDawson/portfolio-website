@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { BaseProjectItem, type ProjectConfig } from './BaseProjectItem';
+import { onScrollFrameWhileVisible } from '../../utils/scrollFrame';
 import { LaptopWithScreen } from '../visuals';
 
 const projectConfig: ProjectConfig = {
@@ -22,56 +23,40 @@ export const SelfDrivingCarProject: React.FC = () => {
 
     if (!screen || !frame) return;
 
-    let raf = 0;
-
-    const onScroll = () => {
-      if (raf) return;
+    const update = () => {
+      // 2. MEASURE STATIC FRAME
+      const rect = frame.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const windowCenterY = windowHeight / 2;
       
-      raf = requestAnimationFrame(() => {
-        // 2. MEASURE STATIC FRAME
-        const rect = frame.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const windowCenterY = windowHeight / 2;
-        
-        // Center of the laptop frame
-        const itemCenterY = rect.top + rect.height / 2;
-        
-        // 3. CALCULATE FACTOR
-        // Distance from center of screen
-        // Positive = Below center (scrolling in)
-        // Negative = Above center (scrolled past)
-        const distanceToCenter = itemCenterY - windowCenterY;
+      // Center of the laptop frame
+      const itemCenterY = rect.top + rect.height / 2;
+      
+      // 3. CALCULATE FACTOR
+      // Distance from center of screen
+      // Positive = Below center (scrolling in)
+      // Negative = Above center (scrolled past)
+      const distanceToCenter = itemCenterY - windowCenterY;
 
-        // Normalize to a 0..1 factor based on half screen height
-        let factor = distanceToCenter / windowCenterY;
-        
-        // Clamp: We only animate when it's below center (opening up)
-        // Stops animating once it hits the center or goes above
-        factor = Math.max(0, factor);
+      // Normalize to a 0..1 factor based on half screen height
+      let factor = distanceToCenter / windowCenterY;
+      
+      // Clamp: We only animate when it's below center (opening up)
+      // Stops animating once it hits the center or goes above
+      factor = Math.max(0, factor);
 
-        // 4. ANIMATION MATH
-        // At bottom of screen (factor 1) -> Rotate 90deg (Closed/Flat)
-        // At center of screen (factor 0) -> Rotate 0deg (Open/Upright)
-        const maxRotation = 90; 
-        const rotation = maxRotation * factor;
-        
-        // Using rotateX to simulate lid opening
-        screen.style.transform = `rotateX(-${rotation}deg)`; 
-        
-        raf = 0;
-      });
+      // 4. ANIMATION MATH
+      // At bottom of screen (factor 1) -> Rotate 90deg (Closed/Flat)
+      // At center of screen (factor 0) -> Rotate 0deg (Open/Upright)
+      const maxRotation = 90; 
+      const rotation = maxRotation * factor;
+      
+      // Using rotateX to simulate lid opening
+      screen.style.transform = `rotateX(-${rotation}deg)`; 
     };
 
-    // 5. ATTACH TO WINDOW
-    window.addEventListener('scroll', onScroll, { passive: true });
-    
-    // Initial calculation
-    onScroll();
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    // Recompute on scroll, only while the card is near the viewport
+    return onScrollFrameWhileVisible(frame, update);
   }, []);
 
   return (
