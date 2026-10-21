@@ -20,6 +20,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 
 from shapely.geometry import LineString, Polygon
 from shapely.ops import unary_union
@@ -82,7 +83,8 @@ def rotate(points, cx, cy, deg):
 
 
 class Drawing:
-    def __init__(self):
+    def __init__(self, width=W, height=H):
+        self.width, self.height = width, height
         self.paths = []
 
     def shape(self, points, width=LINE, closed=True):
@@ -99,7 +101,7 @@ class Drawing:
 
     def svg(self):
         """Every shape, back to front: the source for make_svg.py."""
-        return wrap(path_el(d, w, "#000") for d, w, _, _ in self.paths)
+        return wrap((path_el(d, w, "#000") for d, w, _, _ in self.paths), self.width, self.height)
 
     def outline_svg(self):
         """White lines with the parts hidden behind later shapes removed."""
@@ -112,16 +114,16 @@ class Drawing:
             for part in getattr(line, "geoms", [line]):
                 if not part.is_empty and part.length > 0.5:
                     els.append(path_el(pts_path(list(part.coords), closed=False), w, "#fff"))
-        return wrap(els)
+        return wrap(els, self.width, self.height)
 
 
 def path_el(d, width, colour):
     return f'  <path d="{d}" fill="none" stroke="{colour}" stroke-width="{num(width)}" stroke-linejoin="round" stroke-linecap="round" />'
 
 
-def wrap(els):
+def wrap(els, width=W, height=H):
     body = "\n".join(els)
-    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">\n{body}\n</svg>\n'
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}">\n{body}\n</svg>\n'
 
 
 def keyboard(d, quad, cols=14):
@@ -232,21 +234,42 @@ def tablet():
     return d, [screen]
 
 
-def main():
-    os.makedirs(OUT, exist_ok=True)
-    make_svg = os.path.join(os.path.dirname(__file__), "make_svg.py")
+def export(drawing, out_dir, name):
+    """Write <name>-outline.svg and, through make_svg.py, <name>-colored.svg."""
+    os.makedirs(out_dir, exist_ok=True)
+    make_svg = os.path.join(os.path.dirname(os.path.abspath(__file__)), "make_svg.py")
     with tempfile.TemporaryDirectory() as tmp:
-        for name, draw in (("desktop-phone", desktop_phone), ("tablet", tablet), ("tv", tv)):
-            drawing, screens = draw()
-            src = os.path.join(tmp, f"{name}.svg")
-            with open(src, "w") as fh:
-                fh.write(drawing.svg())
-            subprocess.run([sys.executable, make_svg, src], check=True, stdout=subprocess.DEVNULL)
-            with open(os.path.join(OUT, f"{name}-outline.svg"), "w") as fh:
-                fh.write(drawing.outline_svg())
-            os.replace(os.path.join(tmp, f"{name}_foreground.svg"), os.path.join(OUT, f"{name}-colored.svg"))
-            for sx, sy, sw, sh in screens:
-                print(f"{name}: screen left {sx / W:.2%} top {sy / H:.2%} width {sw / W:.2%} height {sh / H:.2%}")
+        src = os.path.join(tmp, f"{name}.svg")
+        with open(src, "w") as fh:
+            fh.write(drawing.svg())
+        subprocess.run([sys.executable, make_svg, src], check=True, stdout=subprocess.DEVNULL)
+        with open(os.path.join(out_dir, f"{name}-outline.svg"), "w") as fh:
+            fh.write(drawing.outline_svg())
+        colored = os.path.join(out_dir, f"{name}-colored.svg")
+        os.replace(os.path.join(tmp, f"{name}_foreground.svg"), colored)
+        unfill_open_lines(colored)
+
+
+def unfill_open_lines(path):
+    """make_svg.py puts a filled copy under every path; drop it under open lines
+    (cables, tubing, steam), where it would fill the curve like a sail."""
+    ET.register_namespace("", "http://www.w3.org/2000/svg")
+    tree = ET.parse(path)
+    for parent in tree.getroot().iter():
+        children = list(parent)
+        for under, line in zip(children, children[1:]):
+            d = line.get("d") or ""
+            if under.get("fill") == "#361c7d" and line.tag.endswith("path") and not d.rstrip().endswith("Z"):
+                parent.remove(under)
+    tree.write(path, xml_declaration=True, encoding="utf-8")
+
+
+def main():
+    for name, draw in (("desktop-phone", desktop_phone), ("tablet", tablet), ("tv", tv)):
+        drawing, screens = draw()
+        export(drawing, OUT, name)
+        for sx, sy, sw, sh in screens:
+            print(f"{name}: screen left {sx / W:.2%} top {sy / H:.2%} width {sw / W:.2%} height {sh / H:.2%}")
 
 
 if __name__ == "__main__":
