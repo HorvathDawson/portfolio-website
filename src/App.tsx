@@ -4,7 +4,7 @@ import { AboutMe } from './components/AboutMe';
 import { ContactForm } from './components/ContactForm';
 import { ProjectCard } from './components/ProjectCard';
 import { aboutMeContent } from './data/content';
-import { projects } from './data/projects';
+import { visibleProjects } from './data/projects';
 import { BREAKPOINTS } from './utils/useBreakpoint';
 import { watchReducedMotion } from './utils/reducedMotion';
 import { usePageMeta } from './utils/usePageMeta';
@@ -116,7 +116,7 @@ function App() {
           <section className="projects-content" aria-label="Projects">
             <div className="projects-section">
               <div className="projects-grid" role="list">
-                {projects.map((project) => <ProjectCard key={project.id} project={project} />)}
+                {visibleProjects(window.location.search).map((project) => <ProjectCard key={project.id} project={project} />)}
               </div>
               <ContactForm />
             </div>

@@ -6,6 +6,7 @@ import { LaptopWithScreen } from '../components/visuals/LaptopWithScreen';
 import { MotorcycleParts } from '../components/visuals/MotorcycleParts';
 import { FumeExtractorArm } from '../components/visuals/FumeExtractorArm';
 import { TabletDisplay } from '../components/visuals/TabletDisplay';
+import { DeviceDisplay } from '../components/visuals/DeviceDisplay';
 import { RESUME_VIEW_PATH } from './site';
 
 /**
@@ -27,6 +28,8 @@ export interface Project {
   /** Clicking the visual also follows the link. */
   linkVisual?: boolean;
   animation?: ScrollAnimation;
+  /** A card waiting for a project: hidden unless the address has ?drafts. */
+  draft?: boolean;
 }
 
 /** How far below centre a card still is (0 once it reaches the centre). */
@@ -167,4 +170,37 @@ export const projects: Project[] = [
     visual: <TabletDisplay />,
     linkVisual: true,
   },
+  // Spare cards for future projects. To use one, fill in the text and link,
+  // pass the project's screen as `screen` (an <AnimatedImage> recording, like
+  // the other cards) and drop `draft`.
+  {
+    id: 'upcoming-computer',
+    category: 'Coming Soon',
+    title: 'Next Web Project',
+    description: 'Something new is in the works. Check back soon.',
+    visual: <DeviceDisplay device="computer" />,
+    draft: true,
+    // Rises into place, like the monitor above.
+    animation: (offset) => `translate3d(0, ${60 * below(offset)}px, 0)`,
+  },
+  {
+    id: 'upcoming-tablet',
+    category: 'Coming Soon',
+    title: 'Next Tablet Project',
+    description: 'Something new is in the works. Check back soon.',
+    visual: <DeviceDisplay device="tablet" />,
+    draft: true,
+  },
+  {
+    id: 'upcoming-phone',
+    category: 'Coming Soon',
+    title: 'Next Mobile Project',
+    description: 'Something new is in the works. Check back soon.',
+    visual: <DeviceDisplay device="phone" />,
+    draft: true,
+  },
 ];
+
+/** Drafts show in development and with ?drafts in the address. */
+export const visibleProjects = (search: string) =>
+  import.meta.env.DEV || new URLSearchParams(search).has('drafts') ? projects : projects.filter((p) => !p.draft);
