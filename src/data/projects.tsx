@@ -71,12 +71,12 @@ export const projects: Project[] = [
     internal: true,
     visual: (
       <LayeredArt
-        width={1000}
-        height={600}
+        width={1205}
+        height={757}
         data-scroll
         layers={[
-          { layer: 'foreground', src: '/assets/projects/a40-austin/colored.webp' },
-          { layer: 'background', src: '/assets/projects/a40-austin/outline.webp' },
+          { layer: 'foreground', src: '/assets/projects/a40-austin/colored.svg' },
+          { layer: 'background', src: '/assets/projects/a40-austin/outline.svg' },
         ]}
       />
     ),
