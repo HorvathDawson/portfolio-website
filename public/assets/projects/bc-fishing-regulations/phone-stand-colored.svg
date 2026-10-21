@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 295">
+  <defs>
+  <linearGradient id="vaporwaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <stop offset="0%" stop-color="#f65e79" />
+    <stop offset="50%" stop-color="#8a3ab9" />
+    <stop offset="100%" stop-color="#4978f4" />
+  </linearGradient>
+</defs><path d="M 64.0,214.0 L 72.0,210.0 L 100.0,266.0 L 92.0,268.0 L 64.0,214.0" fill="#361c7d" fill-rule="nonzero" /><path d="M 64,214 L 72,210 L 100,266 L 92,268 Z" fill="none" stroke="url(#vaporwaveGrad)" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" />
+  <path d="M 6.0,262.0 L 102.0,260.0 L 106.0,271.0 L 2.0,274.0 L 6.0,262.0" fill="#361c7d" fill-rule="nonzero" /><path d="M 6,262 L 102,260 L 106,271 L 2,274 Z" fill="none" stroke="url(#vaporwaveGrad)" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" />
+  <path d="M 23.0,139.0 L 84.0,128.0 L 86.0,257.0 L 25.0,253.0 L 23.0,139.0" fill="#361c7d" fill-rule="nonzero" /><path d="M 23,139 L 84,128 L 86,257 L 25,253 Z" fill="none" stroke="url(#vaporwaveGrad)" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" />
+  <path d="M 18.0,141.0 L 79.0,130.0 L 81.0,259.0 L 20.0,255.0 L 18.0,141.0" fill="#361c7d" fill-rule="nonzero" /><path d="M 18,141 L 79,130 L 81,259 L 20,255 Z" fill="none" stroke="url(#vaporwaveGrad)" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" />
+  <path d="M 23.63,148.08 L 73.65,139.93 L 75.37,249.7 L 25.35,247.29 L 23.63,148.08" fill="#361c7d" fill-rule="nonzero" /><path d="M 23.63,148.08 L 73.65,139.93 L 75.37,249.7 L 25.35,247.29 Z" fill="none" stroke="url(#vaporwaveGrad)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" />
+  <path d="M 41.23,139.81 L 55.87,137.26 L 55.91,139.73 L 41.27,142.21 L 41.23,139.81" fill="#361c7d" fill-rule="nonzero" /><path d="M 41.23,139.81 L 55.87,137.26 L 55.91,139.73 L 41.27,142.21 Z" fill="none" stroke="url(#vaporwaveGrad)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" />
+  <path d="M 12.0,249.0 L 88.0,253.0 L 88.0,263.0 L 12.0,259.0 L 12.0,249.0" fill="#361c7d" fill-rule="nonzero" /><path d="M 12,249 L 88,253 L 88,263 L 12,259 Z" fill="none" stroke="url(#vaporwaveGrad)" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" />
+</svg>

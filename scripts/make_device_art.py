@@ -1,5 +1,6 @@
-"""Draw the line art for the spare project cards: a desktop with a phone beside
-it, a tablet on a stand and a TV on a wall.
+"""Draw the line art for the spare project cards (a desktop with a phone beside
+it, a tablet on a stand and a TV on a wall) and the phone beside the Can I
+Fish This? monitor.
 
 Each drawing is written as single-colour paths, back to front, which is what
 make_svg.py expects. Then make_svg.py turns each into the white outline (shown
@@ -175,6 +176,26 @@ def desktop_phone():
     return d, [monitor, phone]
 
 
+def phone_stand():
+    """A phone on a desk stand, turned a little to the left like the Can I Fish
+    This? monitor drawing it sits beside (same height and units as that art)."""
+    d = Drawing(120, 295)
+    # Stand: back leg, base plate
+    d.shape([(64, 214), (72, 210), (100, 266), (92, 268)])
+    d.shape([(6, 262), (102, 260), (106, 271), (2, 274)])
+    # Phone: its edge (seen on the right, for depth), then the face
+    d.shape([(23, 139), (84, 128), (86, 257), (25, 253)])
+    body = [(18, 141), (79, 130), (81, 259), (20, 255)]
+    d.shape(body)
+    f = quad_map(body)
+    screen = [f(0.09, 0.07), f(0.91, 0.07), f(0.91, 0.93), f(0.09, 0.93)]
+    d.shape(screen, FINE)
+    d.shape([f(0.38, 0.025), f(0.62, 0.025), f(0.62, 0.045), f(0.38, 0.045)], FINE)
+    # Cradle lip in front of the phone's foot
+    d.shape([(12, 249), (88, 253), (88, 263), (12, 259)])
+    return d, [screen]
+
+
 def tv():
     """A TV on the wall over a low cabinet with a soundbar, books and a plant."""
     d = Drawing()
@@ -285,6 +306,10 @@ def main():
         for sx, sy, sw, sh in screens:
             print(f"{name}: screen left {sx / W:.2%} top {sy / H:.2%} width {sw / W:.2%} height {sh / H:.2%}")
     export(laptop_lid_back(), os.path.join(OUT, "..", "self-driving-car"), "lid-back")
+    phone, (screen,) = phone_stand()
+    export(phone, os.path.join(OUT, "..", "bc-fishing-regulations"), "phone-stand")
+    corners = ", ".join(f"[{x / phone.width:.4f}, {y / phone.height:.4f}]" for x, y in screen)
+    print(f"bc-fishing-regulations: phone-stand screen corners {corners}")
     print("self-driving-car: lid-back")
 
 
