@@ -17,25 +17,18 @@ const Fisher: React.FC = () => (
 );
 
 /**
- * The tent, campfire and a fisher, as line art like the project cards. The
+ * The tent, a campfire that's been put out and a fisher. The
  * fisher's line is drawn separately (FishingLine) since it runs down the page.
  */
 export const CampScene: React.FC = () => (
   <svg className="camp-scene" viewBox="0 0 790 290" aria-hidden="true" focusable="false">
     <defs>
-      <radialGradient id="camp-glow">
-        <stop offset="0" stopColor="#ff8c00" stopOpacity="0.45" />
-        <stop offset="0.45" stopColor="#ff5a00" stopOpacity="0.15" />
-        <stop offset="1" stopColor="#ff3c00" stopOpacity="0" />
-      </radialGradient>
-      <linearGradient id="camp-flame" x1="0" y1="1" x2="0" y2="0">
-        <stop offset="0" stopColor="#ff5a1f" />
-        <stop offset="0.6" stopColor="#ff9b3d" />
-        <stop offset="1" stopColor="#ffd56b" />
-      </linearGradient>
+      {/* Softens the smoke wisps */}
+      <filter id="camp-smoke-blur" x="-50%" y="-20%" width="200%" height="140%">
+        <feGaussianBlur stdDeviation="3" />
+      </filter>
     </defs>
 
-    <circle className="camp-glow" cx="80" cy="228" r="110" fill="url(#camp-glow)" />
 
     {/* Ground */}
     <path className="camp-line camp-faint" d="M0 272 L160 272 M176 273 L512 273" />
@@ -43,27 +36,30 @@ export const CampScene: React.FC = () => (
     {/* The original tent photo */}
     <image className="camp-tent" href={TENT_PHOTO} x="150" y="8" width="384" height="384" opacity="0.9" />
 
-    {/* Campfire: crossed logs, flames, a ring of stones in front */}
+    {/* Campfire, put out: crossed logs, embers, smoke, a ring of stones in front */}
     <g className="camp-fire">
       <g transform="translate(80 248) rotate(-20)">
-        <rect className="camp-line camp-solid" x="-56" y="-9" width="112" height="18" rx="9" />
-        <ellipse className="camp-line" cx="49" cy="0" rx="3.5" ry="7" />
+        <rect className="camp-line camp-dark" x="-56" y="-9" width="112" height="18" rx="9" />
+        <ellipse className="camp-line camp-dark" cx="49" cy="0" rx="3.5" ry="7" />
       </g>
       <g transform="translate(80 248) rotate(20)">
-        <rect className="camp-line camp-solid" x="-56" y="-9" width="112" height="18" rx="9" />
-        <ellipse className="camp-line" cx="-49" cy="0" rx="3.5" ry="7" />
+        <rect className="camp-line camp-dark" x="-56" y="-9" width="112" height="18" rx="9" />
+        <ellipse className="camp-line camp-dark" cx="-49" cy="0" rx="3.5" ry="7" />
       </g>
-      <path
-        className="camp-flame camp-flame-outer"
-        d="M80 242 C50 240 46 206 62 186 C66 201 72 203 75 197 C70 176 80 151 98 136 C94 159 112 173 110 201 C116 197 118 189 116 181 C128 198 125 238 80 242 Z"
-      />
-      <path
-        className="camp-flame camp-flame-inner"
-        d="M80 240 C66 238 63 220 72 207 C74 215 78 215 80 209 C80 197 86 187 94 181 C92 197 102 205 98 223 C96 233 90 240 80 240 Z"
-      />
-      <circle className="camp-spark camp-spark-1" cx="74" cy="150" r="1.8" />
-      <circle className="camp-spark camp-spark-2" cx="92" cy="140" r="1.4" />
-      <circle className="camp-spark camp-spark-3" cx="84" cy="160" r="1.6" />
+      {/* A few embers still glowing where the logs cross */}
+      <circle className="camp-ember" cx="74" cy="244" r="2.2" />
+      <circle className="camp-ember camp-ember-2" cx="86" cy="247" r="1.6" />
+      <circle className="camp-ember camp-ember-3" cx="80" cy="240" r="1.3" />
+      {/* Smoke curling up from it */}
+      <g filter="url(#camp-smoke-blur)">
+        {[
+          'M80 238 C70 214 94 198 82 176 C72 158 92 142 84 120',
+          'M84 238 C94 216 72 202 86 182 C98 164 78 150 90 128',
+          'M76 238 C66 220 86 206 76 190 C68 176 84 162 78 146',
+        ].map((d, i) => (
+          <path key={d} className={`camp-smoke camp-smoke-${i + 1}`} d={d} />
+        ))}
+      </g>
       {[
         [32, 263, 15, 9],
         [57, 269, 16, 8.5],
@@ -71,7 +67,7 @@ export const CampScene: React.FC = () => (
         [114, 268, 16, 9],
         [135, 262, 12, 8],
       ].map(([cx, cy, rx, ry]) => (
-        <ellipse key={cx} className="camp-line camp-solid" cx={cx} cy={cy} rx={rx} ry={ry} />
+        <ellipse key={cx} className="camp-line camp-dark" cx={cx} cy={cy} rx={rx} ry={ry} />
       ))}
     </g>
 
