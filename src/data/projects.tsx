@@ -106,8 +106,8 @@ export const projects: Project[] = [
     title: 'Self Driving Car',
     description: 'Simulated a self-driving robot in Gazebo and ROS.',
     visual: <LaptopWithScreen />,
-    // Lid opens from flat (90°) to upright.
-    animation: (offset) => `rotateX(-${90 * below(offset)}deg)`,
+    // Lid swings up from closed (lying on the keyboard) to upright as the card reaches the middle.
+    animation: (offset) => `rotateX(-${90 * Math.min(1, below(offset))}deg)`,
   },
   {
     id: 'robot253',
