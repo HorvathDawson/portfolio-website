@@ -1,29 +1,30 @@
-# Temporary: screenshots in WebKit, committed back to this branch.
+# Temporary: checks what the live resume generator serves.
 name: Safari check
 on:
   push:
     branches: [claude/safari-check]
-    paths-ignore: ['ci-safari/shots/**']
+    paths-ignore: ['ci-live/out.txt']
 permissions:
   contents: write
 jobs:
-  shoot:
+  live:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm ci && npm run build && npx esbuild src/components/visuals/laptopLid.ts --bundle --format=iife --global-name=LID --outfile=ci-safari/lid-bundle.js
       - run: |
-          npm install --no-save --no-audit --no-fund playwright@1.63.0
-          npx playwright install --with-deps webkit
-      - run: |
-          (cd dist && python3 -m http.server 4400 >/dev/null 2>&1 &)
-          sleep 2
-          node ci-safari/shoot.mjs
-      - run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ci-safari/shots && git commit -m "WebKit screenshots" && git push origin HEAD:claude/safari-check
+          {
+            for u in https://dawsonhorvath.com/resume-generator/ https://resume-generator.horvath-dawson.workers.dev/resume-generator/; do
+              echo "== $u"; curl -sSL -D - -o page.html "$u" | grep -iE '^(HTTP|cf-cache|age|last-modified|cache-control)'
+              grep -oE '/resume-generator/assets/[A-Za-z0-9_.-]+\.js' page.html | sort -u
+              base=$(echo "$u" | grep -oE '^https://[^/]+')
+              for js in $(grep -oE '/resume-generator/assets/index-[A-Za-z0-9_-]+\.js' page.html | sort -u); do
+                curl -sSL "$base$js" -o main.js; echo "main $js"; grep -oE 'Embed-[A-Za-z0-9_-]+\.js' main.js | sort -u
+              done
+              for e in $(grep -ohE 'Embed-[A-Za-z0-9_-]+\.js' main.js | sort -u); do
+                curl -sSL "$base/resume-generator/assets/$e" -o e.js; echo "embed $e: zoom=$(grep -c 'zoom' e.js) scale=$(grep -c 'scale(' e.js)"
+              done
+            done
+          } > ci-live/out.txt 2>&1
+          cat ci-live/out.txt
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ci-live && git commit -m "Live check" && git push origin HEAD:claude/safari-check
