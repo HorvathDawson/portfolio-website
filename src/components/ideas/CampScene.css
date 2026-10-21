@@ -7,7 +7,7 @@
   z-index: 1;
   top: 96px;
   right: max(1.5vw, 8px);
-  width: min(56vw, 700px);
+  width: min(60vw, 760px);
   transform: translateY(-100%);
   overflow: visible;
   pointer-events: none;
@@ -31,10 +31,13 @@
   opacity: 0.45;
 }
 
-.camp-tent-inside {
-  fill: #ff9b3d;
-  opacity: 0.14;
+.camp-tent-door {
+  fill: url(#camp-lantern);
   animation: camp-glow 3.2s ease-in-out infinite alternate;
+}
+
+.camp-tent-spill {
+  fill: url(#camp-spill);
 }
 
 .camp-rim,
@@ -46,16 +49,13 @@
 .camp-rim {
   fill: currentColor;
   stroke: currentColor;
+  stroke-width: 3.5;
 }
 
 .camp-body {
   fill: #150711;
   stroke: #150711;
-}
-
-.camp-rim circle,
-.camp-body circle {
-  stroke: none;
+  stroke-width: 0;
 }
 
 .camp-rod-tip {
@@ -162,7 +162,7 @@
   position: absolute;
   top: 11%;
   left: 71%;
-  width: 4.2%;
+  width: 3.6%;
   animation: glider-cross 95s linear infinite;
 }
 
@@ -181,11 +181,11 @@
 .glider-legs {
   fill: none;
   stroke: #6a1234;
-  stroke-width: 0.8;
+  stroke-width: 0.6;
 }
 
 .glider-legs {
-  stroke-width: 3;
+  stroke-width: 2.6;
   stroke-linecap: round;
 }
 

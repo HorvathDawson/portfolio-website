@@ -1,37 +1,44 @@
 import React from 'react';
 import './CampScene.css';
 
-/** Silhouette parts of the fisher, drawn twice: a light rim, then the dark body over it. */
-const FISHER_LIMBS: [string, number][] = [
-  ['M560 232 L566 190', 17], // torso
-  ['M562 230 L600 226', 13], // thigh
-  ['M600 226 L605 266', 11], // shin
-  ['M603 268 L616 268', 7], // boot
-  ['M566 196 L586 213', 9], // upper arm
-  ['M586 213 L603 203', 8], // forearm
+/**
+ * A seated fisher in silhouette, facing the page edge, in local units with the
+ * ground at y = 0 and the seat rock under the hips. Each shape is drawn twice:
+ * a light rim first, then the dark body over it, so the figure reads as one
+ * silhouette with a thin outline.
+ */
+const FISHER_SHAPES = [
+  // Head and cap with its peak forward
+  'M-9 -122 C-9 -134 10 -135 10 -122 C10 -114 5 -109 0 -109 C-5 -109 -9 -114 -9 -122 Z',
+  'M-11 -124 C-11 -137 11 -138 12 -126 L23 -124 C24 -122 23 -121 21 -121 L-11 -121 Z',
+  // Neck and jacket, leaning a little forward
+  'M-4 -112 L5 -112 L6 -103 L-4 -103 Z',
+  'M-14 -100 C-10 -106 8 -107 13 -100 C19 -88 18 -66 14 -46 L-12 -44 C-18 -62 -19 -86 -14 -100 Z',
+  // Thigh to the knee, shin down, boot
+  'M-10 -56 L30 -62 C40 -63 43 -50 34 -46 L-8 -40 Z',
+  'M27 -58 C33 -61 41 -58 41 -51 L43 -10 L31 -10 L28 -50 Z',
+  'M29 -12 L44 -12 C51 -12 54 -6 54 0 L28 0 Z',
 ];
+/** Arms as thick strokes: shoulder to elbow to the hands on the rod. */
+const FISHER_ARM = 'M2 -97 L14 -70 L35 -80';
 
 const Fisher: React.FC = () => (
-  <g className="camp-fisher" transform="translate(560 272) scale(1.2) translate(-560 -272)">
-    {/* Rock seat */}
-    <path className="camp-line camp-solid" d="M505 272 C505 247 524 233 558 233 C594 233 614 249 615 272 Z" />
+  <g className="camp-fisher" transform="translate(640 272)">
+    {/* Rock seat, behind the legs */}
+    <path className="camp-line camp-solid" d="M-46 0 C-46 -28 -26 -46 -2 -46 C20 -46 30 -30 30 0 Z" />
     <g className="camp-rim">
-      {FISHER_LIMBS.map(([d, w]) => <path key={d} d={d} strokeWidth={w + 3.5} />)}
-      <circle cx="569" cy="173" r="12.5" />
-      <path d="M553 166 L588 164" strokeWidth={6.5} />
+      {FISHER_SHAPES.map((d) => <path key={d} d={d} />)}
+      <path d={FISHER_ARM} fill="none" style={{ strokeWidth: 12.5 }} />
     </g>
     <g className="camp-body">
-      {FISHER_LIMBS.map(([d, w]) => <path key={d} d={d} strokeWidth={w} />)}
-      <circle cx="569" cy="173" r="10.8" />
-      {/* Bucket hat */}
-      <path d="M560 167 C560 155 579 154 580 166 Z" />
-      <path d="M554 166 L587 164" strokeWidth={3} />
+      {FISHER_SHAPES.map((d) => <path key={d} d={d} />)}
+      <path d={FISHER_ARM} fill="none" style={{ strokeWidth: 9 }} />
     </g>
     {/* Rod (thicker at the butt), reel, and the tip the line hangs from */}
-    <path className="camp-line" d="M588 216 Q666 122 742 66" strokeWidth={1.6} />
-    <path className="camp-line" d="M588 216 L612 194" strokeWidth={3.2} />
-    <circle className="camp-line camp-solid" cx="600" cy="207" r="3.6" strokeWidth={1.4} />
-    <circle className="camp-rod-tip" cx="742" cy="66" r="0.5" />
+    <path className="camp-line" d="M18 -66 Q108 -150 196 -228" strokeWidth={1.6} />
+    <path className="camp-line" d="M18 -66 L46 -90" strokeWidth={3.4} />
+    <circle className="camp-line camp-solid" cx="28" cy="-70" r="4" strokeWidth={1.4} />
+    <circle className="camp-rod-tip" cx="196" cy="-228" r="0.5" />
   </g>
 );
 
@@ -40,8 +47,17 @@ const Fisher: React.FC = () => (
  * fisher's line is drawn separately (FishingLine) since it runs down the page.
  */
 export const CampScene: React.FC = () => (
-  <svg className="camp-scene" viewBox="0 0 790 290" aria-hidden="true" focusable="false">
+  <svg className="camp-scene" viewBox="0 0 850 290" aria-hidden="true" focusable="false">
     <defs>
+      <radialGradient id="camp-lantern" cx="0.5" cy="0.82" r="0.7">
+        <stop offset="0" stopColor="#ffe3a1" stopOpacity="0.85" />
+        <stop offset="0.5" stopColor="#ffb057" stopOpacity="0.35" />
+        <stop offset="1" stopColor="#ff8a3d" stopOpacity="0.05" />
+      </radialGradient>
+      <radialGradient id="camp-spill">
+        <stop offset="0" stopColor="#ffc46b" stopOpacity="0.28" />
+        <stop offset="1" stopColor="#ffc46b" stopOpacity="0" />
+      </radialGradient>
       <radialGradient id="camp-glow">
         <stop offset="0" stopColor="#ff8c00" stopOpacity="0.45" />
         <stop offset="0.45" stopColor="#ff5a00" stopOpacity="0.15" />
@@ -57,19 +73,24 @@ export const CampScene: React.FC = () => (
     <circle className="camp-glow" cx="80" cy="228" r="110" fill="url(#camp-glow)" />
 
     {/* Ground */}
-    <path className="camp-line camp-faint" d="M0 272 L150 272 M168 271 L470 271 M495 272 L640 272" />
+    <path className="camp-line camp-faint" d="M0 272 L160 272 M176 271 L520 271 M580 272 L710 272" />
 
-    {/* Tent: dome, seams, a half-open door glowing from inside, vent, guy lines */}
+    {/* A-frame tent seen from the front corner: front triangle with its door
+        flaps tied back and a lantern glowing inside, ridge and side wall
+        running back, guy lines and stakes. */}
     <g className="camp-tent">
-      <path className="camp-tent-inside" d="M242 270 C246 216 276 178 312 172 C329 200 343 238 349 270 Z" />
-      <path className="camp-line" d="M168 270 C172 190 240 128 312 124 C385 120 450 180 462 270" />
-      <path className="camp-line" d="M205 270 C230 175 290 130 330 125 C380 150 410 210 420 270" />
-      <path className="camp-line" d="M242 270 C246 216 276 178 312 172 C350 176 378 216 384 270" />
-      <path className="camp-line" d="M312 172 C329 200 343 238 349 270" />
-      <path className="camp-line camp-faint" d="M312 176 L312 268" strokeDasharray="2 5" />
-      <path className="camp-line" d="M292 140 Q312 131 334 139" />
-      <path className="camp-line camp-faint" d="M180 214 L152 271 M456 214 L496 271" />
-      <path className="camp-line" d="M148 266 L156 276 M492 266 L500 276" />
+      <ellipse className="camp-tent-spill" cx="262" cy="272" rx="90" ry="12" />
+      <path className="camp-tent-door" d="M262 128 L226 270 L300 270 Z" />
+      <path className="camp-line camp-solid" d="M262 122 L448 134 L512 268 L338 270 Z" />
+      <path className="camp-line camp-faint" d="M300 125 L372 268 M352 128 L428 269 M404 131 L472 268" />
+      <path className="camp-line" d="M262 122 L182 270 L338 270 Z" />
+      <path className="camp-line camp-solid" d="M262 128 C246 180 232 226 222 270 L196 270 Z" />
+      <path className="camp-line camp-solid" d="M262 128 C278 180 294 226 304 270 L326 270 Z" />
+      <path className="camp-line" d="M234 214 L214 222 M290 214 L311 222" />
+      <path className="camp-line camp-faint" d="M262 122 L262 270" />
+      <path className="camp-line camp-faint" d="M262 122 L176 196 M448 134 L540 200" />
+      <path className="camp-line" d="M262 112 L262 122 M448 124 L448 134" />
+      <path className="camp-line" d="M171 190 L180 202 M536 194 L545 206" />
     </g>
 
     {/* Campfire: crossed logs, flames, a ring of stones in front */}
