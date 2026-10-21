@@ -1,7 +1,7 @@
-/* ---- Outline camp (?ideas) ----
-   Replaces the photo tent and logs with line art in the cards' style. The
-   scene's ground sits just above the heading, at the right of the page, so
-   the fisher's rod reaches out over the page's right margin. */
+/* ---- Camp with a fisher (?ideas) ----
+   The campfire, the tent photo and a fisher on one shared ground, just
+   above the heading at the right of the page, so the fisher's rod reaches
+   out over the page's right margin. */
 .camp-scene {
   position: absolute;
   z-index: 1;
@@ -9,9 +9,23 @@
   right: max(1.5vw, 8px);
   width: min(60vw, 760px);
   transform: translateY(-100%);
-  overflow: visible;
   pointer-events: none;
   color: var(--warm-white);
+}
+
+.camp-scene svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+/* The original campfire (AboutMe.css), placed left of the tent on the scene's ground. */
+.camp-scene .campfire-group {
+  right: auto;
+  left: 0;
+  bottom: 0;
+  width: 22%;
+  min-width: 0;
 }
 
 .camp-line {
@@ -27,45 +41,17 @@
   fill: #2c112a;
 }
 
-/* The put-out fire: logs and stones in the page's dark blue, faintly outlined. */
-.camp-dark {
-  fill: #0f172a;
-  stroke: rgba(252, 247, 240, 0.22);
-  stroke-width: 1.6;
-}
 
-.camp-ember {
-  fill: #ff6a2a;
-  animation: camp-ember 2.6s ease-in-out infinite alternate;
-}
 
-.camp-ember-2 { animation-delay: -0.9s; }
-.camp-ember-3 { animation-delay: -1.7s; }
 
-.camp-smoke {
-  fill: none;
-  stroke: #cfc7dc;
-  stroke-width: 7;
-  stroke-linecap: round;
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: camp-smoke 7.5s ease-out infinite;
-}
 
-.camp-smoke-2 { animation-delay: -2.5s; }
-.camp-smoke-3 { animation-delay: -5s; }
 
-@keyframes camp-ember {
-  from { opacity: 0.25; }
-  to { opacity: 0.7; }
-}
 
-@keyframes camp-smoke {
-  0% { opacity: 0; transform: translate(0, 12px) scale(0.7, 0.5); }
-  25% { opacity: 0.32; }
-  100% { opacity: 0; transform: translate(10px, -50px) scale(1.4, 1.2); }
-}
+
+
+
+
+
 
 .camp-faint {
   opacity: 0.45;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Campfire } from './Campfire';
 import { ContactLinks } from './ContactLinks';
 import { CampScene } from './ideas/CampScene';
 import { showIdeas } from '../utils/ideas';
@@ -31,27 +32,10 @@ export const AboutMe: React.FC<AboutMeProps> = ({ content }) => {
         <ContactLinks className="about-contact-links" />
       </div>
 
-      {/* Tent and campfire scene (as line art, with a fisher, under ?ideas) */}
-      {showIdeas() ? <CampScene /> : (
+      {/* Tent and campfire scene (with a fisher, under ?ideas) */}
+      {showIdeas() ? <CampScene logsImage={content.logsImage} /> : (
       <div className="about-image-responsive" aria-hidden="true">
-        <div className="campfire-group">
-          <div className="fire-pit">
-            <div className="glow-base"></div>
-            <div className="flame flame-red"></div>
-            <div className="flame flame-orange"></div>
-            <div className="flame flame-yellow"></div>
-            <div className="flame flame-white"></div>
-            <div className="spark spark-1"></div>
-            <div className="spark spark-2"></div>
-            <div className="spark spark-3"></div>
-          </div>
-          <img
-            src={content.logsImage}
-            alt="Campfire logs"
-            loading="lazy"
-            className="logs-img"
-          />
-        </div>
+        <Campfire logsImage={content.logsImage} />
 
         <img
           src={content.tentImage}
