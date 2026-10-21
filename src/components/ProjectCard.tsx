@@ -30,11 +30,29 @@ const setHoveredCard = (card: Element | null) => {
   if (card) hoverHandlers.get(card)?.enter();
 };
 
+/** The card the last hit-test found, and for how many frames in a row. */
+let pendingCard: Element | null = null;
+let pendingFrames = 0;
+
 const recheckHover = () => {
   if (pointerX < 0) return;
   const el = document.elementFromPoint(pointerX, pointerY);
-  const card = el?.closest('.project-card') ?? null;
-  setHoveredCard(card && hoverHandlers.has(card) ? card : null);
+  // Safari can briefly report nothing under the pointer mid-scroll; dropping
+  // the hover for that frame made cards flash between colour and outline.
+  if (!el) return;
+  const found = el.closest('.project-card');
+  const card = found && hoverHandlers.has(found) ? found : null;
+  if (card === hoveredCard) {
+    pendingFrames = 0;
+    return;
+  }
+  // Switch only once the new result holds for two frames running.
+  if (card !== pendingCard) {
+    pendingCard = card;
+    pendingFrames = 1;
+    return;
+  }
+  if (++pendingFrames >= 2) setHoveredCard(card);
 };
 
 const trackPointer = (e: PointerEvent) => {

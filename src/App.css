@@ -575,6 +575,20 @@ h1 {
   opacity: 0;
 }
 
+/* A short fade between outline and colour, so a hover change never snaps
+   straight to the white outline. */
+.background-layer,
+.foreground-layer,
+.splash-layer {
+  transition: opacity 0.25s ease;
+}
+
+/* Parts moved every frame by a card's scroll animation stay on their own
+   layer, so Safari doesn't repaint them (and flash) as the page scrolls. */
+.project-card [data-scroll] {
+  will-change: transform;
+}
+
 .foreground-layer {
   opacity: 0;
   height: 100%;
