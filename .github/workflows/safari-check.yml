@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm ci && npm run build
+      - run: npm ci && npm run build && npx esbuild src/components/visuals/laptopLid.ts --bundle --format=iife --global-name=LID --outfile=ci-safari/lid-bundle.js
       - run: |
           npm install --no-save --no-audit --no-fund playwright@1.63.0
           npx playwright install --with-deps webkit
