@@ -6,7 +6,7 @@ make_svg.py expects. Then make_svg.py turns each into the white outline (shown
 at rest) and the gradient version (shown on hover):
 
     python scripts/make_device_art.py
-    # writes public/assets/projects/upcoming/{desktop-phone,tablet,tv}-{outline,colored}.svg
+    # writes public/assets/projects/devices/{desktop-phone,tablet,tv}-{outline,colored}.svg
 
 make_svg.py's own white version would show edges that sit behind other
 parts, so the outline is drawn here instead, with hidden lines removed.
@@ -26,7 +26,7 @@ from shapely.geometry import LineString, Polygon
 from shapely.ops import unary_union
 
 W, H = 420, 330
-OUT = os.path.join(os.path.dirname(__file__), "..", "public", "assets", "projects", "upcoming")
+OUT = os.path.join(os.path.dirname(__file__), "..", "public", "assets", "projects", "devices")
 LINE = 3.2  # main outlines
 FINE = 1.8  # details
 
