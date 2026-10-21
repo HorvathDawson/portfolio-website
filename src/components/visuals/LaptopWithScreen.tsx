@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { ArtLayer } from './ArtLayer';
 import { useContainFit } from '../../utils/useContainFit';
+import { lidAngle } from './laptopLid';
 
 const ART = '/assets/projects/self-driving-car';
 
@@ -34,11 +35,9 @@ export const LaptopWithScreen: React.FC = () => {
         style={{
           position: 'relative',
           aspectRatio: '10 / 7',
-          // Seen from a little above, so the lid swings up from the keyboard
-          // instead of just squashing. No preserve-3d here: the lid and keyboard
-          // still stack by z-index.
-          perspective: '1100px',
-          perspectiveOrigin: '50% -40%',
+          // No perspective or preserve-3d here: Safari would then sort the lid
+          // and keyboard by depth instead of z-index. The lid carries its own
+          // perspective instead (see lidAngle).
           overflow: 'visible'
         }}
       >
@@ -53,7 +52,7 @@ export const LaptopWithScreen: React.FC = () => {
             transformOrigin: '50% 100%',
             transformStyle: 'preserve-3d',
             // Closed until the scroll animation takes over.
-            transform: 'rotateX(-90deg)',
+            transform: lidAngle(90),
             zIndex: 20
           }}
         >
