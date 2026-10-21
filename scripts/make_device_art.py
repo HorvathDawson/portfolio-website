@@ -234,6 +234,18 @@ def tablet():
     return d, [screen]
 
 
+def laptop_lid_back():
+    """The back of the self-driving-car laptop's lid, seen when it is closed or
+    nearly so. Same size as public/assets/projects/self-driving-car/computer-*.svg."""
+    d = Drawing(476, 309)
+    d.shape(rrect_points(2, 2, 472, 305, 24), 2.4)
+    d.shape(rrect_points(14, 14, 448, 281, 16), 1.2)
+    circle_logo = ellipse_points(238, 154, 24, 24, 40)
+    d.shape(circle_logo, 2.4)
+    d.line([(226, 154), (236, 164), (252, 144)], 2.4)
+    return d
+
+
 def export(drawing, out_dir, name):
     """Write <name>-outline.svg and, through make_svg.py, <name>-colored.svg."""
     os.makedirs(out_dir, exist_ok=True)
@@ -270,6 +282,8 @@ def main():
         export(drawing, OUT, name)
         for sx, sy, sw, sh in screens:
             print(f"{name}: screen left {sx / W:.2%} top {sy / H:.2%} width {sw / W:.2%} height {sh / H:.2%}")
+    export(laptop_lid_back(), os.path.join(OUT, "..", "self-driving-car"), "lid-back")
+    print("self-driving-car: lid-back")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,11 @@ import { useContainFit } from '../../utils/useContainFit';
 
 const ART = '/assets/projects/self-driving-car';
 
-/** Laptop whose lid (`data-scroll`) is rotated open by the card's scroll animation. */
+/**
+ * Laptop whose lid (`data-scroll`) is rotated open by the card's scroll
+ * animation: closed on the keyboard (its back showing) when the card enters,
+ * upright with the simulation playing once it reaches the middle of the screen.
+ */
 export const LaptopWithScreen: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -30,12 +34,15 @@ export const LaptopWithScreen: React.FC = () => {
         style={{
           position: 'relative',
           aspectRatio: '10 / 7',
-          // No preserve-3d/perspective here: the scene stays flat so layers
-          // stack strictly by z-index.
+          // Seen from a little above, so the lid swings up from the keyboard
+          // instead of just squashing. No preserve-3d here: the lid and keyboard
+          // still stack by z-index.
+          perspective: '1100px',
+          perspectiveOrigin: '50% -40%',
           overflow: 'visible'
         }}
       >
-        {/* Lid: z-index keeps it above the keyboard at any rotation */}
+        {/* Lid, hinged at its bottom edge; the card's scroll animation rotates it open */}
         <div
           data-scroll
           style={{
@@ -45,6 +52,8 @@ export const LaptopWithScreen: React.FC = () => {
             top: '-30%',
             transformOrigin: '50% 100%',
             transformStyle: 'preserve-3d',
+            // Closed until the scroll animation takes over.
+            transform: 'rotateX(-90deg)',
             zIndex: 20
           }}
         >
@@ -56,17 +65,26 @@ export const LaptopWithScreen: React.FC = () => {
               left: '50%',
               top: '100%',
               transform: 'translate(-50%, -100%)',
+              transformStyle: 'preserve-3d',
             }}
           >
-            <ArtLayer layer="foreground" src={`${ART}/computer-colored.svg`} style={{ zIndex: 3 }} />
-            <ArtLayer layer="background" src={`${ART}/computer-outline.svg`} style={{ zIndex: 1 }} />
-            <ArtLayer
-              layer="splash"
-              className="computer-screen"
-              src={`${ART}/simulation-demo.webp`}
-              animated
-              style={{ top: '10%', left: '4%', width: '92%', height: '84%', objectFit: 'cover', objectPosition: 'center', zIndex: 6 }}
-            />
+            {/* Screen side */}
+            <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
+              <ArtLayer layer="foreground" src={`${ART}/computer-colored.svg`} style={{ zIndex: 3 }} />
+              <ArtLayer layer="background" src={`${ART}/computer-outline.svg`} style={{ zIndex: 1 }} />
+              <ArtLayer
+                layer="splash"
+                className="computer-screen"
+                src={`${ART}/simulation-demo.webp`}
+                animated
+                style={{ top: '10%', left: '4%', width: '92%', height: '84%', objectFit: 'cover', objectPosition: 'center', zIndex: 6 }}
+              />
+            </div>
+            {/* Back of the lid, seen while it is closed or nearly so */}
+            <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}>
+              <ArtLayer layer="foreground" src={`${ART}/lid-back-colored.svg`} style={{ zIndex: 3 }} />
+              <ArtLayer layer="background" src={`${ART}/lid-back-outline.svg`} style={{ zIndex: 1 }} />
+            </div>
           </div>
         </div>
 
