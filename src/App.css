@@ -1,8 +1,11 @@
-/* Document base. The root background is the canvas colour (seen when the
-   page overscrolls); body and the page layers paint over it. */
+/* Document base. The root background is the canvas colour, seen when the
+   page overscrolls and, in Safari, in strips not yet drawn during a fast
+   scroll; body and the page layers paint over it. It is the site's dark blue
+   whatever the system theme: white here flashed at the top and bottom of the
+   screen while scrolling in Safari. */
 :root {
-  color-scheme: light dark;
-  background-color: #242424;
+  color-scheme: dark;
+  background-color: #0f172a;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -44,9 +47,6 @@ button:focus {
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
-    background-color: #ffffff;
-  }
   a:hover {
     color: #747bff;
   }

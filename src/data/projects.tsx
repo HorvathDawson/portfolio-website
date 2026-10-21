@@ -166,7 +166,7 @@ export const projects: Project[] = [
     id: '3dprinter',
     category: 'Scholarship',
     title: 'Low-Cost 3D Printer Build',
-    description: 'Designed and built a low-cost, functional 3D printer inspired by the Prusa i3 MK2, featuring an Arduino Mega, RAMPS 1.4 board, MDF frame, and custom wiring, balancing quality and cost.',
+    description: 'Built in 2015, when 3D printers were still rare and expensive, this low-cost printer was inspired by the open-source Prusa i3: an Arduino Mega with a RAMPS 1.4 board, an MDF frame and custom wiring, balancing print quality against cost.',
     visual: (
       <LayeredArt
         width={1000}
