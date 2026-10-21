@@ -15,7 +15,19 @@ for (const [name, opts] of [['desktop', { viewport: { width: 1400, height: 900 }
   const sb = await sc.boundingBox(); if (name === 'desktop') { await q.mouse.move(sb.x + 8, sb.y + 8); await q.waitForTimeout(800); }
   const clip = await sc.boundingBox();
   for (const a of [90, 80, 70, 45, 0]) {
-    const info = await sc.locator('[data-scroll]').first().evaluate((e, a) => { e.style.transform = LID.lidTransform(e, a); return [e.offsetWidth, e.offsetHeight, e.className, e.style.transform]; }, a);
+    const info = await sc.locator('[data-scroll]').first().evaluate((e, a) => {
+      e.style.transform = 'none';
+      const base = e.getBoundingClientRect();
+      e.style.transform = LID.lidTransform(e, a);
+      const got = e.getBoundingClientRect();
+      // Expected bounding box of the warped lid, from the same maths.
+      const w = e.offsetWidth, h = e.offsetHeight, ang = (a * Math.PI) / 180, vx = w / 2, vy = -0.1 * h;
+      const pr = (x, y) => { const f = h - y, py = h - f * Math.cos(ang), pz = f * Math.sin(ang), s = 1100 / (1100 - pz); return [vx + (x - vx) * s, vy + (py - vy) * s]; };
+      const q = [pr(0, 0), pr(w, 0), pr(w, h), pr(0, h)];
+      const xs = q.map((p) => p[0]), ys = q.map((p) => p[1]);
+      const r = (n) => Math.round(n);
+      return { expected: [r(Math.min(...xs)), r(Math.min(...ys)), r(Math.max(...xs)), r(Math.max(...ys))], got: [r(got.left - base.left), r(got.top - base.top), r(got.right - base.left), r(got.bottom - base.top)] };
+    }, a);
     await q.waitForTimeout(300);
     console.log(name, a, JSON.stringify(info));
     await q.screenshot({ path: `${out}/${name}-angle-${a}.png`, clip });
