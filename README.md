@@ -1,89 +1,75 @@
-# portfolio-website
+# dawsonhorvath.com
 
-Dawson Horvath's portfolio, [dawsonhorvath.com](https://dawsonhorvath.com): a parallax
-landscape, project cards whose line art fills with colour as you hover, a contact form, the
-1950 Austin A40 build log, and the live resume (served by the separate
-[resume-generator](https://github.com/HorvathDawson/resume-generator) app). React + TypeScript +
-Vite, deployed to Cloudflare (Workers static assets, see `wrangler.jsonc`).
+The portfolio of Dawson Horvath, an engineering physicist who builds robots, imaging systems and
+the software that runs them. **[Visit the site →](https://dawsonhorvath.com)**
 
-![The home page header](docs/home.jpg)
+![The home page: a layered mountain landscape that moves as you scroll](docs/home.jpg)
 
-![Project cards on hover](docs/projects.jpg)
+## What's on it
 
-## Development
+- **Projects**: a web app for BC fishing regulations, robotics, a motorcycle engine rebuild, an
+  electric skateboard, a 3D printer and more. Each card shows a line drawing that fills with
+  colour as you hover over it; some also play a short screen recording.
+- **[The A40 build log](https://dawsonhorvath.com/a40)**: an ongoing restomod of a 1950 Austin
+  A40, covering suspension, steering, frame and wiring design, with a roadmap.
+- **[Resume](https://dawsonhorvath.com/resume-generator/?resume=dawson&mode=view)**: the live
+  resume, made with [Resume Builder](https://github.com/HorvathDawson/resume-generator), a
+  companion project anyone can use to make their own.
+- **Contact**: a form that emails Dawson directly, plus GitHub and LinkedIn links.
+
+![Project cards, shown as they look on hover](docs/projects.jpg)
+
+## How it's built
+
+- **React, TypeScript and Vite**, served by Cloudflare Workers. The A40 build log is written in
+  Markdown and loads separately, so the home page stays light.
+- **Parallax header** made of layered WebP artwork; phones get smaller copies, and a blurred
+  placeholder shows while it loads.
+- **Card artwork** is drawn as white line art with a matching gradient version. Small Python
+  scripts in `scripts/` produce the gradient versions, trace drawings or photos into line art,
+  and draw the device illustrations.
+- **Respects reduced motion**: scroll effects and animated screens switch to still images for
+  visitors who ask their device for less motion.
+- **Contact form** goes through a small Cloudflare Worker that checks a Cloudflare Turnstile challenge
+  and sends the message with Cloudflare Email Routing.
+- **SEO and sharing**: per-page titles and descriptions, share images and a sitemap,
+  generated at build time.
+
+## Running it locally
 
 ```sh
 npm install
 npm run dev      # local dev server
 npm run build    # type-check and build to dist/
 npm run lint
-npm run preview  # build, then serve dist/ with wrangler
 ```
 
-## Contact form
+`npm run preview` builds the site and serves it with the Cloudflare Worker, which is needed to
+try the contact form. Copy `.dev.vars.example` to `.dev.vars` first; it uses Cloudflare's test
+Turnstile key. In production the Worker needs Email Routing on the domain and three secrets:
+`CONTACT_FROM`, `CONTACT_TO` and `TURNSTILE_SECRET`.
 
-The form posts to `/api/contact` on the site Worker. It needs Email Routing on
-`dawsonhorvath.com` with the recipient verified as a destination, and three
-Worker secrets (Workers & Pages → personal-website → Settings → Variables and
-Secrets, type *Secret*):
+<details>
+<summary>Where things are</summary>
 
-- `CONTACT_FROM`: sending address on the domain (e.g. `contact@dawsonhorvath.com`)
-- `CONTACT_TO`: the verified destination address
-- `TURNSTILE_SECRET`: the Turnstile widget's secret key
+- `src/data/projects.tsx`: the project cards (text, links, artwork, scroll animation). Cards
+  marked `draft: true` are placeholders for future projects, hidden unless the address has
+  `?drafts`.
+- `src/data/content.ts` and `src/data/site.ts`: about text, contact links, page titles and
+  descriptions.
+- `src/components/visuals/`: the artwork inside each card.
+- `src/blog/` and `content/a40/`: the A40 build log and its Markdown posts.
+- `worker/index.ts`: the Worker behind the contact form; it also routes `/resume-generator/` to
+  the Resume Builder app.
+- `scripts/`: image tools, re-run after changing a source image:
+  - `make-header-images.py`: phone-sized header layers, placeholder and share image;
+  - `make-stills.py`: still frames used when motion is reduced;
+  - `make_svg.py`: white and gradient versions of a line drawing;
+  - `trace_outline.py`: line art (or, with `--photo`, a cut-out photo) traced into those two
+    versions;
+  - `make_device_art.py`: the computer, tablet and TV drawings for future project cards.
 
-For local testing copy `.dev.vars.example` to `.dev.vars` and run `npm run preview`.
-After changing `wrangler.jsonc`, regenerate the Worker types with
-`npx wrangler types worker/worker-configuration.d.ts`.
+  The tracing scripts need `pip install potracer pillow numpy svgpathtools shapely
+  opencv-python-headless`.
 
-## Layout
-
-- `src/App.tsx`: home page (parallax header, about, project cards, contact form)
-- `src/data/projects.tsx`: the project cards (copy, links, visual, scroll animation), rendered by `ProjectCard`.
-  Cards marked `draft: true` are spares waiting for a project: hidden on the live page, shown in
-  development and with `?drafts` in the address
-- `src/data/content.ts`: about text, header layers, contact links
-- `src/data/site.ts`: domain, titles and descriptions used for `<head>` metadata
-- `src/components/visuals/`: the artwork shown inside each card, built from `ArtLayer`/`LayeredArt`
-- `src/blog/`: the A40 build log and roadmap (`/a40`, `/a40/roadmap`), loaded as a separate chunk
-- `content/a40/`: build log posts in Markdown
-- `src/utils/scrollFrame.ts`: shared, rAF-batched scroll subscription used by all scroll effects
-- `src/utils/reducedMotion.ts`: the one `prefers-reduced-motion` check (CSS side at the end of `App.css`)
-- `vite.plugins.ts`: home-page header preloads, `<head>` metadata, `sitemap.xml`
-- `worker/index.ts`: the site Worker; handles `POST /api/contact` (Turnstile check, then
-  email via Cloudflare Email Routing) and forwards `/resume-generator/*` to the
-  `resume-generator` Worker over a service binding. Other static files never reach it.
-- `public/assets/`: images; home page artwork is WebP
-
-## Assets
-
-Home page images are WebP. Card artwork is capped at 1600px on its long edge,
-which is enough for 2x/3x screens at the size the cards render. Header layers
-keep their full 3000x2000 resolution; phones get 1500w copies via `srcset`.
-
-Derived images are generated, so re-run the scripts after changing a source:
-
-```sh
-python3 scripts/make-header-images.py  # 1500w header layers, blurred placeholder, og/home.jpg
-python3 scripts/make-stills.py         # *-still.webp frames for reduced motion
-```
-
-### Card artwork
-
-Each card shows white line art at rest and fades to a version filled with the site's
-pink→purple→blue gradient on hover (`ArtLayer` layers `background` and `foreground`; screens and
-glows are `splash` layers). The gradient versions come from white line art:
-
-```sh
-python3 scripts/make_svg.py art.svg            # art_background.svg (white) + art_foreground.svg (gradient)
-python3 scripts/trace_outline.py outline.webp  # trace white line art (PNG/WebP) to SVG, then run make_svg.py
-python3 scripts/trace_outline.py --photo photo.webp --crop x0,y0,x1,y1  # or a cut-out photo, as a sketch
-python3 scripts/make_device_art.py             # the spare cards' computer, tablet and TV drawings
-```
-
-The A40 card is traced from its outline drawing this way. The tracing scripts need
-`pip install potracer pillow numpy svgpathtools shapely opencv-python-headless`.
-
-To give a spare card a project: fill in its text and link in `src/data/projects.tsx`, pass the
-project's screen recording(s) to `<DeviceDisplay screens={[...]} />` (desktop first) and remove
-`draft: true`.
-
+</details>
