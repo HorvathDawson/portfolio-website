@@ -15,8 +15,8 @@ const lastLayer = parallaxLayers.length - 1;
 const speedAt = (depth: number) => (depth >= lastLayer ? 0 : (1 - depth / lastLayer) * MAX_PARALLAX_LAG);
 const layerSpeeds = parallaxLayers.map((_, index) => speedAt(index));
 
-/** The paraglider (?ideas) flies between layers 1 (the big mountain) and 2. */
-const GLIDER_DEPTH = 1.5;
+/** The paraglider (?ideas) flies between layers 0 (the clouds) and 1 (the big mountain). */
+const GLIDER_DEPTH = 0.5;
 
 /*
  * The frame is sized by CSS (3:2, see .parallax-frame) and shows a blurred

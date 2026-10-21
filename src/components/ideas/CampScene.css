@@ -151,13 +151,13 @@
 }
 
 /* ---- Paraglider (?ideas) ----
-   Its own parallax layer between the big mountain and the range in front,
-   so it passes in front of one and behind the other. It soars back and
-   forth across the middle of the sky, banking into each turn; at rest
-   (reduced motion) it hangs in the open sky right of the peak. */
+   Its own parallax layer between the clouds and the big mountain, so it
+   slips behind the peak. It soars back and forth across the middle of the
+   sky, turning around (mirrored) and banking at each end; at rest (reduced
+   motion) it hangs in the open sky right of the peak. */
 .glider-path {
   position: absolute;
-  top: 11%;
+  top: 9%;
   left: 58%;
   width: 3.6%;
   animation: glider-soar 56s ease-in-out infinite;
@@ -167,17 +167,21 @@
   animation: glider-bob 13s ease-in-out infinite alternate;
 }
 
+.glider-turn {
+  animation: glider-turn 56s ease-in-out infinite;
+}
+
 .glider {
   display: block;
   width: 100%;
   overflow: visible;
-  fill: #6a1234;
+  fill: #7d2b4c;
 }
 
 .glider-lines path,
 .glider-legs {
   fill: none;
-  stroke: #6a1234;
+  stroke: #7d2b4c;
   stroke-width: 0.6;
 }
 
@@ -196,6 +200,16 @@
   58% { transform: translateX(380%) rotate(-1deg); }
   92% { transform: translateX(-380%) rotate(-1deg); }
   100% { transform: translateX(-450%) rotate(-7deg); }
+}
+
+/* Faces right on the way right (0-50%) and left on the way back, edge-on
+   at each end as it turns. */
+@keyframes glider-turn {
+  0% { transform: scaleX(0.05); }
+  4%, 46% { transform: scaleX(1); }
+  50% { transform: scaleX(-0.05); }
+  54%, 96% { transform: scaleX(-1); }
+  100% { transform: scaleX(-0.05); }
 }
 
 @media (prefers-reduced-motion: reduce) {
