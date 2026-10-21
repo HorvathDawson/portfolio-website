@@ -79,27 +79,32 @@ async function visit(page, touch, started) {
         'and set that header as DEMO_HEADER ("Name: value"; in GitHub, the DEMO_HEADER repository secret). Or run this script on your own computer.',
     );
   }
-  await page
-    .getByText(/loading waterbody data/i)
-    .waitFor({ state: 'hidden', timeout: 90_000 })
-    .catch(() => console.warn('  no loading message seen; carrying on'));
-  await page.waitForLoadState('networkidle', { timeout: 30_000 }).catch(() => {});
+  // Wait out the loading screen: it may take a moment to appear, then a while to go.
+  const loading = page.getByText(/loading waterbody data/i);
+  await loading.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {});
+  await loading.waitFor({ state: 'hidden', timeout: 120_000 });
+  const box = page
+    .locator('input[type="search"], input[placeholder*="search" i], [role="searchbox"], [role="combobox"], input[aria-label*="search" i]')
+    .first();
+  await box.waitFor({ state: 'visible', timeout: 30_000 });
+  await pause(page, 1500); // let the first map tiles draw
   const loaded = (Date.now() - started) / 1000;
   if (!touch) await page.mouse.move(page.viewportSize().width * 0.55, page.viewportSize().height * 0.6);
   await pause(page, 1500);
 
   // Look the waterbody up and open it.
-  const box = page
-    .locator('input[type="search"], input[placeholder*="search" i], [role="searchbox"], [role="combobox"], input[aria-label*="search" i]')
-    .first();
-  await box.waitFor({ state: 'visible', timeout: 30_000 });
   await point(page, box, touch);
   await box.pressSequentially(SEARCH, { delay: 90 });
   await pause(page, 900);
   const result = page.locator('[role="option"], li, button, a').filter({ hasText: new RegExp(SEARCH, 'i') }).first();
   await result.waitFor({ state: 'visible', timeout: 15_000 });
   await point(page, result, touch);
-  await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
+  // On a phone the first tap can just highlight the row; tap again, then try Enter.
+  for (const retry of [() => point(page, result, touch), () => box.press('Enter')]) {
+    if (!(await result.isVisible({ timeout: 1500 }).catch(() => false))) break;
+    await pause(page, 1500);
+    if (await result.isVisible().catch(() => false)) await retry().catch(() => {});
+  }
   await pause(page, 3500);
 
   // Scroll the regulations a little so the panel reads as live.
@@ -118,11 +123,14 @@ async function visit(page, touch, started) {
   return loaded;
 }
 
+/** Longest recording kept, in seconds, so the files stay small. */
+const MAX_SECONDS = 16;
+
 function encode(video, start, { name, outWidth }) {
   const out = path.join(OUT, `${name}-demo.webp`);
   const still = path.join(OUT, `${name}-demo-still.webp`);
-  const scale = `fps=12,scale=${outWidth}:-2:flags=lanczos`;
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(start), '-i', video, '-vf', scale, '-c:v', 'libwebp_anim', '-quality', '62', '-compression_level', '6', '-loop', '0', out]);
+  const scale = `fps=10,scale=${outWidth}:-2:flags=lanczos`;
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(start), '-t', String(MAX_SECONDS), '-i', video, '-vf', scale, '-c:v', 'libwebp_anim', '-quality', '55', '-compression_level', '6', '-loop', '0', out]);
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-sseof', '-0.4', '-i', video, '-vf', `scale=${outWidth}:-2:flags=lanczos`, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '85', still]);
   console.log(`  wrote ${path.relative(process.cwd(), out)} and its still`);
 }
