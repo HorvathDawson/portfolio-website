@@ -1,5 +1,7 @@
 import React from 'react';
 import { ContactLinks } from './ContactLinks';
+import { CampScene } from './ideas/CampScene';
+import { showIdeas } from '../utils/ideas';
 import './AboutMe.css';
 
 interface AboutMeProps {
@@ -29,7 +31,8 @@ export const AboutMe: React.FC<AboutMeProps> = ({ content }) => {
         <ContactLinks className="about-contact-links" />
       </div>
 
-      {/* Tent and campfire scene */}
+      {/* Tent and campfire scene (as line art, with a fisher, under ?ideas) */}
+      {showIdeas() ? <CampScene /> : (
       <div className="about-image-responsive" aria-hidden="true">
         <div className="campfire-group">
           <div className="fire-pit">
@@ -57,6 +60,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ content }) => {
           className="tent-img"
         />
       </div>
+      )}
     </section>
   );
 };

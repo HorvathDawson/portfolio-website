@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HEADER_SIZES, headerSrcSet, parallaxLayers } from '../data/content';
 import { onScrollMotion } from '../utils/scrollFrame';
+import { Paraglider } from './ideas/Paraglider';
+import { showIdeas } from '../utils/ideas';
 
 const MAX_PARALLAX_LAG = 0.85;
 
@@ -10,9 +12,11 @@ const REVEAL_TIMEOUT_MS = 4000;
 const lastLayer = parallaxLayers.length - 1;
 
 // Back layers move slower than the foreground; the foreground (last) layer is static.
-const layerSpeeds = parallaxLayers.map((_, index) =>
-  index === lastLayer ? 0 : (1 - index / lastLayer) * MAX_PARALLAX_LAG
-);
+const speedAt = (depth: number) => (depth >= lastLayer ? 0 : (1 - depth / lastLayer) * MAX_PARALLAX_LAG);
+const layerSpeeds = parallaxLayers.map((_, index) => speedAt(index));
+
+/** The paraglider (?ideas) flies between layers 1 (the big mountain) and 2. */
+const GLIDER_DEPTH = 1.5;
 
 /*
  * The frame is sized by CSS (3:2, see .parallax-frame) and shows a blurred
@@ -28,7 +32,9 @@ export const ParallaxHeader: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const gliderRef = useRef<HTMLDivElement>(null);
   const [loadState, setLoadState] = useState<LoadState>('loading');
+  const [ideas] = useState(showIdeas);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,8 +69,9 @@ export const ParallaxHeader: React.FC = () => {
             layer.style.transform = `translate3d(0, ${scrollY * speed}px, 0)`;
           }
         });
+        if (gliderRef.current) gliderRef.current.style.transform = `translate3d(0, ${scrollY * speedAt(GLIDER_DEPTH)}px, 0)`;
       },
-      () => layerRefs.current.forEach((layer) => { if (layer) layer.style.transform = ''; }),
+      () => [...layerRefs.current, gliderRef.current].forEach((layer) => { if (layer) layer.style.transform = ''; }),
     );
   }, []);
 
@@ -87,7 +94,7 @@ export const ParallaxHeader: React.FC = () => {
               layerRefs.current[index] = el;
             }}
             className="parallax-layer"
-            style={{ zIndex: index, willChange: layerSpeeds[index] ? 'transform' : undefined }}
+            style={{ zIndex: index * 10, willChange: layerSpeeds[index] ? 'transform' : undefined }}
           >
             <img
               ref={(el) => {
@@ -101,6 +108,12 @@ export const ParallaxHeader: React.FC = () => {
             />
           </div>
         ))}
+
+        {ideas && (
+          <div ref={gliderRef} className="parallax-layer" style={{ zIndex: GLIDER_DEPTH * 10, willChange: 'transform' }}>
+            <Paraglider />
+          </div>
+        )}
       </div>
       <span className="sr-only" role="status" aria-live="polite">
         {loadState === 'complete' ? 'Content loaded' : 'Loading portfolio…'}
