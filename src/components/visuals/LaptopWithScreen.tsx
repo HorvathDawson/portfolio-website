@@ -67,9 +67,10 @@ export const LaptopWithScreen: React.FC = () => {
               width: '75%',
               aspectRatio: '300 / 194',
               position: 'absolute',
-              left: '50%',
-              top: '100%',
-              transform: 'translate(-50%, -100%)',
+              // Placed with offsets, not a transform: Safari misplaces
+              // transformed children inside the lid's perspective warp.
+              left: '12.5%',
+              bottom: 0,
             }}
           >
             {/* Screen side */}

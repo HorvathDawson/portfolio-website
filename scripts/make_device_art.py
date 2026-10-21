@@ -236,13 +236,15 @@ def tablet():
 
 def laptop_lid_back():
     """The back of the self-driving-car laptop's lid, seen when it is closed or
-    nearly so. Same size as public/assets/projects/self-driving-car/computer-*.svg."""
+    nearly so. Same size as public/assets/projects/self-driving-car/computer-*.svg.
+    Drawn upside down: the page's perspective warp mirrors the lid vertically
+    once it tips past edge-on, which turns it the right way up."""
     d = Drawing(476, 309)
     d.shape(rrect_points(2, 2, 472, 305, 24), 2.4)
     d.shape(rrect_points(14, 14, 448, 281, 16), 1.2)
     circle_logo = ellipse_points(238, 154, 24, 24, 40)
     d.shape(circle_logo, 2.4)
-    d.line([(226, 154), (236, 164), (252, 144)], 2.4)
+    d.line([(226, 154), (236, 144), (252, 164)], 2.4)
     return d
 
 
