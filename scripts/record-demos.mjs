@@ -62,13 +62,14 @@ async function point(page, locator, touch) {
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
   if (touch) return locator.tap();
-  await page.mouse.move(x, y, { steps: 25 });
+  // Few steps: on a busy machine each one waits for the map to repaint.
+  await page.mouse.move(x, y, { steps: 8 });
   await pause(page, 250);
   await page.mouse.down();
   await page.mouse.up();
 }
 
-/** The scripted visit. Returns seconds from the start of the video where the loaded site first shows. */
+/** The scripted visit. Returns seconds from the start of the video where the recording should begin. */
 async function visit(page, touch, started) {
   await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   // Cloudflare's bot check ("Just a moment...") never lets an automated browser through on its own.
@@ -87,10 +88,10 @@ async function visit(page, touch, started) {
     .locator('input[type="search"], input[placeholder*="search" i], [role="searchbox"], [role="combobox"], input[aria-label*="search" i]')
     .first();
   await box.waitFor({ state: 'visible', timeout: 30_000 });
-  await pause(page, 1500); // let the first map tiles draw
-  const loaded = (Date.now() - started) / 1000;
   if (!touch) await page.mouse.move(page.viewportSize().width * 0.55, page.viewportSize().height * 0.6);
-  await pause(page, 1500);
+  await pause(page, 2500); // let the first map tiles draw
+  // Start the recording on the loaded map, a moment before the search.
+  const begin = (Date.now() - started) / 1000 - 1.2;
 
   // Look the waterbody up and open it.
   await point(page, box, touch);
@@ -120,11 +121,11 @@ async function visit(page, touch, started) {
     }
   }
   await pause(page, 2500);
-  return loaded;
+  return begin;
 }
 
 /** Longest recording kept, in seconds, so the files stay small. */
-const MAX_SECONDS = 16;
+const MAX_SECONDS = 20;
 
 function encode(video, start, { name, outWidth }) {
   const out = path.join(OUT, `${name}-demo.webp`);
@@ -170,17 +171,16 @@ try {
     await context.addInitScript(POINTER(view.touch));
     const page = await context.newPage();
     const started = Date.now();
-    let loaded;
+    let begin;
     try {
-      loaded = await visit(page, view.touch, started);
+      begin = await visit(page, view.touch, started);
     } catch (err) {
       await describe(page, view.name);
       throw err;
     }
     const video = await page.video().path();
     await context.close(); // finishes writing the video
-    // Keep a moment of the loaded map before the action; drop the blank start.
-    encode(video, Math.max(0, loaded - 0.3), view);
+    encode(video, Math.max(0, begin), view);
   }
 } finally {
   await browser.close();
