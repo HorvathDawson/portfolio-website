@@ -15,13 +15,13 @@ jobs:
           {
             for u in https://dawsonhorvath.com/resume-generator/ https://resume-generator.horvath-dawson.workers.dev/resume-generator/; do
               echo "== $u"; curl -sSL -D - -o page.html "$u" | grep -iE '^(HTTP|cf-cache|age|last-modified|cache-control)'
-              grep -oE '/resume-generator/assets/[A-Za-z0-9_.-]+\.js' page.html | sort -u
+              grep -oE '["/a-zA-Z0-9_.-]*assets/[A-Za-z0-9_.-]+\.(js|css)' page.html | sort -u; grep -c . page.html
               base=$(echo "$u" | grep -oE '^https://[^/]+')
-              for js in $(grep -oE '/resume-generator/assets/index-[A-Za-z0-9_-]+\.js' page.html | sort -u); do
+              for js in $(grep -oE '/[a-z/-]*assets/index-[A-Za-z0-9_-]+\.js' page.html | sort -u); do
                 curl -sSL "$base$js" -o main.js; echo "main $js"; grep -oE 'Embed-[A-Za-z0-9_-]+\.js' main.js | sort -u
               done
               for e in $(grep -ohE 'Embed-[A-Za-z0-9_-]+\.js' main.js | sort -u); do
-                curl -sSL "$base/resume-generator/assets/$e" -o e.js; echo "embed $e: zoom=$(grep -c 'zoom' e.js) scale=$(grep -c 'scale(' e.js)"
+                curl -sSL "$base$(dirname $js)/$e" -o e.js; echo "embed $e: zoom=$(grep -c 'zoom' e.js) scale=$(grep -c 'scale(' e.js)"
               done
             done
           } > ci-live/out.txt 2>&1

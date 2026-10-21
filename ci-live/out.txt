@@ -1,8 +1,0 @@
-== https://dawsonhorvath.com/resume-generator/
-HTTP/2 403 
-grep: main.js: No such file or directory
-== https://resume-generator.horvath-dawson.workers.dev/resume-generator/
-HTTP/2 200 
-cf-cache-status: MISS
-cache-control: public, max-age=0, must-revalidate
-grep: main.js: No such file or directory
