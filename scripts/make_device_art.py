@@ -1,12 +1,12 @@
-"""Draw the line art for the spare project cards: a desktop computer, a tablet
-on a stand and a phone.
+"""Draw the line art for the spare project cards: a desktop with a phone beside
+it, a tablet on a stand and a TV on a wall.
 
 Each drawing is written as single-colour paths, back to front, which is what
 make_svg.py expects. Then make_svg.py turns each into the white outline (shown
 at rest) and the gradient version (shown on hover):
 
     python scripts/make_device_art.py
-    # writes public/assets/projects/upcoming/{computer,tablet,phone}-{outline,colored}.svg
+    # writes public/assets/projects/upcoming/{desktop-phone,tablet,tv}-{outline,colored}.svg
 
 make_svg.py's own white version would show edges that sit behind other
 parts, so the outline is drawn here instead, with hidden lines removed.
@@ -124,42 +124,87 @@ def wrap(els):
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">\n{body}\n</svg>\n'
 
 
-def computer():
-    d = Drawing()
-    # Mug with steam, behind the monitor's left edge
-    d.shape(rrect_points(14, 228, 40, 54, 6))
-    d.line(ellipse_points(56, 255, 12, 13, 24, -80, 80), LINE)
-    for x in (24, 34, 44):
-        d.line([(x + 3 * math.sin(t / 3), 218 - t * 1.6) for t in range(0, 22)])
-    # Stand behind the monitor
-    d.shape([(190, 190), (230, 190), (238, 262), (182, 262)])
-    d.shape(rrect_points(146, 258, 128, 11, 5.5))
-    # Monitor: back edge for depth, then the front
-    d.shape(rrect_points(68, 14, 300, 192, 12))
-    d.shape(rrect_points(62, 8, 300, 192, 12))
-    screen = (74, 20, 276, 156)
-    d.shape(rrect_points(*screen, 4), FINE)
-    d.shape(ellipse_points(212, 189, 2.4, 2.4, 12), FINE)
-    # Keyboard in perspective, with rows of keys
-    quad = [(92, 286), (322, 286), (346, 320), (68, 320)]
+def keyboard(d, quad, cols=14):
+    """A keyboard in perspective, with rows of keys and a space bar."""
     d.shape(quad)
     f = quad_map(quad)
-    cols, rows = 14, 4
+    rows = 4
     for r in range(rows):
         v0, v1 = 0.12 + r * 0.2, 0.12 + r * 0.2 + 0.15
         c = 0
         while c < cols:
-            span = 6 if (r == rows - 1 and c == 4) else 1
+            span = cols // 2 - 1 if (r == rows - 1 and c == cols // 3) else 1
             u0 = 0.04 + c * (0.92 / cols)
             u1 = u0 + span * (0.92 / cols) - 0.012
             d.shape([f(u0, v0), f(u1, v0), f(u1, v1), f(u0, v1)], 1.2)
             c += span
-    # Mouse and its cable
-    d.line([(378, 268), (380, 250), (372, 236), (380, 222)], FINE)
-    d.shape(ellipse_points(380, 296, 15, 24))
-    d.line([(365, 290), (395, 290)])
-    d.line([(380, 272), (380, 290)])
-    return d, screen
+
+
+def leaves(d, x, y, sizes):
+    """A spray of leaves fanning up from (x, y)."""
+    for angle, length in sizes:
+        tip = (x + length * math.sin(math.radians(angle)), y - length * math.cos(math.radians(angle)))
+        mid = ((x + tip[0]) / 2, (y + tip[1]) / 2)
+        nx, ny = (tip[1] - y) / length * length * 0.16, -(tip[0] - x) / length * length * 0.16
+        d.shape([(x, y), (mid[0] + nx, mid[1] + ny), tip, (mid[0] - nx, mid[1] - ny)], FINE)
+
+
+def desktop_phone():
+    """A desktop monitor with a phone on a dock beside it: a site and its mobile version."""
+    d = Drawing()
+    # Monitor stand, then the monitor: back edge for depth, then the front
+    d.shape([(140, 186), (176, 186), (183, 250), (133, 250)])
+    d.shape(rrect_points(96, 246, 124, 11, 5.5))
+    d.shape(rrect_points(26, 14, 276, 178, 12))
+    d.shape(rrect_points(20, 8, 276, 178, 12))
+    monitor = (32, 20, 252, 144)
+    d.shape(rrect_points(*monitor, 4), FINE)
+    d.shape(ellipse_points(158, 176, 2.4, 2.4, 12), FINE)
+    keyboard(d, [(60, 278), (252, 278), (272, 316), (40, 316)], cols=12)
+    # Phone dock: arm and base behind the phone, cradle lip in front
+    d.shape([(330, 262), (364, 262), (374, 286), (320, 286)])
+    d.shape(rrect_points(298, 282, 98, 12, 6))
+    d.shape(rrect_points(316, 119, 70, 146, 13))
+    d.shape(rrect_points(312, 116, 70, 146, 13))
+    phone = (317, 121, 60, 128)
+    d.shape(rrect_points(*phone, 9), FINE)
+    d.shape(rrect_points(336, 126, 22, 6, 3), FINE)
+    d.shape(rrect_points(304, 254, 86, 14, 5))
+    return d, [monitor, phone]
+
+
+def tv():
+    """A TV on the wall over a low cabinet with a soundbar, books and a plant."""
+    d = Drawing()
+    # TV: back edge for depth, then the front
+    d.shape(rrect_points(45, 16, 340, 190, 6))
+    d.shape(rrect_points(40, 12, 340, 190, 6))
+    screen = (48, 20, 324, 172)
+    d.shape(rrect_points(*screen, 2), FINE)
+    d.shape(ellipse_points(210, 197, 2.2, 2.2, 12), FINE)
+    # Cable down the wall to the cabinet
+    d.line([(296, 206), (299, 226), (293, 244), (296, 262)])
+    # Cabinet: legs, body with three doors, top
+    for x in (74, 338):
+        d.shape([(x, 306), (x + 9, 306), (x + 7, 322), (x + 2, 322)])
+    d.shape(rrect_points(58, 270, 304, 40, 4))
+    for x in (159, 261):
+        d.line([(x, 274), (x, 306)])
+    for x in (147, 171, 249, 273):
+        d.shape(rrect_points(x - 2, 284, 4, 12, 2), FINE)
+    d.shape(rrect_points(50, 262, 320, 10, 3))
+    # Soundbar
+    d.shape(rrect_points(140, 248, 140, 13, 6.5))
+    for i in range(9):
+        d.shape(ellipse_points(170 + i * 10, 254.5, 1.4, 1.4, 10), 1.2)
+    # Books
+    d.shape(rrect_points(68, 252, 50, 9, 2))
+    d.shape(rrect_points(73, 243, 42, 9, 2))
+    d.shape(rrect_points(70, 234, 46, 9, 2))
+    # Plant
+    leaves(d, 332, 236, ((-40, 34), (-15, 42), (12, 39), (36, 32)))
+    d.shape([(318, 236), (346, 236), (342, 262), (322, 262)])
+    return d, [screen]
 
 
 def tablet():
@@ -181,49 +226,18 @@ def tablet():
     d.shape(rotate([(290, 248.5), (276, 252), (290, 255.5)], 346, 252, -62), FINE)
     d.line(rotate([(384, 248), (384, 256)], 346, 252, -62))
     # Small plant on the left
-    for angle, length in ((-38, 52), (-14, 64), (10, 58), (34, 48)):
-        tip = (54 + length * math.sin(math.radians(angle)), 262 - length * math.cos(math.radians(angle)))
-        mid = ((54 + tip[0]) / 2, (262 + tip[1]) / 2)
-        nx, ny = (tip[1] - 262) / length * 9, -(tip[0] - 54) / length * 9
-        d.shape([(54, 262), (mid[0] + nx, mid[1] + ny), tip, (mid[0] - nx, mid[1] - ny)], FINE)
+    leaves(d, 54, 262, ((-38, 52), (-14, 64), (10, 58), (34, 48)))
     d.shape([(30, 262), (78, 262), (72, 306), (36, 306)])
     d.shape(rrect_points(26, 256, 56, 10, 3))
-    return d, screen
-
-
-PHONE_ANGLE = -10
-
-
-def phone():
-    d = Drawing()
-    cx, cy = 196, 160
-    # Earbuds case beside the phone
-    case = rrect_points(312, 222, 70, 62, 22)
-    d.shape(case)
-    d.line([(313, 246), (381, 246)])
-    d.shape(ellipse_points(347, 262, 2.4, 2.4, 12), FINE)
-    pw, ph = 140, 280
-    x, y = cx - pw / 2, cy - ph / 2
-    rot = lambda pts: rotate(pts, cx, cy, PHONE_ANGLE)  # noqa: E731
-    # Side buttons, then the back edge, then the front
-    d.shape(rot(rrect_points(x + pw + 3, y + 70, 7, 46, 3)), FINE)
-    d.shape(rot(rrect_points(x - 4, y + 62, 6, 26, 3)), FINE)
-    d.shape(rot(rrect_points(x - 4, y + 96, 6, 26, 3)), FINE)
-    d.shape(rot(rrect_points(x + 6, y + 5, pw, ph, 26)))
-    d.shape(rot(rrect_points(x, y, pw, ph, 26)))
-    inset = 8
-    screen = (x + inset, y + inset, pw - 2 * inset, ph - 2 * inset)
-    d.shape(rot(rrect_points(*screen, 19)), FINE)
-    d.shape(rot(rrect_points(cx - 22, y + 16, 44, 12, 6)), FINE)
-    return d, screen
+    return d, [screen]
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
     make_svg = os.path.join(os.path.dirname(__file__), "make_svg.py")
     with tempfile.TemporaryDirectory() as tmp:
-        for name, draw in (("computer", computer), ("tablet", tablet), ("phone", phone)):
-            drawing, (sx, sy, sw, sh) = draw()
+        for name, draw in (("desktop-phone", desktop_phone), ("tablet", tablet), ("tv", tv)):
+            drawing, screens = draw()
             src = os.path.join(tmp, f"{name}.svg")
             with open(src, "w") as fh:
                 fh.write(drawing.svg())
@@ -231,9 +245,8 @@ def main():
             with open(os.path.join(OUT, f"{name}-outline.svg"), "w") as fh:
                 fh.write(drawing.outline_svg())
             os.replace(os.path.join(tmp, f"{name}_foreground.svg"), os.path.join(OUT, f"{name}-colored.svg"))
-            print(
-                f"{name}: screen left {sx / W:.2%} top {sy / H:.2%} width {sw / W:.2%} height {sh / H:.2%}"
-            )
+            for sx, sy, sw, sh in screens:
+                print(f"{name}: screen left {sx / W:.2%} top {sy / H:.2%} width {sw / W:.2%} height {sh / H:.2%}")
 
 
 if __name__ == "__main__":
