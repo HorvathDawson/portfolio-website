@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { LayeredArt } from '../components/visuals/LayeredArt';
 import { SpinningLeg } from '../components/visuals/SpinningLeg';
 import { LaptopWithScreen } from '../components/visuals/LaptopWithScreen';
-import { lidAngle } from '../components/visuals/laptopLid';
+import { lidTransform } from '../components/visuals/laptopLid';
 import { MotorcycleParts } from '../components/visuals/MotorcycleParts';
 import { FumeExtractorArm } from '../components/visuals/FumeExtractorArm';
 import { TabletDisplay } from '../components/visuals/TabletDisplay';
@@ -108,7 +108,7 @@ export const projects: Project[] = [
     description: 'Simulated a self-driving robot in Gazebo and ROS.',
     visual: <LaptopWithScreen />,
     // Lid swings up from closed (lying on the keyboard) to upright as the card reaches the middle.
-    animation: (offset) => lidAngle(90 * Math.min(1, below(offset))),
+    animation: (offset, part) => lidTransform(part, 90 * Math.min(1, below(offset))),
   },
   {
     id: 'robot253',
