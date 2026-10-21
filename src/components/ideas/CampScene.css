@@ -156,14 +156,15 @@
 
 /* ---- Paraglider (?ideas) ----
    Its own parallax layer between the big mountain and the range in front,
-   so it passes in front of one and behind the other. At rest (reduced
-   motion) it hangs in the open sky right of the peak. */
+   so it passes in front of one and behind the other. It soars back and
+   forth across the middle of the sky, banking into each turn; at rest
+   (reduced motion) it hangs in the open sky right of the peak. */
 .glider-path {
   position: absolute;
   top: 11%;
-  left: 71%;
+  left: 58%;
   width: 3.6%;
-  animation: glider-cross 95s linear infinite;
+  animation: glider-soar 56s ease-in-out infinite;
 }
 
 .glider-bob {
@@ -189,9 +190,22 @@
   stroke-linecap: round;
 }
 
-@keyframes glider-cross {
-  from { transform: translateX(-1800%); }
-  to { transform: translateX(750%); }
+/* Steps are a third of the frame either side of the middle (the glider is
+   3.6% of the frame wide), slowing and banking through each turn. */
+@keyframes glider-soar {
+  0% { transform: translateX(-450%) rotate(-7deg); }
+  8% { transform: translateX(-380%) rotate(1deg); }
+  42% { transform: translateX(380%) rotate(1deg); }
+  50% { transform: translateX(450%) rotate(7deg); }
+  58% { transform: translateX(380%) rotate(-1deg); }
+  92% { transform: translateX(-380%) rotate(-1deg); }
+  100% { transform: translateX(-450%) rotate(-7deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glider-path {
+    transform: translateX(360%);
+  }
 }
 
 @keyframes glider-bob {
