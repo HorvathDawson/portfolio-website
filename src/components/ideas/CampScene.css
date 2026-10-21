@@ -31,13 +31,9 @@
   opacity: 0.45;
 }
 
-.camp-tent-door {
-  fill: url(#camp-lantern);
+.camp-tent-bloom,
+.camp-tent-lamp {
   animation: camp-glow 3.2s ease-in-out infinite alternate;
-}
-
-.camp-tent-spill {
-  fill: url(#camp-spill);
 }
 
 .camp-rim,
