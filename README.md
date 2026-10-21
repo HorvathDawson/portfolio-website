@@ -9,7 +9,8 @@ the software that runs them. **[Visit the site →](https://dawsonhorvath.com)**
 
 - **Projects**: a web app for BC fishing regulations, robotics, a motorcycle engine rebuild, an
   electric skateboard, a 3D printer and more. Each card shows a line drawing that fills with
-  colour as you hover over it; some also play a short screen recording.
+  colour as you hover over it; some also play a short screen recording, like Can I Fish This?
+  on both desktop and phone.
 - **[The A40 build log](https://dawsonhorvath.com/a40)**: an ongoing restomod of a 1950 Austin
   A40, covering suspension, steering, frame and wiring design, with a roadmap.
 - **[Resume](https://dawsonhorvath.com/resume-generator/?resume=dawson&mode=view)**: the live
@@ -67,7 +68,10 @@ Turnstile key. In production the Worker needs Email Routing on the domain and th
   - `make_svg.py`: white and gradient versions of a line drawing;
   - `trace_outline.py`: line art (or, with `--photo`, a cut-out photo) traced into those two
     versions;
-  - `make_device_art.py`: the computer, tablet and TV drawings for future project cards.
+  - `make_device_art.py`: the computer, phone, tablet and TV drawings;
+  - `record-demos.mjs`: records the Can I Fish This? card's desktop and phone recordings from
+    the live site. Run it from GitHub (Actions → Record demos → Run workflow) to refresh them
+    after the site changes; it also runs monthly.
 
   The tracing scripts need `pip install potracer pillow numpy svgpathtools shapely
   opencv-python-headless`.

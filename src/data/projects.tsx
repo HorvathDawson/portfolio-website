@@ -1,12 +1,12 @@
 import type { ReactElement } from 'react';
 import { LayeredArt } from '../components/visuals/LayeredArt';
-import { DesktopDisplay } from '../components/visuals/DesktopDisplay';
 import { SpinningLeg } from '../components/visuals/SpinningLeg';
 import { LaptopWithScreen } from '../components/visuals/LaptopWithScreen';
 import { MotorcycleParts } from '../components/visuals/MotorcycleParts';
 import { FumeExtractorArm } from '../components/visuals/FumeExtractorArm';
 import { TabletDisplay } from '../components/visuals/TabletDisplay';
 import { DeviceDisplay } from '../components/visuals/DeviceDisplay';
+import { AnimatedImage } from '../components/visuals/AnimatedImage';
 import { RESUME_VIEW_PATH } from './site';
 
 /**
@@ -40,6 +40,17 @@ const FADE = { transition: 'opacity 0.3s ease' };
 
 const BUELL_ANGLE = (60 * Math.PI) / 180;
 
+/** A screen recording of canifishthis.ca, lazy-loaded, filling its device screen. */
+const FISHING_DEMO = (view: 'desktop' | 'mobile') => (
+  <AnimatedImage
+    src={`/assets/projects/bc-fishing-regulations/${view}-demo.webp`}
+    alt=""
+    loading="lazy"
+    decoding="async"
+    style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+  />
+);
+
 export const projects: Project[] = [
   {
     id: 'bc-fishing-regulations',
@@ -48,7 +59,13 @@ export const projects: Project[] = [
     description: 'A web app that simplifies BC fishing regulations, helping anglers quickly find what they can fish, where, and when.',
     link: 'https://canifishthis.ca',
     buttonText: 'Visit Site',
-    visual: <DesktopDisplay />,
+    // Recorded from the live site by scripts/record-demos.mjs (see the "Record demos" GitHub Action).
+    visual: (
+      <DeviceDisplay
+        device="desktop-phone"
+        screens={[FISHING_DEMO('desktop'), FISHING_DEMO('mobile')]}
+      />
+    ),
     // Monitor rises into place.
     animation: (offset) => `translate3d(0, ${60 * below(offset)}px, 0)`,
   },

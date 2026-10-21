@@ -3,7 +3,7 @@ import { ArtLayer } from './ArtLayer';
 import { useContainFit } from '../../utils/useContainFit';
 import './DeviceDisplay.css';
 
-const ART = '/assets/projects/upcoming';
+const ART = '/assets/projects/devices';
 
 export type Device = 'desktop-phone' | 'tablet' | 'tv';
 
@@ -77,7 +77,8 @@ interface DeviceDisplayProps {
 
 /**
  * Line-art desktop and phone, tablet or TV (outline at rest, gradient on
- * hover) with live content on its screens. Used for cards still waiting for a project.
+ * hover) with live content on its screens: a project's recordings, or a
+ * placeholder app on spare cards.
  */
 export const DeviceDisplay: React.FC<DeviceDisplayProps> = ({ device, screens = [] }) => {
   const containerRef = useRef<HTMLDivElement>(null);
