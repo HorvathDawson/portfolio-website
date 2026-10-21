@@ -14,7 +14,7 @@
 // Environment: DEMO_URL (default https://canifishthis.ca/), DEMO_SEARCH (the
 // waterbody to look up, default "Harrison Lake").
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -76,7 +76,10 @@ async function visit(page, touch, started) {
   await pause(page, 1500);
 
   // Look the waterbody up and open it.
-  const box = page.getByPlaceholder(/search/i).first();
+  const box = page
+    .locator('input[type="search"], input[placeholder*="search" i], [role="searchbox"], [role="combobox"], input[aria-label*="search" i]')
+    .first();
+  await box.waitFor({ state: 'visible', timeout: 30_000 });
   await point(page, box, touch);
   await box.pressSequentially(SEARCH, { delay: 90 });
   await pause(page, 900);
@@ -111,6 +114,25 @@ function encode(video, start, { name, outWidth }) {
   console.log(`  wrote ${path.relative(process.cwd(), out)} and its still`);
 }
 
+/** What the page looks like when a step fails, so the script can be fixed without seeing the site. */
+async function describe(page, name) {
+  const dir = path.join(process.cwd(), 'record-demos-debug');
+  mkdirSync(dir, { recursive: true });
+  await page.screenshot({ path: path.join(dir, `${name}.png`) }).catch(() => {});
+  const info = await page
+    .evaluate(() => ({
+      url: location.href,
+      title: document.title,
+      inputs: [...document.querySelectorAll('input, textarea, [role="searchbox"], [role="combobox"], [contenteditable="true"]')].map((e) =>
+        [e.tagName, e.getAttribute('type'), e.getAttribute('placeholder'), e.getAttribute('aria-label'), e.getAttribute('role')].join(' | '),
+      ),
+      text: document.body?.innerText.slice(0, 1500),
+    }))
+    .catch((err) => ({ error: String(err) }));
+  console.error(`--- ${name}: what the page shows ---\n${JSON.stringify(info, null, 2)}`);
+}
+
+mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch();
 const tmp = mkdtempSync(path.join(tmpdir(), 'demos-'));
 try {
@@ -126,7 +148,13 @@ try {
     await context.addInitScript(POINTER(view.touch));
     const page = await context.newPage();
     const started = Date.now();
-    const loaded = await visit(page, view.touch, started);
+    let loaded;
+    try {
+      loaded = await visit(page, view.touch, started);
+    } catch (err) {
+      await describe(page, view.name);
+      throw err;
+    }
     const video = await page.video().path();
     await context.close(); // finishes writing the video
     // Keep a moment of the loaded map before the action; drop the blank start.

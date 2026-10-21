@@ -49,11 +49,15 @@ jobs:
       - name: Record
         run: node scripts/record-demos.mjs
 
-      - name: Keep the recordings as a downloadable artifact
+      - name: Keep the recordings (or, on failure, screenshots) as a downloadable artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: demo-recordings
-          path: public/assets/projects/bc-fishing-regulations/*-demo*.webp
+          if-no-files-found: ignore
+          path: |
+            public/assets/projects/bc-fishing-regulations/*-demo*.webp
+            record-demos-debug/
 
       - name: Commit
         env:
