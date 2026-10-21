@@ -10,8 +10,9 @@
   display: none;
 }
 
+/* The warp mirrors the lid vertically once past edge-on, so the back art is
+   drawn upside down (scripts/make_device_art.py) rather than flipped here:
+   Safari misplaces transformed children inside the warp. */
 .laptop-lid.is-back .laptop-lid-back {
   display: block;
-  /* The warp mirrors the lid vertically once past edge-on; undo that for the back art. */
-  transform: scaleY(-1);
 }
