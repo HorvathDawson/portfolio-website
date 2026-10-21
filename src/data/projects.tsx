@@ -171,14 +171,14 @@ export const projects: Project[] = [
     linkVisual: true,
   },
   // Spare cards for future projects. To use one, fill in the text and link,
-  // pass the project's screen as `screen` (an <AnimatedImage> recording, like
-  // the other cards) and drop `draft`.
+  // pass the project's screens as `screens` (<AnimatedImage> recordings, like
+  // the other cards; desktop first) and drop `draft`.
   {
-    id: 'upcoming-computer',
+    id: 'upcoming-desktop-phone',
     category: 'Coming Soon',
     title: 'Next Web Project',
-    description: 'Something new is in the works. Check back soon.',
-    visual: <DeviceDisplay device="computer" />,
+    description: 'Something new is in the works, on desktop and mobile. Check back soon.',
+    visual: <DeviceDisplay device="desktop-phone" />,
     draft: true,
     // Rises into place, like the monitor above.
     animation: (offset) => `translate3d(0, ${60 * below(offset)}px, 0)`,
@@ -192,11 +192,11 @@ export const projects: Project[] = [
     draft: true,
   },
   {
-    id: 'upcoming-phone',
+    id: 'upcoming-tv',
     category: 'Coming Soon',
-    title: 'Next Mobile Project',
+    title: 'Next Big-Screen Project',
     description: 'Something new is in the works. Check back soon.',
-    visual: <DeviceDisplay device="phone" />,
+    visual: <DeviceDisplay device="tv" />,
     draft: true,
   },
 ];
