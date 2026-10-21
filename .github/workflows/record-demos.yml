@@ -47,6 +47,9 @@ jobs:
           sudo apt-get update -q && sudo apt-get install -yq ffmpeg
 
       - name: Record
+        env:
+          # "Name: value" header that a Cloudflare WAF rule lets past the bot check (see README.md).
+          DEMO_HEADER: ${{ secrets.DEMO_HEADER }}
         run: node scripts/record-demos.mjs
 
       - name: Keep the recordings (or, on failure, screenshots) as a downloadable artifact

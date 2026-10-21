@@ -71,7 +71,13 @@ Turnstile key. In production the Worker needs Email Routing on the domain and th
   - `make_device_art.py`: the computer, phone, tablet and TV drawings;
   - `record-demos.mjs`: records the Can I Fish This? card's desktop and phone recordings from
     the live site. Run it from GitHub (Actions → Record demos → Run workflow) to refresh them
-    after the site changes; it also runs monthly.
+    after the site changes; it also runs monthly. canifishthis.ca is behind Cloudflare's bot
+    check, so GitHub needs a way in: create a repository secret `DEMO_HEADER` such as
+    `X-Demo-Recorder: <long random string>`, and on canifishthis.ca's Cloudflare zone add a WAF
+    custom rule matching that header and value with the action *Skip* (Super Bot Fight Mode
+    and managed rules). Or run `npm install --no-save playwright && npx playwright install
+    chromium && npm run record-demos` on your own computer (needs ffmpeg) and commit the
+    results.
 
   The tracing scripts need `pip install potracer pillow numpy svgpathtools shapely
   opencv-python-headless`.

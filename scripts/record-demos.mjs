@@ -12,7 +12,11 @@
 //   desktop-demo-still.webp, mobile-demo-still.webp   last frame, for reduced motion
 //
 // Environment: DEMO_URL (default https://canifishthis.ca/), DEMO_SEARCH (the
-// waterbody to look up, default "Harrison Lake").
+// waterbody to look up, default "Harrison Lake"), and DEMO_HEADER, an optional
+// "Name: value" header sent with every request. canifishthis.ca sits behind
+// Cloudflare's bot check, which stops browsers on GitHub's servers; a WAF rule
+// that skips the check for requests carrying this secret header lets the
+// recorder in (see README.md).
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -21,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const URL = process.env.DEMO_URL ?? 'https://canifishthis.ca/';
+const HEADER = process.env.DEMO_HEADER?.match(/^\s*([^:\s]+)\s*:\s*(.+?)\s*$/);
 const SEARCH = process.env.DEMO_SEARCH ?? 'Harrison Lake';
 const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public', 'assets', 'projects', 'bc-fishing-regulations');
 
@@ -66,6 +71,14 @@ async function point(page, locator, touch) {
 /** The scripted visit. Returns seconds from the start of the video where the loaded site first shows. */
 async function visit(page, touch, started) {
   await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+  // Cloudflare's bot check ("Just a moment...") never lets an automated browser through on its own.
+  await page.waitForTimeout(3000);
+  if (/just a moment/i.test(await page.title())) {
+    throw new Error(
+      `${URL} answered with Cloudflare's bot check. Add a WAF rule that skips it for requests with a secret header, ` +
+        'and set that header as DEMO_HEADER ("Name: value"; in GitHub, the DEMO_HEADER repository secret). Or run this script on your own computer.',
+    );
+  }
   await page
     .getByText(/loading waterbody data/i)
     .waitFor({ state: 'hidden', timeout: 90_000 })
@@ -144,6 +157,7 @@ try {
       hasTouch: view.touch,
       deviceScaleFactor: 1,
       recordVideo: { dir: tmp, size: view.viewport },
+      extraHTTPHeaders: HEADER ? { [HEADER[1]]: HEADER[2] } : undefined,
     });
     await context.addInitScript(POINTER(view.touch));
     const page = await context.newPage();
