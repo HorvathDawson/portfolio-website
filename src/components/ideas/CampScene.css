@@ -31,27 +31,24 @@
   opacity: 0.45;
 }
 
-.camp-tent-bloom,
-.camp-tent-lamp {
-  animation: camp-glow 3.2s ease-in-out infinite alternate;
+.camp-moon {
+  fill: url(#camp-moon);
 }
 
-.camp-rim,
-.camp-body {
+.camp-moon-water {
+  fill: #d9cdf2;
+  opacity: 0.22;
+}
+
+.camp-silhouette {
+  fill: #150711;
+}
+
+.camp-silhouette-line {
+  fill: none;
+  stroke: #150711;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-
-.camp-rim {
-  fill: currentColor;
-  stroke: currentColor;
-  stroke-width: 3.5;
-}
-
-.camp-body {
-  fill: #150711;
-  stroke: #150711;
-  stroke-width: 0;
 }
 
 .camp-rod-tip {
