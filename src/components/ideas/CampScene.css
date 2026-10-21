@@ -31,26 +31,6 @@
   opacity: 0.45;
 }
 
-.camp-moon {
-  fill: url(#camp-moon);
-}
-
-.camp-moon-water {
-  fill: #d9cdf2;
-  opacity: 0.22;
-}
-
-.camp-silhouette {
-  fill: #150711;
-}
-
-.camp-silhouette-line {
-  fill: none;
-  stroke: #150711;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .camp-rod-tip {
   fill: none;
 }

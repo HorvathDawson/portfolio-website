@@ -3,51 +3,16 @@ import './CampScene.css';
 
 const TENT_PHOTO = '/assets/about/tent.webp';
 
-/** The fisher's silhouette (local units, feet at y = 0, facing right): legs and boots... */
-const FISHER_LEGS = [
-  'M-23 -80 L-1 -80 L-4 -14 L-18 -14 C-20 -34 -22 -56 -23 -80 Z',
-  'M0 -80 L22 -80 C23 -56 21 -34 20 -14 L6 -14 L3 -50 Z',
-  'M-20 -16 L-4 -16 L-3 -5 L3 -3 L3 0 L-21 0 Z',
-  'M5 -16 L20 -16 L21 -6 L29 -3 L29 0 L4 0 Z',
-];
-/** ...and the upper body: hat, head, jacket, backpack with a rolled mat. */
-const FISHER_BODY = [
-  'M-32 -166 C-22 -171 22 -172 34 -165 C28 -162 -26 -161 -32 -166 Z',
-  'M-15 -167 C-15 -183 15 -185 14 -167 Z',
-  'M-9 -165 L11 -165 C12 -160 13 -158 16 -155 C14 -153 12 -153 12 -150 C12 -147 9 -144 4 -144 L-6 -144 C-10 -150 -10 -158 -9 -165 Z',
-  'M-6 -147 L5 -147 L6 -134 L-7 -134 Z',
-  'M-22 -132 C-8 -140 10 -140 18 -132 C24 -112 25 -88 23 -62 L-24 -62 C-26 -88 -27 -112 -22 -132 Z',
-  'M-22 -130 C-40 -128 -47 -112 -47 -94 C-47 -78 -40 -68 -24 -68 Z',
-  'M-30 -132 C-36 -138 -26 -142 -18 -136 Z',
-];
+/** Size and place of the fisher silhouette (public/assets/about/fisher.svg, 616 × 570). */
+const FISHER = { x: 560, y: 87.3, width: 200.6, height: 185.7 };
+/** Where its rod tip lands in the scene; the line hangs from here. */
+const ROD_TIP = { x: 760.0, y: 239.1 };
 
-/**
- * A fisher in silhouette against a pale moon, standing at the water with the
- * rod held out over the page's edge; ripples of moonlight at their feet.
- */
+/** A fisher in silhouette, in the dark blue the page fades into, rod held out over the page's edge. */
 const Fisher: React.FC = () => (
-  <g className="camp-fisher" transform="translate(640 272) scale(0.85)">
-    <circle className="camp-moon" cx="46" cy="-118" r="82" />
-    <g className="camp-moon-water">
-      <rect x="20" y="-12" width="120" height="3" rx="1.5" />
-      <rect x="40" y="-6" width="96" height="3" rx="1.5" />
-      <rect x="30" y="0" width="70" height="2.5" rx="1.2" />
-    </g>
-    {/* The near bank, hiding the bottom of the moon */}
-    <path className="camp-solid" d="M-90 4 C-30 -1 80 -2 200 3 L200 30 L-90 30 Z" />
-    <g className="camp-silhouette">
-      {FISHER_LEGS.map((d) => <path key={d} d={d} />)}
-      <g transform="translate(0 -16)">
-        {FISHER_BODY.map((d) => <path key={d} d={d} />)}
-        <circle cx="35" cy="-87" r="6" />
-        {/* Arm to the hands, a loose strap, and the rod held out */}
-        <path className="camp-silhouette-line" d="M8 -128 L22 -98 L34 -88" style={{ strokeWidth: 11 }} />
-        <path className="camp-silhouette-line" d="M-40 -72 C-42 -60 -40 -50 -44 -38" style={{ strokeWidth: 2 }} />
-        <path className="camp-silhouette-line" d="M22 -78 L60 -98" style={{ strokeWidth: 3 }} />
-        <path className="camp-silhouette-line" d="M60 -98 L210 -150" style={{ strokeWidth: 1.5 }} />
-        <circle className="camp-rod-tip" cx="210" cy="-150" r="0.5" />
-      </g>
-    </g>
+  <g className="camp-fisher">
+    <image href="/assets/about/fisher.svg" {...FISHER} />
+    <circle className="camp-rod-tip" cx={ROD_TIP.x} cy={ROD_TIP.y} r="0.5" />
   </g>
 );
 
@@ -56,12 +21,8 @@ const Fisher: React.FC = () => (
  * fisher's line is drawn separately (FishingLine) since it runs down the page.
  */
 export const CampScene: React.FC = () => (
-  <svg className="camp-scene" viewBox="0 0 870 290" aria-hidden="true" focusable="false">
+  <svg className="camp-scene" viewBox="0 0 790 290" aria-hidden="true" focusable="false">
     <defs>
-      <radialGradient id="camp-moon">
-        <stop offset="0" stopColor="#d9cdf2" stopOpacity="0.34" />
-        <stop offset="1" stopColor="#d9cdf2" stopOpacity="0.22" />
-      </radialGradient>
       <radialGradient id="camp-glow">
         <stop offset="0" stopColor="#ff8c00" stopOpacity="0.45" />
         <stop offset="0.45" stopColor="#ff5a00" stopOpacity="0.15" />
