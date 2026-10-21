@@ -1,7 +1,14 @@
 # portfolio-website
 
-Dawson Horvath's portfolio and the A40 Austin build log. React + TypeScript +
+Dawson Horvath's portfolio, [dawsonhorvath.com](https://dawsonhorvath.com): a parallax
+landscape, project cards whose line art fills with colour as you hover, a contact form, the
+1950 Austin A40 build log, and the live resume (served by the separate
+[resume-generator](https://github.com/HorvathDawson/resume-generator) app). React + TypeScript +
 Vite, deployed to Cloudflare (Workers static assets, see `wrangler.jsonc`).
+
+![The home page header](docs/home.jpg)
+
+![Project cards on hover](docs/projects.jpg)
 
 ## Development
 
@@ -31,7 +38,9 @@ After changing `wrangler.jsonc`, regenerate the Worker types with
 ## Layout
 
 - `src/App.tsx`: home page (parallax header, about, project cards, contact form)
-- `src/data/projects.tsx`: the project cards (copy, links, visual, scroll animation), rendered by `ProjectCard`
+- `src/data/projects.tsx`: the project cards (copy, links, visual, scroll animation), rendered by `ProjectCard`.
+  Cards marked `draft: true` are spares waiting for a project: hidden on the live page, shown in
+  development and with `?drafts` in the address
 - `src/data/content.ts`: about text, header layers, contact links
 - `src/data/site.ts`: domain, titles and descriptions used for `<head>` metadata
 - `src/components/visuals/`: the artwork shown inside each card, built from `ArtLayer`/`LayeredArt`
@@ -41,7 +50,8 @@ After changing `wrangler.jsonc`, regenerate the Worker types with
 - `src/utils/reducedMotion.ts`: the one `prefers-reduced-motion` check (CSS side at the end of `App.css`)
 - `vite.plugins.ts`: home-page header preloads, `<head>` metadata, `sitemap.xml`
 - `worker/index.ts`: the site Worker; handles `POST /api/contact` (Turnstile check, then
-  email via Cloudflare Email Routing). Static files never reach it.
+  email via Cloudflare Email Routing) and forwards `/resume-generator/*` to the
+  `resume-generator` Worker over a service binding. Other static files never reach it.
 - `public/assets/`: images; home page artwork is WebP
 
 ## Assets
@@ -56,3 +66,24 @@ Derived images are generated, so re-run the scripts after changing a source:
 python3 scripts/make-header-images.py  # 1500w header layers, blurred placeholder, og/home.jpg
 python3 scripts/make-stills.py         # *-still.webp frames for reduced motion
 ```
+
+### Card artwork
+
+Each card shows white line art at rest and fades to a version filled with the site's
+pink→purple→blue gradient on hover (`ArtLayer` layers `background` and `foreground`; screens and
+glows are `splash` layers). The gradient versions come from white line art:
+
+```sh
+python3 scripts/make_svg.py art.svg            # art_background.svg (white) + art_foreground.svg (gradient)
+python3 scripts/trace_outline.py outline.webp  # trace white line art (PNG/WebP) to SVG, then run make_svg.py
+python3 scripts/trace_outline.py --photo photo.webp --crop x0,y0,x1,y1  # or a cut-out photo, as a sketch
+python3 scripts/make_device_art.py             # the spare cards' computer, tablet and TV drawings
+```
+
+The A40 card is traced from its outline drawing this way. The tracing scripts need
+`pip install potracer pillow numpy svgpathtools shapely opencv-python-headless`.
+
+To give a spare card a project: fill in its text and link in `src/data/projects.tsx`, pass the
+project's screen recording(s) to `<DeviceDisplay screens={[...]} />` (desktop first) and remove
+`draft: true`.
+
