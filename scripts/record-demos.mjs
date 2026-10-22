@@ -88,7 +88,10 @@ async function visit(page, touch, started) {
     .locator('input[type="search"], input[placeholder*="search" i], [role="searchbox"], [role="combobox"], input[aria-label*="search" i]')
     .first();
   await box.waitFor({ state: 'visible', timeout: 30_000 });
-  if (!touch) await page.mouse.move(page.viewportSize().width * 0.55, page.viewportSize().height * 0.6);
+  // Rest the cursor just below the search box, so getting there takes a moment,
+  // not half the recording (each mouse step waits for the map to repaint).
+  const boxAt = !touch && (await box.boundingBox());
+  if (boxAt) await page.mouse.move(boxAt.x + boxAt.width * 0.7, boxAt.y + boxAt.height + 140);
   await pause(page, 2500); // let the first map tiles draw
   // Start the recording on the loaded map, a moment before the search.
   const begin = (Date.now() - started) / 1000 - 1.2;
@@ -125,7 +128,7 @@ async function visit(page, touch, started) {
 }
 
 /** Longest recording kept, in seconds, so the files stay small. */
-const MAX_SECONDS = 20;
+const MAX_SECONDS = 26;
 
 function encode(video, start, { name, outWidth }) {
   const out = path.join(OUT, `${name}-demo.webp`);
