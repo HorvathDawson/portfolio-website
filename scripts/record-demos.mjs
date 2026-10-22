@@ -29,11 +29,11 @@ const HEADER = process.env.DEMO_HEADER?.match(/^\s*([^:\s]+)\s*:\s*(.+?)\s*$/);
 const SEARCH = process.env.DEMO_SEARCH ?? 'Harrison Lake';
 const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public', 'assets', 'projects', 'bc-fishing-regulations');
 
-// Viewports match the screens in the desktop-and-phone drawing
-// (src/components/visuals/DeviceDisplay.tsx): 1.75:1 and about 0.47:1.
+// Viewports match the screens the recordings are shown on (the monitor and
+// phone in src/components/visuals/DesktopDisplay.tsx): about 1.36:1 and 0.40:1.
 const VIEWS = [
-  { name: 'desktop', viewport: { width: 1400, height: 800 }, outWidth: 960, touch: false },
-  { name: 'mobile', viewport: { width: 390, height: 832 }, outWidth: 300, touch: true },
+  { name: 'desktop', viewport: { width: 1280, height: 940 }, outWidth: 960, touch: false },
+  { name: 'mobile', viewport: { width: 390, height: 970 }, outWidth: 300, touch: true },
 ];
 
 /** A visible cursor (desktop) or tap ripple (phone), since recordings don't show the pointer. */
@@ -63,7 +63,7 @@ async function point(page, locator, touch) {
   const y = box.y + box.height / 2;
   if (touch) return locator.tap();
   // Few steps: on a busy machine each one waits for the map to repaint.
-  await page.mouse.move(x, y, { steps: 8 });
+  await page.mouse.move(x, y, { steps: 4 });
   await pause(page, 250);
   await page.mouse.down();
   await page.mouse.up();
@@ -88,7 +88,10 @@ async function visit(page, touch, started) {
     .locator('input[type="search"], input[placeholder*="search" i], [role="searchbox"], [role="combobox"], input[aria-label*="search" i]')
     .first();
   await box.waitFor({ state: 'visible', timeout: 30_000 });
-  if (!touch) await page.mouse.move(page.viewportSize().width * 0.55, page.viewportSize().height * 0.6);
+  // Rest the cursor just below the search box, so getting there takes a moment,
+  // not half the recording (each mouse step waits for the map to repaint).
+  const boxAt = !touch && (await box.boundingBox());
+  if (boxAt) await page.mouse.move(boxAt.x + boxAt.width * 0.7, boxAt.y + boxAt.height + 140);
   await pause(page, 2500); // let the first map tiles draw
   // Start the recording on the loaded map, a moment before the search.
   const begin = (Date.now() - started) / 1000 - 1.2;
@@ -124,8 +127,8 @@ async function visit(page, touch, started) {
   return begin;
 }
 
-/** Longest recording kept, in seconds, so the files stay small. */
-const MAX_SECONDS = 20;
+/** Longest recording kept, in seconds, so the files stay small; a longer visit loses its start. */
+const MAX_SECONDS = 26;
 
 function encode(video, start, { name, outWidth }) {
   const out = path.join(OUT, `${name}-demo.webp`);
@@ -172,15 +175,18 @@ try {
     const page = await context.newPage();
     const started = Date.now();
     let begin;
+    let end;
     try {
       begin = await visit(page, view.touch, started);
+      end = (Date.now() - started) / 1000;
     } catch (err) {
       await describe(page, view.name);
       throw err;
     }
     const video = await page.video().path();
     await context.close(); // finishes writing the video
-    encode(video, Math.max(0, begin), view);
+    // Keep the end (the lake opening, the regulations) if it all ran long.
+    encode(video, Math.max(0, begin, end - MAX_SECONDS), view);
   }
 } finally {
   await browser.close();

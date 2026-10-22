@@ -66,14 +66,18 @@ const MONITOR_CLIP = clipPolygon(inset(MONITOR_OPENING, 0.006, 0.007), MONITOR_W
 const PHONE_WARP = inset(PHONE_OPENING, -0.012, -0.005);
 const PHONE_CLIP = clipPolygon(inset(PHONE_OPENING, 0.012, 0.005), PHONE_WIDTH / ART_HEIGHT, 0.022);
 
-/** A screen recording of canifishthis.ca (scripts/record-demos.mjs), filling a warped screen. */
+/**
+ * A screen recording of canifishthis.ca (scripts/record-demos.mjs), filling a
+ * warped screen. It's shown whole (never cropped, which would cut off the
+ * site's side panel); the recordings are made in the screens' proportions.
+ */
 const Recording: React.FC<{ view: 'desktop' | 'mobile' }> = ({ view }) => (
   // An <img> (rather than a CSS background) so the animation is lazy-loaded
   <AnimatedImage
     src={`${ART}/${view}-demo.webp`}
     loading="lazy"
     decoding="async"
-    style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+    style={{ display: 'block', width: '100%', height: '100%', objectFit: 'fill' }}
   />
 );
 
