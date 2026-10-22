@@ -29,11 +29,11 @@ const HEADER = process.env.DEMO_HEADER?.match(/^\s*([^:\s]+)\s*:\s*(.+?)\s*$/);
 const SEARCH = process.env.DEMO_SEARCH ?? 'Harrison Lake';
 const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public', 'assets', 'projects', 'bc-fishing-regulations');
 
-// Viewports match the screens in the desktop-and-phone drawing
-// (src/components/visuals/DeviceDisplay.tsx): 1.75:1 and about 0.47:1.
+// Viewports match the screens the recordings are shown on (the monitor and
+// phone in src/components/visuals/DesktopDisplay.tsx): about 1.36:1 and 0.40:1.
 const VIEWS = [
-  { name: 'desktop', viewport: { width: 1400, height: 800 }, outWidth: 960, touch: false },
-  { name: 'mobile', viewport: { width: 390, height: 832 }, outWidth: 300, touch: true },
+  { name: 'desktop', viewport: { width: 1280, height: 940 }, outWidth: 960, touch: false },
+  { name: 'mobile', viewport: { width: 390, height: 970 }, outWidth: 300, touch: true },
 ];
 
 /** A visible cursor (desktop) or tap ripple (phone), since recordings don't show the pointer. */
