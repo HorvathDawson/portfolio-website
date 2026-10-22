@@ -63,7 +63,7 @@ async function point(page, locator, touch) {
   const y = box.y + box.height / 2;
   if (touch) return locator.tap();
   // Few steps: on a busy machine each one waits for the map to repaint.
-  await page.mouse.move(x, y, { steps: 8 });
+  await page.mouse.move(x, y, { steps: 4 });
   await pause(page, 250);
   await page.mouse.down();
   await page.mouse.up();
@@ -127,7 +127,7 @@ async function visit(page, touch, started) {
   return begin;
 }
 
-/** Longest recording kept, in seconds, so the files stay small. */
+/** Longest recording kept, in seconds, so the files stay small; a longer visit loses its start. */
 const MAX_SECONDS = 26;
 
 function encode(video, start, { name, outWidth }) {
@@ -175,15 +175,18 @@ try {
     const page = await context.newPage();
     const started = Date.now();
     let begin;
+    let end;
     try {
       begin = await visit(page, view.touch, started);
+      end = (Date.now() - started) / 1000;
     } catch (err) {
       await describe(page, view.name);
       throw err;
     }
     const video = await page.video().path();
     await context.close(); // finishes writing the video
-    encode(video, Math.max(0, begin), view);
+    // Keep the end (the lake opening, the regulations) if it all ran long.
+    encode(video, Math.max(0, begin, end - MAX_SECONDS), view);
   }
 } finally {
   await browser.close();
