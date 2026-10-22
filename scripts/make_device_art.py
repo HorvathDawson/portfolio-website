@@ -176,24 +176,42 @@ def desktop_phone():
     return d, [monitor, phone]
 
 
+def mapped_rrect(f, u0, v0, u1, v1, ru, rv, steps=6):
+    """A rounded rectangle given in the unit square (corner radii ru, rv), mapped through f."""
+    pts = []
+    for cu, cv, start in ((u1 - ru, v0 + rv, -90), (u1 - ru, v1 - rv, 0), (u0 + ru, v1 - rv, 90), (u0 + ru, v0 + rv, 180)):
+        for i in range(steps + 1):
+            a = math.radians(start + 90 * i / steps)
+            pts.append(f(cu + ru * math.cos(a), cv + rv * math.sin(a)))
+    return pts
+
+
 def phone_stand():
-    """A phone on a desk stand, turned a little to the left like the Can I Fish
-    This? monitor drawing it sits beside (same height and units as that art)."""
+    """A modern phone (19.5:9, thin bezels, camera cutout) propped on a slim
+    stand, turned a little to the left like the Can I Fish This? monitor drawing
+    it sits beside (same height and units as that art)."""
     d = Drawing(120, 295)
-    # Stand: back leg, base plate
-    d.shape([(64, 214), (72, 210), (100, 266), (92, 268)])
-    d.shape([(6, 262), (102, 260), (106, 271), (2, 274)])
-    # Phone: its edge (seen on the right, for depth), then the face
-    d.shape([(23, 139), (84, 128), (86, 257), (25, 253)])
-    body = [(18, 141), (79, 130), (81, 259), (20, 255)]
-    d.shape(body)
-    f = quad_map(body)
-    screen = [f(0.09, 0.07), f(0.91, 0.07), f(0.91, 0.93), f(0.09, 0.93)]
-    d.shape(screen, FINE)
-    d.shape([f(0.38, 0.025), f(0.62, 0.025), f(0.62, 0.045), f(0.38, 0.045)], FINE)
-    # Cradle lip in front of the phone's foot
-    d.shape([(12, 249), (88, 253), (88, 263), (12, 259)])
-    return d, [screen]
+    # The face, as a quad: the right edge is nearer, so a little taller.
+    face = [(26, 130), (80, 122), (82, 254), (28, 250)]
+    f = quad_map(face)
+    # Its edge, seen on the right, a few units behind the face.
+    edge = quad_map([(x + 4.5, y - 1.2) for x, y in face])
+    ru, rv = 0.17, 0.075  # corner radius in face units (equal on the real phone)
+    # Stand: a slim arm leaning back behind the phone, then the base
+    d.shape([(62, 216), (66, 214), (94, 261), (90, 262)], 2.4)
+    d.shape(mapped_rrect(quad_map([(16, 261), (100, 258), (101, 264), (15, 267)]), 0, 0, 1, 1, 0.04, 0.45), 2.4)
+    # Side buttons on the visible edge, the edge, then the face over it
+    for v0, v1 in ((0.2, 0.32), ):
+        d.shape([edge(1.0, v0), (edge(1.0, v0)[0] + 1.6, edge(1.0, v0)[1]), (edge(1.0, v1)[0] + 1.6, edge(1.0, v1)[1]), edge(1.0, v1)], FINE)
+    d.shape(mapped_rrect(edge, 0, 0, 1, 1, ru, rv), 2.6)
+    d.shape(mapped_rrect(f, 0, 0, 1, 1, ru, rv), 2.6)
+    screen = (0.045, 0.022, 0.955, 0.978)
+    d.shape(mapped_rrect(f, *screen, ru - 0.035, rv - 0.016), FINE)
+    d.shape(mapped_rrect(f, 0.4, 0.042, 0.6, 0.062, 0.1, 0.01), 1.4)
+    # Lip of the stand in front of the phone's foot
+    d.shape(mapped_rrect(quad_map([(24, 249), (88, 252.5), (88, 257), (24, 253.5)]), 0, 0, 1, 1, 0.04, 0.45), 2.4)
+    u0, v0, u1, v1 = screen
+    return d, [[f(u0, v0), f(u1, v0), f(u1, v1), f(u0, v1)]]
 
 
 def tv():

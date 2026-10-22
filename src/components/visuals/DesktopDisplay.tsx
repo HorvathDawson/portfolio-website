@@ -13,7 +13,7 @@ const ASPECT = (MONITOR_WIDTH + PHONE_WIDTH) / ART_HEIGHT;
 const MONITOR_SHARE = MONITOR_WIDTH / (MONITOR_WIDTH + PHONE_WIDTH);
 
 /** The phone's screen corners as fractions of its drawing (printed by scripts/make_device_art.py). */
-const PHONE_SCREEN: [number, number][] = [[0.1969, 0.502], [0.6138, 0.4743], [0.6281, 0.8465], [0.2113, 0.8383]];
+const PHONE_SCREEN: [number, number][] = [[0.2373, 0.4484], [0.6468, 0.4246], [0.6627, 0.8506], [0.2532, 0.8391]];
 
 /** A screen recording of canifishthis.ca (scripts/record-demos.mjs), filling a warped screen. */
 const Recording: React.FC<{ view: 'desktop' | 'mobile' }> = ({ view }) => (
@@ -137,7 +137,10 @@ export const DesktopDisplay: React.FC = () => {
             className="splash-layer computer-screen"
             style={{ opacity: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', transformOrigin: '0 0', zIndex: 2147483647 }}
           >
-            <Recording view="mobile" />
+            {/* Rounded like the phone's screen (the warp maps this box onto it) */}
+            <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '13% / 6%' }}>
+              <Recording view="mobile" />
+            </div>
           </div>
         </div>
       </div>
