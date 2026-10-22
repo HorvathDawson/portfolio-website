@@ -12,8 +12,15 @@ const ART_HEIGHT = 294.66;
 const ASPECT = (MONITOR_WIDTH + PHONE_WIDTH) / ART_HEIGHT;
 const MONITOR_SHARE = MONITOR_WIDTH / (MONITOR_WIDTH + PHONE_WIDTH);
 
-/** The phone's screen corners as fractions of its drawing (printed by scripts/make_device_art.py). */
-const PHONE_SCREEN: [number, number][] = [[0.2373, 0.4484], [0.6468, 0.4246], [0.6627, 0.8506], [0.2532, 0.8391]];
+/**
+ * Where each recording goes: the screen openings' corners (top-left,
+ * top-right, bottom-right, bottom-left) as fractions of each drawing, just
+ * inside the screen's outline so the recording never covers it. The monitor's
+ * were measured from desktop-outline.svg; the phone's are the screen line from
+ * scripts/make_device_art.py, pulled in by the line's width.
+ */
+const MONITOR_SCREEN: [number, number][] = [[0.251, 0.12], [0.875, 0.035], [0.876, 0.641], [0.242, 0.626]];
+const PHONE_SCREEN: [number, number][] = [[0.2483, 0.4544], [0.6358, 0.4306], [0.6517, 0.8446], [0.2642, 0.8331]];
 
 /** A screen recording of canifishthis.ca (scripts/record-demos.mjs), filling a warped screen. */
 const Recording: React.FC<{ view: 'desktop' | 'mobile' }> = ({ view }) => (
@@ -75,12 +82,7 @@ export const DesktopDisplay: React.FC = () => {
     const pw = width * (1 - MONITOR_SHARE);
     phoneScreen.style.transform = computeWarpMatrix(pw, h, PHONE_SCREEN.map(([x, y]) => [x * pw, y * h]));
     const w = width * MONITOR_SHARE;
-    screen.style.transform = computeWarpMatrix(w, h, [
-      [w * 0.01, h * 0.18], // top-left
-      [w * 0.97, h * 0.05], // top-right (narrower, so the monitor faces left)
-      [w * 0.99, h * 0.92], // bottom-right
-      [w * 0, h * 0.85],    // bottom-left
-    ]);
+    screen.style.transform = computeWarpMatrix(w, h, MONITOR_SCREEN.map(([x, y]) => [x * w, y * h]));
   }, []);
 
   useContainFit(containerRef, contentRef, ASPECT, warpScreen);
@@ -115,16 +117,7 @@ export const DesktopDisplay: React.FC = () => {
           <div
             ref={screenRef}
             className="splash-layer computer-screen"
-            style={{
-              opacity: 0,
-              position: 'absolute',
-              top: '-5.5%',
-              left: '24%',
-              width: '70%',
-              height: '75%',
-              transformOrigin: '0 0',
-              zIndex: 2147483647
-            }}
+            style={{ opacity: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', transformOrigin: '0 0', zIndex: 2147483647 }}
           >
             <Recording view="desktop" />
           </div>
