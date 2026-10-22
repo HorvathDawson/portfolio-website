@@ -14,13 +14,14 @@ const MONITOR_SHARE = MONITOR_WIDTH / (MONITOR_WIDTH + PHONE_WIDTH);
 
 /**
  * Where each recording goes: the screen openings' corners (top-left,
- * top-right, bottom-right, bottom-left) as fractions of each drawing, just
- * inside the screen's outline so the recording never covers it. The monitor's
- * were measured from desktop-outline.svg; the phone's are the screen line from
- * scripts/make_device_art.py, pulled in by the line's width.
+ * top-right, bottom-right, bottom-left) as fractions of each drawing, with a
+ * few pixels of bezel left inside the screen's outline (a warped image's edge
+ * blurs by about a pixel, which would otherwise touch the line). The monitor's
+ * opening was measured from desktop-outline.svg and desktop-colored.svg; the
+ * phone's is the screen line from scripts/make_device_art.py.
  */
-const MONITOR_SCREEN: [number, number][] = [[0.251, 0.12], [0.875, 0.035], [0.876, 0.641], [0.242, 0.626]];
-const PHONE_SCREEN: [number, number][] = [[0.2483, 0.4544], [0.6358, 0.4306], [0.6517, 0.8446], [0.2642, 0.8331]];
+const MONITOR_SCREEN: [number, number][] = [[0.2579, 0.1281], [0.8669, 0.0425], [0.8697, 0.6323], [0.2483, 0.6187]];
+const PHONE_SCREEN: [number, number][] = [[0.2628, 0.4634], [0.6213, 0.4396], [0.6372, 0.8356], [0.2787, 0.8241]];
 
 /** A screen recording of canifishthis.ca (scripts/record-demos.mjs), filling a warped screen. */
 const Recording: React.FC<{ view: 'desktop' | 'mobile' }> = ({ view }) => (
