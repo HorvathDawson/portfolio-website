@@ -16,7 +16,7 @@ jobs:
             for base in https://dawsonhorvath.com https://personal-website.horvath-dawson.workers.dev; do
               echo "== $base"; curl -sSL -D - -o page.html "$base/?v=$RANDOM" | grep -iE '^(HTTP|cf-cache|age|cache-control)'
               for js in $(grep -oE '/assets/[A-Za-z0-9_.-]+\.js' page.html | sort -u); do
-                curl -sSL "$base$js" -o a.js; echo "$js bezel-fix=$(grep -c '\.2579' a.js)"
+                curl -sSL "$base$js" -o a.js; echo "$js clip-fix=$(grep -c 'polygon(' a.js)"
               done
             done
           } > ci-live/out.txt 2>&1
