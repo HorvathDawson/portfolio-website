@@ -1,8 +1,11 @@
-/* Document base. The root background is the canvas colour (seen when the
-   page overscrolls); body and the page layers paint over it. */
+/* Document base. The root background is the canvas colour, seen when the
+   page overscrolls and, in Safari, in strips not yet drawn during a fast
+   scroll; body and the page layers paint over it. It is the site's dark blue
+   whatever the system theme: white here flashed at the top and bottom of the
+   screen while scrolling in Safari. */
 :root {
-  color-scheme: light dark;
-  background-color: #242424;
+  color-scheme: dark;
+  background-color: #0f172a;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -44,9 +47,6 @@ button:focus {
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
-    background-color: #ffffff;
-  }
   a:hover {
     color: #747bff;
   }
@@ -223,7 +223,10 @@ html {
 }
 
 .app-container {
-  background-color: #FEDCC8;
+  /* Dark like the art over it: in Safari, parts of the page not yet drawn
+     during a fast scroll show this colour (a light one flashed white at the
+     top and bottom of the screen). */
+  background-color: #2c112a;
   min-height: 100vh;
   width: 100%;
   position: relative;
@@ -234,6 +237,8 @@ html {
 
 /* Page content below the header; sits above the bottom edge of the header. */
 .parallax-foreground {
+  /* The tile's average colour, shown while the tile isn't drawn yet. */
+  background-color: #2c112a;
   background-image: url("/assets/header/foreground-tile.webp");
   background-repeat: repeat;
   background-position: top center;
@@ -573,6 +578,20 @@ h1 {
 
 .splash-layer {
   opacity: 0;
+}
+
+/* A short fade between outline and colour, so a hover change never snaps
+   straight to the white outline. */
+.background-layer,
+.foreground-layer,
+.splash-layer {
+  transition: opacity 0.25s ease;
+}
+
+/* Parts moved every frame by a card's scroll animation stay on their own
+   layer, so Safari doesn't repaint them (and flash) as the page scrolls. */
+.project-card [data-scroll] {
+  will-change: transform;
 }
 
 .foreground-layer {

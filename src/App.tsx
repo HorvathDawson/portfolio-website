@@ -3,6 +3,8 @@ import { ParallaxHeader } from './components/ParallaxHeader';
 import { AboutMe } from './components/AboutMe';
 import { ContactForm } from './components/ContactForm';
 import { ProjectCard } from './components/ProjectCard';
+import { FishingLine } from './components/ideas/FishingLine';
+import { showIdeas } from './utils/ideas';
 import { aboutMeContent } from './data/content';
 import { visibleProjects } from './data/projects';
 import { BREAKPOINTS } from './utils/useBreakpoint';
@@ -122,6 +124,7 @@ function App() {
             </div>
           </section>
         </div>
+        {showIdeas() && <FishingLine />}
       </main>
     </div>
   );

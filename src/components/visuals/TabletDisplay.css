@@ -8,8 +8,8 @@
   pointer-events: none;
 }
 
-/* With a mouse, the wheel pages through the resume (the page scrolls on once
-   the first or last page is reached) and a click opens it in the viewer. */
+/* With a mouse, a scrollbar in the frame pages through the resume (the wheel
+   keeps scrolling this page) and a click opens it in the viewer. */
 @media (hover: hover) and (pointer: fine) {
   .resume-embed {
     pointer-events: auto;

@@ -1,5 +1,6 @@
-"""Draw the line art for the spare project cards: a desktop with a phone beside
-it, a tablet on a stand and a TV on a wall.
+"""Draw the line art for the spare project cards (a desktop with a phone beside
+it, a tablet on a stand and a TV on a wall) and the phone beside the Can I
+Fish This? monitor.
 
 Each drawing is written as single-colour paths, back to front, which is what
 make_svg.py expects. Then make_svg.py turns each into the white outline (shown
@@ -175,6 +176,44 @@ def desktop_phone():
     return d, [monitor, phone]
 
 
+def mapped_rrect(f, u0, v0, u1, v1, ru, rv, steps=6):
+    """A rounded rectangle given in the unit square (corner radii ru, rv), mapped through f."""
+    pts = []
+    for cu, cv, start in ((u1 - ru, v0 + rv, -90), (u1 - ru, v1 - rv, 0), (u0 + ru, v1 - rv, 90), (u0 + ru, v0 + rv, 180)):
+        for i in range(steps + 1):
+            a = math.radians(start + 90 * i / steps)
+            pts.append(f(cu + ru * math.cos(a), cv + rv * math.sin(a)))
+    return pts
+
+
+def phone_stand():
+    """A modern phone (19.5:9, thin bezels, camera cutout) propped on a slim
+    stand, turned a little to the left like the Can I Fish This? monitor drawing
+    it sits beside (same height and units as that art)."""
+    d = Drawing(120, 295)
+    # The face, as a quad: the right edge is nearer, so a little taller.
+    face = [(26, 130), (80, 122), (82, 254), (28, 250)]
+    f = quad_map(face)
+    # Its edge, seen on the right, a few units behind the face.
+    edge = quad_map([(x + 4.5, y - 1.2) for x, y in face])
+    ru, rv = 0.17, 0.075  # corner radius in face units (equal on the real phone)
+    # Stand: a slim arm leaning back behind the phone, then the base
+    d.shape([(62, 216), (66, 214), (94, 261), (90, 262)], 2.4)
+    d.shape(mapped_rrect(quad_map([(16, 261), (100, 258), (101, 264), (15, 267)]), 0, 0, 1, 1, 0.04, 0.45), 2.4)
+    # Side buttons on the visible edge, the edge, then the face over it
+    for v0, v1 in ((0.2, 0.32), ):
+        d.shape([edge(1.0, v0), (edge(1.0, v0)[0] + 1.6, edge(1.0, v0)[1]), (edge(1.0, v1)[0] + 1.6, edge(1.0, v1)[1]), edge(1.0, v1)], FINE)
+    d.shape(mapped_rrect(edge, 0, 0, 1, 1, ru, rv), 2.6)
+    d.shape(mapped_rrect(f, 0, 0, 1, 1, ru, rv), 2.6)
+    screen = (0.045, 0.022, 0.955, 0.978)
+    d.shape(mapped_rrect(f, *screen, ru - 0.035, rv - 0.016), FINE)
+    d.shape(mapped_rrect(f, 0.4, 0.042, 0.6, 0.062, 0.1, 0.01), 1.4)
+    # Lip of the stand in front of the phone's foot
+    d.shape(mapped_rrect(quad_map([(24, 249), (88, 252.5), (88, 257), (24, 253.5)]), 0, 0, 1, 1, 0.04, 0.45), 2.4)
+    u0, v0, u1, v1 = screen
+    return d, [[f(u0, v0), f(u1, v0), f(u1, v1), f(u0, v1)]]
+
+
 def tv():
     """A TV on the wall over a low cabinet with a soundbar, books and a plant."""
     d = Drawing()
@@ -236,13 +275,15 @@ def tablet():
 
 def laptop_lid_back():
     """The back of the self-driving-car laptop's lid, seen when it is closed or
-    nearly so. Same size as public/assets/projects/self-driving-car/computer-*.svg."""
+    nearly so. Same size as public/assets/projects/self-driving-car/computer-*.svg.
+    Drawn upside down: the page's perspective warp mirrors the lid vertically
+    once it tips past edge-on, which turns it the right way up."""
     d = Drawing(476, 309)
     d.shape(rrect_points(2, 2, 472, 305, 24), 2.4)
     d.shape(rrect_points(14, 14, 448, 281, 16), 1.2)
     circle_logo = ellipse_points(238, 154, 24, 24, 40)
     d.shape(circle_logo, 2.4)
-    d.line([(226, 154), (236, 164), (252, 144)], 2.4)
+    d.line([(226, 154), (236, 144), (252, 164)], 2.4)
     return d
 
 
@@ -283,6 +324,10 @@ def main():
         for sx, sy, sw, sh in screens:
             print(f"{name}: screen left {sx / W:.2%} top {sy / H:.2%} width {sw / W:.2%} height {sh / H:.2%}")
     export(laptop_lid_back(), os.path.join(OUT, "..", "self-driving-car"), "lid-back")
+    phone, (screen,) = phone_stand()
+    export(phone, os.path.join(OUT, "..", "bc-fishing-regulations"), "phone-stand")
+    corners = ", ".join(f"[{x / phone.width:.4f}, {y / phone.height:.4f}]" for x, y in screen)
+    print(f"bc-fishing-regulations: phone-stand screen corners {corners}")
     print("self-driving-car: lid-back")
 
 

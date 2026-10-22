@@ -1,0 +1,18 @@
+/* The lid shows its screen side, or (once it tips past edge-on, see laptopLid.ts) its back. */
+.laptop-lid-front,
+.laptop-lid-back {
+  position: absolute;
+  inset: 0;
+}
+
+.laptop-lid-back,
+.laptop-lid.is-back .laptop-lid-front {
+  display: none;
+}
+
+/* The warp mirrors the lid vertically once past edge-on, so the back art is
+   drawn upside down (scripts/make_device_art.py) rather than flipped here:
+   Safari misplaces transformed children inside the warp. */
+.laptop-lid.is-back .laptop-lid-back {
+  display: block;
+}

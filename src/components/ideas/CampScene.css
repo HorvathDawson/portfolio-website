@@ -1,0 +1,206 @@
+/* ---- Camp with a fisher (?ideas) ----
+   The campfire, the tent photo and a fisher on one shared ground, just
+   above the heading at the right of the page, so the fisher's rod reaches
+   out over the page's right margin. */
+.camp-scene {
+  position: absolute;
+  z-index: 1;
+  top: 96px;
+  right: max(1.5vw, 8px);
+  width: min(60vw, 760px);
+  transform: translateY(-100%);
+  pointer-events: none;
+  color: var(--warm-white);
+}
+
+.camp-scene svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+/* The original campfire (AboutMe.css), placed left of the tent on the scene's ground. */
+.camp-scene .campfire-group {
+  right: auto;
+  left: 0;
+  bottom: 0;
+  width: 22%;
+  min-width: 0;
+}
+
+.camp-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Parts that hide what's behind them (logs, stones, the rock). */
+.camp-solid {
+  fill: #2c112a;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.camp-faint {
+  opacity: 0.45;
+}
+
+.camp-rod-tip {
+  fill: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* The line, a hair wide in the fisher's dark blue with a faint light edge
+   so it still shows, swaying a little from the rod tip. */
+.fishing-line {
+  position: absolute;
+  z-index: 3;
+  width: 1.4px;
+  margin-left: -0.7px;
+  background: #0f172a;
+  box-shadow: 0.7px 0 0 rgba(252, 247, 240, 0.2);
+  transform-origin: 50% 0;
+  animation: line-sway 9s ease-in-out infinite alternate;
+  pointer-events: none;
+  color: rgba(252, 247, 240, 0.35);
+}
+
+.fishing-tackle {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 110px;
+  margin-left: -55px;
+  overflow: visible;
+}
+
+.fishing-tackle .camp-solid {
+  fill: #0f172a;
+}
+
+.fishing-fish {
+  animation: fish-nudge 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes line-sway {
+  from { transform: rotate(0.12deg); }
+  to { transform: rotate(-0.12deg); }
+}
+
+@keyframes fish-nudge {
+  from { transform: translate(-6px, 2px); }
+  to { transform: translate(2px, -1px); }
+}
+
+@media screen and (max-width: 850px) {
+  .camp-scene {
+    width: min(84vw, 560px);
+  }
+}
+
+@media screen and (max-width: 479px) {
+  .camp-scene {
+    top: 70px;
+    width: 96vw;
+    right: 1vw;
+  }
+}
+
+/* ---- Paraglider (?ideas) ----
+   Its own parallax layer between the clouds and the big mountain, so it
+   slips behind the peak. It soars back and forth across the middle of the
+   sky, turning around (mirrored) and banking at each end; at rest (reduced
+   motion) it hangs in the open sky right of the peak. */
+.glider-path {
+  position: absolute;
+  top: 9%;
+  left: 58%;
+  width: 3.6%;
+  animation: glider-soar 56s ease-in-out infinite;
+}
+
+.glider-bob {
+  animation: glider-bob 13s ease-in-out infinite alternate;
+}
+
+.glider-turn {
+  animation: glider-turn 56s ease-in-out infinite;
+}
+
+.glider {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  fill: #7d2b4c;
+}
+
+.glider-lines path,
+.glider-legs {
+  fill: none;
+  stroke: #7d2b4c;
+  stroke-width: 0.6;
+}
+
+.glider-legs {
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+/* Steps are a third of the frame either side of the middle (the glider is
+   3.6% of the frame wide), slowing and banking through each turn. */
+@keyframes glider-soar {
+  0% { transform: translateX(-450%) rotate(-7deg); }
+  8% { transform: translateX(-380%) rotate(1deg); }
+  42% { transform: translateX(380%) rotate(1deg); }
+  50% { transform: translateX(450%) rotate(7deg); }
+  58% { transform: translateX(380%) rotate(-1deg); }
+  92% { transform: translateX(-380%) rotate(-1deg); }
+  100% { transform: translateX(-450%) rotate(-7deg); }
+}
+
+/* Faces right on the way right (0-50%) and left on the way back, edge-on
+   at each end as it turns. */
+@keyframes glider-turn {
+  0% { transform: scaleX(0.05); }
+  4%, 46% { transform: scaleX(1); }
+  50% { transform: scaleX(-0.05); }
+  54%, 96% { transform: scaleX(-1); }
+  100% { transform: scaleX(-0.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glider-path {
+    transform: translateX(360%);
+  }
+}
+
+@keyframes glider-bob {
+  0% { transform: translateY(0) rotate(-3deg); }
+  35% { transform: translateY(-55%) rotate(2deg); }
+  70% { transform: translateY(70%) rotate(4deg); }
+  100% { transform: translateY(160%) rotate(-2deg); }
+}

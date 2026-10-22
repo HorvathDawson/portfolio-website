@@ -2,11 +2,12 @@ import type { ReactElement } from 'react';
 import { LayeredArt } from '../components/visuals/LayeredArt';
 import { SpinningLeg } from '../components/visuals/SpinningLeg';
 import { LaptopWithScreen } from '../components/visuals/LaptopWithScreen';
+import { lidTransform } from '../components/visuals/laptopLid';
 import { MotorcycleParts } from '../components/visuals/MotorcycleParts';
 import { FumeExtractorArm } from '../components/visuals/FumeExtractorArm';
 import { TabletDisplay } from '../components/visuals/TabletDisplay';
 import { DeviceDisplay } from '../components/visuals/DeviceDisplay';
-import { AnimatedImage } from '../components/visuals/AnimatedImage';
+import { DesktopDisplay } from '../components/visuals/DesktopDisplay';
 import { RESUME_VIEW_PATH } from './site';
 
 /**
@@ -40,17 +41,6 @@ const FADE = { transition: 'opacity 0.3s ease' };
 
 const BUELL_ANGLE = (60 * Math.PI) / 180;
 
-/** A screen recording of canifishthis.ca, lazy-loaded, filling its device screen. */
-const FISHING_DEMO = (view: 'desktop' | 'mobile') => (
-  <AnimatedImage
-    src={`/assets/projects/bc-fishing-regulations/${view}-demo.webp`}
-    alt=""
-    loading="lazy"
-    decoding="async"
-    style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
-  />
-);
-
 export const projects: Project[] = [
   {
     id: 'bc-fishing-regulations',
@@ -59,13 +49,8 @@ export const projects: Project[] = [
     description: 'A web app that simplifies BC fishing regulations, helping anglers quickly find what they can fish, where, and when.',
     link: 'https://canifishthis.ca',
     buttonText: 'Visit Site',
-    // Recorded from the live site by scripts/record-demos.mjs (see the "Record demos" GitHub Action).
-    visual: (
-      <DeviceDisplay
-        device="desktop-phone"
-        screens={[FISHING_DEMO('desktop'), FISHING_DEMO('mobile')]}
-      />
-    ),
+    // Screens play recordings of the live site from scripts/record-demos.mjs (the "Record demos" GitHub Action).
+    visual: <DesktopDisplay />,
     // Monitor rises into place.
     animation: (offset) => `translate3d(0, ${60 * below(offset)}px, 0)`,
   },
@@ -107,7 +92,7 @@ export const projects: Project[] = [
     description: 'Simulated a self-driving robot in Gazebo and ROS.',
     visual: <LaptopWithScreen />,
     // Lid swings up from closed (lying on the keyboard) to upright as the card reaches the middle.
-    animation: (offset) => `rotateX(-${90 * Math.min(1, below(offset))}deg)`,
+    animation: (offset, part) => lidTransform(part, 90 * Math.min(1, below(offset))),
   },
   {
     id: 'robot253',
@@ -165,7 +150,7 @@ export const projects: Project[] = [
     id: '3dprinter',
     category: 'Scholarship',
     title: 'Low-Cost 3D Printer Build',
-    description: 'Designed and built a low-cost, functional 3D printer inspired by the Prusa i3 MK2, featuring an Arduino Mega, RAMPS 1.4 board, MDF frame, and custom wiring, balancing quality and cost.',
+    description: 'Built in 2015, when 3D printers were still rare and expensive, this low-cost printer was inspired by the open-source Prusa i3: an Arduino Mega with a RAMPS 1.4 board, an MDF frame and custom wiring, balancing print quality against cost.',
     visual: (
       <LayeredArt
         width={1000}
