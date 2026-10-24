@@ -7,7 +7,7 @@ kind: reference
 tags: [electronics, can-bus, epas, steering, raspberry-pi, safety]
 ---
 
-The steering is a **Gen 4 Prius (2016–2022)** EPAS column (see the [steering post](./steering)), chosen because comma.ai's openpilot drives this car, so its CAN messages are decoded in [opendbc](https://github.com/commaai/opendbc). With no CAN traffic it runs a single fixed assist level. A level light enough for parking is too light and nervous at highway speed, and a level that suits the highway is heavy in a parking lot. To get speed-sensitive assist, the column has to see the Prius frames it expects. The dash Pi reads the Haltech broadcast and re-sends speed and rpm in Toyota format on a second, isolated bus.
+If power assist is chosen (manual steering is the other option), the column is a **Gen 4 Prius (2016–2022)** EPAS column (see the [steering post](./steering)), chosen because comma.ai's openpilot drives this car, so its CAN messages are decoded in [opendbc](https://github.com/commaai/opendbc). With no CAN traffic it runs a single fixed assist level. A level light enough for parking is too light and nervous at highway speed, and a level that suits the highway is heavy in a parking lot. To get speed-sensitive assist, the column has to see the Prius frames it expects. The dash Pi reads the Haltech broadcast and re-sends speed and rpm in Toyota format on a second, isolated bus.
 
 The dash is a UI and the gateway is part of the steering, so they share a Pi and a power supply but nothing else.
 
@@ -91,13 +91,14 @@ These come before writing any code.
    - If it stays stale, **ramp toward a high-speed, low-assist value**.
    - **Never ramp toward 0.**
    - Rate-limit the speed sent to the column to what the car can physically do (for example 1 g, about 35 km/h per second).
-4. **Column behaviour when frames stop is unknown.** It may hold, fall back to fixed assist, drop assist, or **latch a DTC until a key cycle**. Bench-test pulling `can1` and `can0` at different simulated speeds before the car moves.
-5. **Keep the service alive:**
+4. **Every fault fails to manual steering.** The column keeps its mechanical shaft; the motor only adds torque through a worm gear. Losing 12 V, CAN, the gateway or the column ECU leaves unassisted steering through the same shaft, heavier but connected. Bench check: with the column unpowered, turn the input shaft by hand and confirm it turns freely through the motor gear with no binding.
+5. **Column behaviour when frames stop is unknown.** It may hold, fall back to fixed assist, drop assist, or **latch a DTC until a key cycle**. Bench-test pulling `can1` and `can0` at different simulated speeds before the car moves.
+6. **Keep the service alive:**
    - `restart-ms` (or the networkd `RestartSec`) on `can0` and `can1`, so bus-off recovers on its own.
    - systemd unit with `Restart=always`, `RestartSec=200ms`, `StartLimitIntervalSec=0` (never gives up), and `WatchdogSec=` with `sd_notify` from the main loop.
    - Hardware watchdog: `RuntimeWatchdogSec=` in `/etc/systemd/system.conf`, so a hung kernel reboots.
    - Start early in boot: depend only on the CAN interfaces, not on the dash, network-online or the user session.
-6. **Stronger design to keep in mind:** a small dual-CAN microcontroller (for example a Teensy 4.x or an STM32 with two CAN controllers) boots in milliseconds and has no OS to hang. The Pi gateway is the prototype, and the MCU is the upgrade path if the bench tests show slow boot or a latched DTC.
+7. **Stronger design to keep in mind:** a small dual-CAN microcontroller (for example a Teensy 4.x or an STM32 with two CAN controllers) boots in milliseconds and has no OS to hang. The Pi gateway is the prototype, and the MCU is the upgrade path if the bench tests show slow boot or a latched DTC.
 
 ## Status
 
@@ -115,4 +116,4 @@ These come before writing any code.
 2. The column on `can1` with its own 12 V supply, motor fuse and IG wake.
 3. Measure the termination on both buses.
 4. Check that assist changes with the spoofed speed (turn the input shaft by hand and feel the effort).
-5. Run the loss tests from item 4 above.
+5. Run the loss tests from item 5 above.

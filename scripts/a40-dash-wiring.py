@@ -26,7 +26,7 @@ Power architecture (matches content/a40/digital-dash.md):
     goes to the HAT except each bus's own CAN ground reference.
   * can0: Haltech Nexus S2, 1 Mbit/s. The bus is already terminated at both ends,
     so the HAT terminator on ch0 stays OFF (measure ~60 ohm across CAN_H/L).
-  * can1: Prius Gen 3 EPAS column, 500 kbit/s. 120 ohm at the HAT (ch1 jumper ON)
+  * can1: Prius Gen 4 (2016-2022) EPAS column (if fitted), 500 kbit/s. 120 ohm at the HAT (ch1 jumper ON)
     and 120 ohm at the column end (measure ~60 ohm with power off).
   * DCDC-USB PSW -> Pi 5 J2 power-button header: on key-off (after OFFDELAY) the
     pulse starts a clean OS shutdown; HARDOFF cuts power 1 min later.
@@ -119,7 +119,7 @@ connectors:
     pinlabels: [CAN_H, CAN_L, CAN GND / signal GND]
     notes: Bus already has 2 terminators. Do not add a third (measure ~60 ohm).
   EPAS:
-    type: Prius Gen 3 EPAS column ECU
+    type: Prius Gen 4 (2016-2022) EPAS column ECU (if fitted)
     subtype: can1, 500 kbit/s
     pinlabels: [CAN_H, CAN_L, GND]
     notes: 120 ohm at this end unless the ECU has one (measure). Motor feed + IG wake wired separately.

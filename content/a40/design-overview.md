@@ -43,7 +43,7 @@ The integration view: one line per system, then the clearance problems I have to
 | Radiator airflow | Small grille, FMIC ahead of the radiator. | Largest core the opening allows, shrouded electric fan. |
 | Driveshaft | Runs in the tunnel; angles fixed because the diff is sprung. | Tunnel sized for the shaft plus engine movement and vibration margin. Safety loop at a crossmember. |
 | Half-shafts + diff | New with the IRS: the diff and inner half-shafts sit between the rear rails. | Check half-shaft sweep through full bump/droop against rails, crossmembers, exhaust, fuel tank and brake/parking-brake lines. |
-| Steering lock | Narrowed rack ⇒ steeper tie-rod angle. Narrowing costs 12–18° of steering lock; turning circle grows from ~9.4 m (Miata) to roughly 16–25 m. | Steering stops are mandatory. Check tie rods against rail, LCA and brackets at full lock. |
+| Steering lock | Expect 12–18° less steering lock (tyre-to-body clearance with the wider tyres in narrower wells, and the steeper tie-rod angle); turning circle grows from ~9.4 m (Miata) to roughly 16–25 m. | Steering stops are mandatory. Check tie rods against rail, LCA and brackets at full lock. |
 | Tyre fitment | Front tyres sit ~35 mm/side further out than stock, and the inner edge further inboard. Main fitment risk. | Check full lock + full bump against the scanned body and the shock bodies. |
 | Body-to-frame | Mount style still open. Panels must clear tyres, arms and shocks at full travel and roll. | Check against the body scan. |
 | Brake lines | Four discs, braided flex at each corner, hard lines on the rails. | Rear flex runs frame → upright; it must take full droop without tension and full bump without kinking. |

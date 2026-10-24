@@ -49,7 +49,8 @@ If assist is chosen, this is the cheapest and simplest EPAS path. The motor and 
 1. **Power:** fused 12 V and ground with heavy-gauge cable.
 2. **Wake:** the column's IG wake line is **hard-wired to switched ignition**. Do not rely on the gateway to wake it.
 3. **Assist curve:** the Pi gateway sends the two Toyota frames the column expects (`0x1C4` engine RPM, `0xB4` vehicle speed). With these the column gives speed-sensitive assist. Frame IDs, checksums and the safety reasoning are in the [EPAS CAN gateway](./epas-can-gateway) post.
-4. **If the gateway stops:** unknown until bench-tested. The column may hold, drop to fixed or no assist, or latch a fault until a key cycle. The gateway's loss policy (hold the last speed, ramp to low assist, never to 0) is in the gateway post.
+4. **Any fault fails to manual:** the column keeps its mechanical shaft, so losing power, CAN or the gateway leaves unassisted steering (bench-check that the unpowered column turns freely).
+5. **If the gateway stops:** unknown until bench-tested. The column may hold, drop to fixed or no assist, or latch a fault until a key cycle. The gateway's loss policy (hold the last speed, ramp to low assist, never to 0) is in the gateway post.
 
 **Engine-off assist is not promised.** A Prius steers with its engine stopped, so the column probably doesn't need rpm > 0, but it may use `ENGINE_RUNNING` or other frames. Check on the bench what it does with ignition on and the engine off.
 

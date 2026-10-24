@@ -41,7 +41,7 @@ Shock towers are part of the frame, not bolted plates. The front towers tie into
 
 ## Loads
 
-From the [geometry reference](./geometry-design-reference): peak weight transfer at 0.8 g is ~43% higher than the donor Miata, mostly because the CG is higher (~575 mm vs ~460 mm). That loads the UCA mount, the shock tower tops and the rear pickups hardest. Rail and crossmember sizes go in the cut list in [design finalization](./design-finalization).
+From the [geometry reference](./geometry-design-reference): peak weight transfer at 0.8 g is ~44% higher than the donor Miata, mostly because the CG is higher (~575 mm vs ~460 mm). That loads the UCA mount, the shock tower tops and the rear pickups hardest. Rail and crossmember sizes go in the cut list in [design finalization](./design-finalization).
 
 ## Still open
 

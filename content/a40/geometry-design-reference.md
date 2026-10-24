@@ -7,25 +7,22 @@ kind: reference
 tags: [suspension, geometry, analysis, fabrication]
 ---
 
-What changes at vehicle level when the Miata suspension is narrowed into the A40, and what that means for the frame. Front: NA Miata double wishbone, every pickup moved **95 mm/side** inboard. Rear: **narrowed NA Miata IRS** at a 1340 mm track with an RX-8 diff (see [rear suspension](./rear-suspension)). Spring, bar and damper selection live in [suspension tuning](./suspension-tuning); donor dimensions in [donor geometry dimensions](./donor-geometry-dimensions); fitment in [narrowing analysis](./narrowing-analysis).
+What changes at vehicle level when the Miata suspension is narrowed into the A40, and what that means for the frame. Front: NA Miata double wishbone, every pickup moved **95 mm/side** inboard. Rear: **narrowed NA Miata IRS** at a 1340 mm track with an RX-8 diff (see [rear suspension](./rear-suspension)). Spring, bar and damper selection live in [suspension tuning](./suspension-tuning); donor dimensions in [donor geometry dimensions](./donor-geometry-dimensions); fitment in [narrowing analysis](./narrowing-analysis). Vehicle numbers (mass, CG, tracks) come from [build constants](./build-constants).
 
-> Every number and plot here comes from [`scripts/plot_geometry_reference.py`](https://github.com/HorvathDawson/portfolio-website/blob/main/scripts/plot_geometry_reference.py). Running it prints a summary of all the values quoted below. All inputs are working values; the "verify" items are what moves them.
+> Every number and plot here comes from [`scripts/plot_geometry_reference.py`](https://github.com/HorvathDawson/portfolio-website/blob/master/scripts/plot_geometry_reference.py). Running it prints a summary of all the values quoted below. All inputs are working values; the "verify" items are what moves them.
 
 ## Inputs
 
 | | Miata donor | A40 build |
 |---|---:|---:|
 | Hub face from CL | 750 mm | 655 mm (locked) |
-| Wheel / tyre | ET40, 185/60R14 (577 mm OD) | ET38, 205/65R15 (647.5 mm OD) |
+| Wheel / tyre | ET40, 185/60R14 (577.6 mm OD) | ET38, 205/65R15 (647.5 mm OD) |
 | Front track | 1420 mm | 1234 mm exact, **~1230 nominal** |
-| Rear track | - | 1340 mm (locked) |
 | Hub centre height | 265 mm | 300.25 mm (+35.25) |
 | LCA / UCA inner pivot from CL | 329.5 / 368 mm | 234.5 / 273 mm |
 | Wheelbase | 2265 mm | 2350 mm |
-| CG height | ~460 mm | 575 ± 50 mm |
-| Sprung mass / corners | - | ~825 kg; 231 kg F, 181 kg R (55/45) |
 
-Lock the pivot and hub-face positions, not the derived track. The donor's 1420 mm track is unverified (published 1405-1425): measure the donor hub-face width. Vehicle-level ratios below use the nominal 1230 mm.
+Rear track, CG height and masses: see [build constants](./build-constants). Lock the pivot and hub-face positions, not the derived track. The donor's 1420 mm track is unverified (published 1405-1425): measure the donor hub-face width. Vehicle-level ratios below use the nominal 1230 mm.
 
 ## Results at a glance
 
@@ -58,7 +55,7 @@ What does change: roll centre, roll stiffness, weight transfer, and (from the ta
 
 | Step | RC | Change |
 |---|---:|---:|
-| Stock Miata (1420 mm, 577 mm tyre) | 142.4 mm | - |
+| Stock Miata (1420 mm, 577.6 mm tyre) | 142.4 mm | - |
 | A40 pickups, Miata tyre and ET40 | 123.3 mm | **−19.1 mm** (narrowing) |
 | A40 build, 647.5 mm tyre, ET38 | 139.2 mm | **+15.8 mm** (tyre lifts the linkage 35 mm) |
 
@@ -162,7 +159,7 @@ The shock tower must fit between the rails, clear the engine and carry about 5 k
 
 From the scanned knuckle (LBJ 84.25 mm inboard of the hub face and 86 mm below hub centre; UBJ 132 mm inboard and 137.75 mm above): **KPI 12.05°, caster 3.62°.** Baseline is the Miata on ET40.
 
-| | Miata (ET40, 577 mm) | A40 (ET38, 647.5 mm) |
+| | Miata (ET40, 577.6 mm) | A40 (ET38, 647.5 mm) |
 |---|---:|---:|
 | Scrub radius | +6.05 mm | **+0.5 mm** |
 | Mechanical trail | 7.57 mm | **9.8 mm** |

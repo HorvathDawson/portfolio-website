@@ -668,12 +668,12 @@
 <polygon fill="#ffffff" stroke="black" points="5119,-151 4444,-151 4444,-13 5119,-13 5119,-151"/>
 <polygon fill="none" stroke="black" points="4444.5,-128 4444.5,-151 5119.5,-151 5119.5,-128 4444.5,-128"/>
 <text text-anchor="start" x="4764" y="-135.8" font-family="Helvetica,sans-Serif" font-size="14.00">EPAS</text>
-<polygon fill="none" stroke="black" points="4444.5,-105 4444.5,-128 4759.5,-128 4759.5,-105 4444.5,-105"/>
-<text text-anchor="start" x="4497" y="-112.8" font-family="Helvetica,sans-Serif" font-size="14.00">Prius Gen 3 EPAS column ECU</text>
-<polygon fill="none" stroke="black" points="4759.5,-105 4759.5,-128 4977.5,-128 4977.5,-105 4759.5,-105"/>
-<text text-anchor="start" x="4812" y="-112.8" font-family="Helvetica,sans-Serif" font-size="14.00">can1, 500 kbit/s</text>
-<polygon fill="none" stroke="black" points="4977.5,-105 4977.5,-128 5119.5,-128 5119.5,-105 4977.5,-105"/>
-<text text-anchor="start" x="5030" y="-112.8" font-family="Helvetica,sans-Serif" font-size="14.00">3&#45;pin</text>
+<polygon fill="none" stroke="black" points="4444.5,-105 4444.5,-128 4864.5,-128 4864.5,-105 4444.5,-105"/>
+<text text-anchor="start" x="4471" y="-112.8" font-family="Helvetica,sans-Serif" font-size="14.00">Prius Gen 4 (2016&#45;2022) EPAS column ECU (if fitted)</text>
+<polygon fill="none" stroke="black" points="4864.5,-105 4864.5,-128 5030.5,-128 5030.5,-105 4864.5,-105"/>
+<text text-anchor="start" x="4891" y="-112.8" font-family="Helvetica,sans-Serif" font-size="14.00">can1, 500 kbit/s</text>
+<polygon fill="none" stroke="black" points="5030.5,-105 5030.5,-128 5119.5,-128 5119.5,-105 5030.5,-105"/>
+<text text-anchor="start" x="5056.5" y="-112.8" font-family="Helvetica,sans-Serif" font-size="14.00">3&#45;pin</text>
 <polygon fill="none" stroke="black" points="4444.5,-82 4444.5,-105 4763.5,-105 4763.5,-82 4444.5,-82"/>
 <text text-anchor="start" x="4599" y="-89.8" font-family="Helvetica,sans-Serif" font-size="14.00">1</text>
 <polygon fill="none" stroke="black" points="4763.5,-82 4763.5,-105 5119.5,-105 5119.5,-82 4763.5,-82"/>

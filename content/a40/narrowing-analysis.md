@@ -31,7 +31,7 @@ The donor baseline (1420 mm track at ET40 → hub face 750 mm from CL) is the sc
 |---|---|---|---|
 | Wheelbase | 2350 mm | 2265 mm | +85 mm |
 | Front track | 1232 mm | 1420 mm | −188 mm |
-| Stock tyre | 5.25-16 (133 × 646 mm) | 185/60R14 (185 × 578 mm) | width −52 mm, OD +68 mm |
+| Stock tyre | 5.25-16 (133 × 646 mm) | 185/60R14 (185 × 577.6 mm) | width −52 mm, OD +68 mm |
 | Stock outer-to-outer | 1232 + 133 = **1365 mm** | 1420 + 185 = **1605 mm** | −240 mm |
 | Stock wheel | 16 in steel, no offset | 14×6 ET40 | — |
 | Bolt pattern | 4-stud | 4×100 | converting to 4×100 |

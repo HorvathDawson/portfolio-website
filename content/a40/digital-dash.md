@@ -7,7 +7,7 @@ kind: tutorial
 tags: [electronics, dash, raspberry-pi, haltech, can-bus]
 ---
 
-The original A40 cluster is coming out. In its place, a Raspberry Pi 5 behind the original bezel runs a Godot dashboard that reads the Haltech Nexus S2 CAN broadcast. The same Pi also runs the [EPAS CAN gateway](./epas-can-gateway). Sensor wiring is covered in the [wiring overview](./wiring-overview).
+The original A40 cluster is coming out. In its place, a Raspberry Pi 5 behind the original bezel runs a Godot dashboard that reads the Haltech Nexus S2 CAN broadcast. If EPAS is fitted, the same Pi also runs the [EPAS CAN gateway](./epas-can-gateway). Sensor wiring is covered in the [wiring overview](./wiring-overview).
 
 <figure>
   <img src="/assets/projects/a40-austin/blog/dash/dash-reference.jpeg" alt="A40 Austin Devon dash bezel with dimension reference" />
@@ -62,7 +62,7 @@ A short key-off (a fuel stop) inside the first minute doesn't reboot the dash. B
 
 <figure class="wide">
   <img src="/assets/projects/a40-austin/blog/dash/dash-wiring.svg" alt="Dash wiring: constant 12 V with 5 A fuse and ignition sense into the Mini-Box DCDC-USB, its V(out) jumpered to 5 V feeding the Raspberry Pi 5 USB-C and, on a separate pair, the Waveshare display, PSW to the Pi 5 J2 header, PiCAN FD Duo Isolated with can0 to the Haltech Nexus S2 and can1 to the Prius EPAS column" />
-  <figcaption>Dash + gateway wiring. Source: <a href="https://github.com/HorvathDawson/portfolio-website/blob/main/scripts/a40-dash-wiring.py">scripts/a40-dash-wiring.py</a> (WireViz).</figcaption>
+  <figcaption>Dash + gateway wiring. Source: <a href="https://github.com/HorvathDawson/portfolio-website/blob/master/scripts/a40-dash-wiring.py">scripts/a40-dash-wiring.py</a> (WireViz).</figcaption>
 </figure>
 
 ## Hardware assembly
@@ -235,7 +235,7 @@ Warning icons sit as an overlay above the gauges: indicators, high beam, CEL, lo
 
 ## Generate gauge assets (Mac)
 
-[scripts/a40-gauge-placeholders.py](https://github.com/HorvathDawson/portfolio-website/blob/main/scripts/a40-gauge-placeholders.py) draws the dial faces, the needles, a preview and `gauges_manifest.json` (pivots, sweeps, formulas, window anchors, panel placement), and prints the Godot numbers below.
+[scripts/a40-gauge-placeholders.py](https://github.com/HorvathDawson/portfolio-website/blob/master/scripts/a40-gauge-placeholders.py) draws the dial faces, the needles, a preview and `gauges_manifest.json` (pivots, sweeps, formulas, window anchors, panel placement), and prints the Godot numbers below.
 
 ```bash
 pip install pillow ezdxf
@@ -344,7 +344,7 @@ WantedBy=multi-user.target
 
 ## Silent boot with the A40 splash
 
-**1. Generate the splash (Mac).** [scripts/a40-splash-generator.py](https://github.com/HorvathDawson/portfolio-website/blob/main/scripts/a40-splash-generator.py) writes two files:
+**1. Generate the splash (Mac).** [scripts/a40-splash-generator.py](https://github.com/HorvathDawson/portfolio-website/blob/master/scripts/a40-splash-generator.py) writes two files:
 
 - `scripts/output/a40-dash/a40-boot-splash-portrait.png` (720×1920, pre-rotated for Plymouth)
 - the 1920×720 blog copy below
