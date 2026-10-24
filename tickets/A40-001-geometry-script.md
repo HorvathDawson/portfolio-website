@@ -1,7 +1,7 @@
 ---
 id: A40-001
 title: Geometry script, plots and reference post
-status: in-progress
+status: review
 owner: geometry agent
 reviewer:
 blocked_by:
@@ -27,3 +27,15 @@ The motion ratio treated the contact patch as fixed to the LCA (0.62 instead of 
 
 ## Verification
 _Filled by the reviewer._
+
+## Implementer notes (geometry agent)
+- MR from four-bar perturbation: 0.690 vertical, 0.680 at an 80° shock (A40, ET38). Effective lever 347.8 mm.
+- Front RC 139.2 mm (Miata 142.4); rear RC carried as 80/100/150 mm, rear MR as 0.65/0.75/0.85 cases.
+- Springs-only roll 6.5/6.9/7.1° at rear RC 150/100/80; bars add 15.5–33 kN·m/rad (23.8 for 3.5° at RC 100).
+- Front spring 38.7 N/mm (221 lb/in); rear 38/29/22 N/mm at rear MR 0.65/0.75/0.85.
+- Front travel 83 bump / 103 droop with 127 mm stroke (45% bump split assumed); stock Miata travel needs ~106–112 mm stroke.
+- Lateral transfer +44%; jacking 20.1% → 22.6%; scrub +0.53 mm; trail 9.80 mm; turning circle ~16.3–25.1 m.
+- Bar-diameter results are indicative: installation ratio back-calculated from an unsourced stock-bar figure.
+- Post: 440 → 222 lines. Ackermann reconciled in script (labels computed).
+- Follow-ups for other posts: donor-geometry-dimensions travel (141/60, MR 0.62), captions of arb_sizing, ride_frequency, ackermann, rack_narrowing, driveshaft_angles, ujoint_life.
+- Unused plots still generated: rc_construction, rc_tire_comparison, rc_migration_miata, track_effects, weight_transfer, jacking, ackermann_topview, ackermann_turn.

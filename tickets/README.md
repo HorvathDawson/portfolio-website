@@ -57,7 +57,7 @@ _Filled by the reviewer: what was checked, how, and the result._
 | Id | Title | Status |
 |---|---|---|
 | [A40-000](./A40-000-canonical-spec.md) | Canonical numbers and decisions | done |
-| [A40-001](./A40-001-geometry-script.md) | Geometry script, plots and reference post | in-progress |
+| [A40-001](./A40-001-geometry-script.md) | Geometry script, plots and reference post | review |
 | [A40-002](./A40-002-front-geometry-steering.md) | Front narrowing, donor geometry and steering posts | review |
 | [A40-003](./A40-003-rear-suspension.md) | Rear suspension post (Miata IRS, RX-8 diff) | review |
 | [A40-004](./A40-004-constants-and-tuning.md) | Build constants and suspension tuning posts | review |
