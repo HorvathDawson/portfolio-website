@@ -38,7 +38,7 @@ Lock the pivot and hub-face positions, not the derived track. The donor's 1420 m
 | Front motion ratio | **0.68** at an 80° shock (0.69 vertical) | spring = wheel rate / 0.68² |
 | Front wheel travel (127 mm stroke) | 83 mm bump / 103 mm droop | confirm after the shock is chosen |
 | Springs-only roll at 0.8 g | **6.5-7.1°** | ARBs are required |
-| ARB stiffness needed for 3-4° | **16-33 kN·m/rad** (≈24 for 3.5°) | front and rear bars, see tuning |
+| ARB stiffness needed for 3-4° | **15.5–33 kN·m/rad** (≈24 for 3.5°) | front and rear bars, see tuning |
 | Scrub / trail | +0.5 mm / 9.8 mm | nothing; trail rises with the taller tyre |
 | Caster | 3.62° scanned | target **4-5.5°** |
 

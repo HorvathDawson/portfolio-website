@@ -24,6 +24,7 @@ Same idea as the front: keep the Miata geometry and move every inboard pickup to
 | Rear sprung corner mass | ~181 kg | working |
 | Rear wheel rate target | 16.1 N/mm (1.5 Hz), range 12–21 N/mm | working |
 | Rear motion ratio | Miata rear, not yet measured | measure donor |
+| Rear spring | 16.1 / MR²: 38 / 29 / 22 N/mm at MR 0.65 / 0.75 / 0.85 | pick once MR is measured |
 | Rear roll centre | not yet modelled; assume 80–150 mm | model/measure |
 
 **Narrowing amount.** Narrowing per side = stock hub-face distance from centreline − 708 mm. If the donor's 1420 mm rear track is quoted at ET40, that's 750 − 708 = **42 mm**. If it's at ET45, 755 − 708 = **47 mm**. Measure hub face to hub face on the donor subframe before cutting anything; don't trust the published track.
@@ -74,14 +75,14 @@ The engine and gearbox sit **3° down at the rear** (tail-down). The diff pinion
 
 <figure class="wide" style="margin:1rem 0">
   <img src="/assets/projects/a40-austin/blog/plots/driveshaft_angles.png" alt="Driveshaft angle layout side view showing transmission, driveshaft, and pinion angles with U-joint operating angles" style="width:100%" />
-  <figcaption>Driveshaft layout at ride height: gearbox output 3° down at the rear, shaft 5.4°, pinion parallel to the gearbox. Both U-joints run at 2.4°.</figcaption>
+  <figcaption>Driveshaft side view: gearbox output 3° tail-down, shaft 5.4° down to the rear (3.5" drop over 37" centre to centre), RX-8 pinion 3° nose-up, parallel to the gearbox. Both U-joints run at 2.4°. The diff is chassis-mounted, so this holds through suspension travel.</figcaption>
 </figure>
 
 U-joint life is roughly inversely proportional to operating angle (manufacturers rate it at 3° and 3000 rpm), so 2.4° is in the long-life range. Phase the yokes in line.
 
 <figure class="wide" style="margin:1rem 0">
   <img src="/assets/projects/a40-austin/blog/plots/ujoint_life.png" alt="U-joint life expectancy vs operating angle chart" style="width:100%" />
-  <figcaption>U-joint life vs operating angle at constant load and 3000 rpm, relative to the 3° rating.</figcaption>
+  <figcaption>U-joint life vs operating angle at rated load and 3000 rpm (life ∝ 1/angle, 5000 h at the 3° rating). The build's 2.4° joints sit at ~6240 h, in the ideal 1–3° band; doubling to 6° would halve life to 2500 h.</figcaption>
 </figure>
 
 **Ordering the driveshaft** (once the engine, gearbox and diff are in their final positions on the jig):

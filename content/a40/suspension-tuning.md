@@ -18,12 +18,13 @@ What gets set after the frame is built: spring rates, anti-roll bars, dampers an
 | Sprung corner mass | ~231 kg | ~181 kg |
 | Target ride frequency | 1.4 Hz (1.2–1.6) | 1.5 Hz (1.3–1.7) |
 | Wheel rate | 17.9 N/mm (13–23) | 16.1 N/mm (12–21) |
-| Motion ratio | ~0.68 | measure donor |
-| Spring rate | ≈39 N/mm (~220 lb/in) | 16.1 ÷ MR² |
-| Spring roll stiffness | ~13.5 kN·m/rad | ~14.4 kN·m/rad |
+| Motion ratio | 0.680 (80° shock; 0.690 vertical) | measure donor |
+| Spring rate | ≈39 N/mm (38.7, ~220 lb/in) | 38 / 29 / 22 N/mm at MR 0.65 / 0.75 / 0.85 |
+| Spring roll stiffness | 13.5 kN·m/rad | 14.4 kN·m/rad (28.0 total) |
+| Wheel travel | 83 bump / 103 droop (127 mm stroke) | set by rear MR and damper |
 | Critical damping at the wheel | ~4.1 kN·s/m | ~3.4 kN·s/m |
 | Static camber | −1.5 to −2.0° street | Miata rear adjustment, start −1.5° |
-| Caster | 4–5.5° | — |
+| Caster | 4–5.5° (3.62° scanned) | — |
 | Toe | ~0 | slight toe-in, ~1–2 mm total |
 
 All of these depend on the working masses; redo the table after the car is corner-weighed.
@@ -42,25 +43,26 @@ To measure instead: corner-weigh the car, then subtract the unsprung mass of a w
 - Street range 1.2–1.6 Hz. Below ~1.0 feels floaty, above ~2.0 harsh.
 - Run the rear 0.0–0.2 Hz above the front. The rear wheel hits a bump later; a slightly faster rear catches up, so the body heaves flat instead of pitching.
 - Pick the **wheel rate** first (it doesn't depend on motion ratio), then convert: spring rate = wheel rate ÷ MR².
+- Front: 17.9 / 0.680² = **38.7 N/mm (221 lb/in)**. Rear: 16.1 / MR² = 38 / 29 / 22 N/mm at MR 0.65 / 0.75 / 0.85; pick once the rear MR is measured.
 
 1 lb/in = 0.175 N/mm.
 
 <figure>
   <img src="/assets/projects/a40-austin/blog/plots/ride_frequency.png" alt="Ride frequency vs spring rate for different corner masses" />
-  <figcaption>Ride frequency vs spring rate at the front motion ratio. The shaded band is the 1.2–1.6 Hz street range.</figcaption>
+  <figcaption>Ride frequency vs <em>wheel</em> rate for the 231 kg front and 181 kg rear sprung corners (dotted: corner mass ±10%). Shaded: 1.2–1.6 Hz street band. Markers: front 17.9 N/mm at 1.4 Hz (spring 38.7 N/mm at MR 0.680), rear 16.1 N/mm at 1.5 Hz (spring 38 / 29 / 22 N/mm at MR 0.65 / 0.75 / 0.85).</figcaption>
 </figure>
 
 ## Anti-roll bars
 
-**Roll without bars.** Springs alone give ~28 kN·m/rad of roll stiffness (front 13.5 + rear 14.4, from $K = K_w T^2/2$). With the front roll centre at ~139 mm and the rear assumed at 80–150 mm, the roll axis sits ~110–145 mm high at the CG. That leaves a roll arm of ~430–465 mm. At 0.8 g that is **~6.5–7° of roll**: too much.
+**Roll without bars.** Springs alone give 28.0 kN·m/rad of roll stiffness (front 13.5 + rear 14.4, from $K = K_w T^2/2$). With the front roll centre at 139 mm and the rear assumed at 80–150 mm, the roll axis sits 113–144 mm high at the CG, a roll arm of ~430–460 mm. At 0.8 g that is **6.5 / 6.9 / 7.1° of roll** at rear RC 150 / 100 / 80 mm: too much.
 
-**Target 3–4°.** The bars must add about **16–33 kN·m/rad** in total (~24 kN·m/rad for 3.5° with the rear RC at 100 mm). The rear roll centre is the biggest unknown; once it's modelled the range narrows.
+**Target 3–4°.** The bars must add **15.5–33 kN·m/rad** in total (4° at rear RC 150 mm to 3° at 80 mm; 23.8 kN·m/rad for 3.5° at rear RC 100 mm). CG ±50 mm moves the 3.5° figure to 18 / 30 kN·m/rad. The rear roll centre is the biggest unknown; once it's modelled the range narrows.
 
-Bar stiffness scales with diameter⁴ (formula and installation ratios in the geometry reference). Use solid bar. Stock Miata front bars run ~19–22 mm depending on trim (verify for the donor). Expect ~22–25 mm front for this car, finalised from the plot once the rear RC is known.
+Bar stiffness scales with diameter⁴. Use solid bar. As a scale, a front bar alone gives 22 mm → 13.5, 25 mm → 22.5 kN·m/rad; this is indicative only, because the 1.71 installation ratio is back-calculated, not measured. Stock Miata front bars run ~19–22 mm depending on trim (verify for the donor). Expect ~22–25 mm front plus a rear bar, finalised once the rear RC and CG are known.
 
 <figure>
   <img src="/assets/projects/a40-austin/blog/plots/arb_sizing.png" alt="Required total roll stiffness vs target roll angle with ARB diameter lines" />
-  <figcaption>Required total roll stiffness vs target roll angle across the CG band. The horizontal lines show what each bar diameter adds; where a line crosses the curve gives the resulting roll.</figcaption>
+  <figcaption>ARB stiffness to add on top of the 28.0 kN·m/rad from the springs (front + rear) vs target roll at 0.8 g. White: CG 575 mm, rear RC 100 mm (32 / 24 / 18 kN·m/rad at 3 / 3.5 / 4°); band: rear RC 80–150 mm; dotted / dashed: CG 525 / 625 mm. Horizontal lines: a 19–28 mm front bar alone at the assumed 1.71 installation ratio; where one crosses the curve gives the resulting roll.</figcaption>
 </figure>
 
 **Balance (LLTD).** $LLTD = \Delta W_f / (\Delta W_f + \Delta W_r)$, i.e. the front share of lateral load transfer. Start ~3–5% above the front static weight fraction (so ~58–60% front for 55/45) for mild understeer.
@@ -76,7 +78,7 @@ Bar stiffness scales with diameter⁴ (formula and installation ratios in the ge
 Use adjustable dampers: damping can't be finalised until the shock positions are set and the car is driving.
 
 - Critical damping at the wheel is $c_c = 2\sqrt{K_w m_c}$: ~4.1 kN·s/m front, ~3.4 kN·s/m rear.
-- At the damper, divide by MR²: the front is ~8.8 kN·s/m at MR 0.68.
+- At the damper, divide by MR²: the front is ~8.8 kN·s/m at MR 0.680.
 - Aim for ride damping ζ ≈ 0.3–0.4 and roll ζ ≈ 0.4–0.5. Below ~0.3 the body oscillates after inputs.
 - The A40 has more roll inertia than a Miata. Set valving for this car, not from Miata settings.
 

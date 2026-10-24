@@ -124,7 +124,7 @@ The front-view four-bar is set by four points: LCA pivot, UCA pivot, LBJ and UBJ
 
 <figure style="margin:1rem 0">
   <img src="/assets/projects/a40-austin/blog/plots/uca_plan.png" alt="UCA plan view schematic" style="width:100%" />
-  <figcaption>UCA plan view (top-down). BJ at origin, +x outboard, +y forward. Symmetric arm: front pivot at +110 mm, rear pivot at -110 mm from the BJ; total fore-aft span = 220 mm. Lateral arm length (UBJ -> pivot line) = 250 mm; the UCA pivot line sits 38.5 mm outboard of the LCA pivot line. Pivot bushings shown as 57 mm rectangles.</figcaption>
+  <figcaption>UCA plan view (top-down). BJ at origin, +x outboard, +y forward. Symmetric arm: front pivot at +110 mm, rear pivot at -110 mm from the BJ; total fore-aft span = 220 mm. Lateral arm length (UBJ -> pivot line) = 250 mm; the UCA pivot line sits 38.5 mm outboard of the LCA pivot line. Pivot bushings shown as 57 mm rectangles. Schematic: the bushing axis is drawn parallel to the CL; the real axis is tilted ~3.5° front-high and canted in plan.</figcaption>
 </figure>
 
 <figure style="margin:1rem 0">

@@ -1506,7 +1506,7 @@ export const roadmap: Roadmap = {
       summary: 'Size the bars to the roll-stiffness target, then pick arm length and end-link attachment. Weld mount provisions front and rear; the rear bar is final-sized at the rolling-chassis roll-balance test.',
       notes: [
         'Springs-only roll at 0.8 g ≈ 6.5–7° (rear RC 150–80 mm); spring roll stiffness ≈ 28 kN·m/rad total (13.5 front / 14.4 rear)',
-        'For 3–4° the bars must add ~16–33 kN·m/rad (≈24 kN·m/rad for 3.5° at rear RC 100 mm)',
+        'For 3–4° the bars must add ~15.5–33 kN·m/rad (≈24 kN·m/rad for 3.5° at rear RC 100 mm)',
         'Bar diameter: TBD from that target; solid bar; stiffness scales with D⁴',
         'LLTD: start ~3–5% above the front static weight fraction',
         'Rear: IRS at both ends, so a rear ARB is a normal tuning part — provisions now, bar sized at the roll-balance test',
@@ -1916,7 +1916,7 @@ export const roadmap: Roadmap = {
       epic: 'narrowing',
       kind: 'decision',
       status: 'in-progress',
-      summary: 'Front ARB is needed: springs alone give ≈6.5–7° of roll at 0.8 g, and the bars must add ~16–33 kN·m/rad to reach 3–4° (see t-decide-arb). Lock diameter + mount geometry now so the frame ships with usable provisions.',
+      summary: 'Front ARB is needed: springs alone give ≈6.5–7° of roll at 0.8 g, and the bars must add ~15.5–33 kN·m/rad to reach 3–4° (see t-decide-arb). Lock diameter + mount geometry now so the frame ships with usable provisions.',
       notes: [
         'Solid bar; diameter TBD from the roll-stiffness target',
         'Mount provisions: bracket tabs welded to frame at front cross-tube',

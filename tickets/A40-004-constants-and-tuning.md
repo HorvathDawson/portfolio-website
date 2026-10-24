@@ -4,7 +4,7 @@ title: Build constants and suspension tuning posts
 status: review
 owner: Claude
 reviewer:
-blocked_by: A40-001 (final MR, RC and roll numbers)
+blocked_by:
 ---
 
 ## Files
@@ -23,3 +23,9 @@ blocked_by: A40-001 (final MR, RC and roll numbers)
 
 ## Verification
 _Filled by the reviewer._
+
+## Implementer notes (reconcile agent)
+- Numbers aligned with the geometry script summary: MR 0.680, front spring 38.7 N/mm, rear 38/29/22 N/mm at MR 0.65/0.75/0.85, travel 83/103 mm, roll 6.5/6.9/7.1°, bars 15.5–33 kN·m/rad, roll stiffness 28.0.
+- Captions fixed: ride_frequency (x-axis is wheel rate), arb_sizing (stiffness to add, front bar alone at IR 1.71), rack_narrowing, ackermann (0.54/1.04/1.71° at 15/20/25°), driveshaft, ujoint_life.
+- Tyre poke ~35 mm/side everywhere; narrowing-analysis explains the 37 mm exact-track figure.
+- Open: lca_plan.png labels overlap ("ARB link"/"Coilover"); uca_plan/pickups_3view draw the UCA axis parallel to the centreline (captions say so). Needs a script fix.

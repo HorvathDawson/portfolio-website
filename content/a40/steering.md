@@ -72,7 +72,7 @@ Machining a new bar from billet is the fallback if the stock bar cannot be short
 
 <figure>
   <img src="/assets/projects/a40-austin/blog/plots/rack_narrowing.png" alt="Rack narrowing required vs front track width with difficulty zones" />
-  <figcaption>Rack narrowing vs front track, with difficulty zones from LocostUSA builder data. Narrowing equals the change in hub-face spacing from the donor; at 95 mm per side that is 190 mm total, in the moderate zone.</figcaption>
+  <figcaption>Rack narrowing vs front track (1420 mm donor baseline), with difficulty zones from LocostUSA builder data. The build (~1230 mm track, tyres 1435 mm outer-to-outer, +35 mm/side) needs 190 mm (7.5"), in the moderate zone. Pulling the tyres in to 1400 mm would need 225 mm; matching the stock A40's 1365 mm would need 260 mm, past the practical limit.</figcaption>
 </figure>
 
 ---
@@ -87,7 +87,7 @@ The plot uses a **virtual-wheelbase approximation**, not a real linkage solve. O
 
 <figure class="wide">
   <img src="/assets/projects/a40-austin/blog/plots/ackermann.png" alt="Ackermann error vs steering angle with driving scenarios and turn radii" />
-  <figcaption>Stock Miata knuckle arms (17.40°) on the A40 (track ~1230 mm, wheelbase 2350 mm), approximate virtual-wheelbase model. Top: excess Ackermann vs steering lock, with driving scenarios and turn radii. Bottom: at autocross angles (15-20°) the excess runs from ~0.5° to ~1.0°, around compliance-steer level and well below tyre slip angles. A linkage solve with the scanned steering arm is still needed.</figcaption>
+  <figcaption>Stock Miata knuckle arms (17.40°) on the A40 (track ~1230 mm, wheelbase 2350 mm), approximate virtual-wheelbase model. Top: excess Ackermann vs steering lock, with driving scenarios and turn radii. Excess is 0.54° at 15°, 1.04° at 20° and 1.71° at 25° (parking-speed lock). Bottom: the 15° and 20° values against tyre pressure, bushing compliance, driver input and the ~4° tyre slip angle at 0.8 g. A linkage solve with the scanned steering arm is still needed.</figcaption>
 </figure>
 
 ### Rack position
@@ -105,7 +105,7 @@ Body clearance, not the rack, limits lock. Expect to lose **12-18° of lock** co
 | | Turning circle (diameter) |
 |---|---|
 | Miata NA | ~9.4 m |
-| A40 build, estimate | **~16-25 m** |
+| A40 build, estimate | **~16-25 m** (16.3 m at 12° lost, 25.1 m at 18°) |
 
 That is a real drivability cost (three-point turns, parking). Steering stops are **mandatory**: set them on the jig where the tyre clears the scanned body at full lock and full bump, with margin. Then measure the actual turning circle.
 

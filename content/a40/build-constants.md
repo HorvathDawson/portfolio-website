@@ -34,7 +34,7 @@ The headline numbers for the build, in one place. Other posts use these. If a po
 | Rear narrowing | ~42–47 mm per side | measure | Stock rear hub-face distance − 708 mm. See [rear suspension](./rear-suspension). |
 | Tyre | 205/65R15, OD 647.5 mm | locked | Same front and rear. |
 | Wheel | 15", 4x100, ET38 | locked | On hand. Miata donor baseline is ET40. |
-| Tyre outer-to-outer (front) | ~1435 mm | — | Stock A40 is ~1365 mm, so the tyres sit ~35 mm/side further out than stock. Main fitment risk; check against the body scan. See [narrowing analysis](./narrowing-analysis). |
+| Tyre outer-to-outer (front) | ~1435 mm | working | 1230 + 205. Stock A40 is 1232 + 133 = 1365 mm, so the tyres sit **~35 mm/side** further out than stock (37 at the exact 1234 mm track). Main fitment risk; check against the body scan. See [narrowing analysis](./narrowing-analysis). |
 
 ## Suspension
 
@@ -42,13 +42,15 @@ The headline numbers for the build, in one place. Other posts use these. If a po
 |---|---|---|---|
 | Front | Narrowed Miata NA double wishbone | locked | Narrowed pivots: LCA 234.5 mm, UCA 273 mm from centreline. |
 | Rear | Narrowed Miata NA independent rear | decided | Replaces the Ford 9" / four-link plan (Oct 2026). |
-| Front motion ratio | ~0.68 | working | From the front-view instant centre. See the [geometry reference](./geometry-design-reference). |
-| Rear motion ratio | TBD | measure | Measure on the donor. |
-| Wheel rate target, front | 17.9 N/mm (1.4 Hz), range 13–23 | working | Spring rate = wheel rate ÷ MR². ≈39 N/mm (~220 lb/in) at MR 0.68. |
+| Front motion ratio | 0.680 | working | 80° shock (0.690 vertical), from the front-view instant centre. See the [geometry reference](./geometry-design-reference). |
+| Rear motion ratio | TBD | measure | Measure on the donor. Rear spring = 16.1 / MR²: 38 / 29 / 22 N/mm at MR 0.65 / 0.75 / 0.85. |
+| Wheel rate target, front | 17.9 N/mm (1.4 Hz), range 13–23 | working | Spring rate = wheel rate ÷ MR² = ≈39 N/mm (38.7, ~220 lb/in) at MR 0.680. |
 | Wheel rate target, rear | 16.1 N/mm (1.5 Hz), range 12–21 | working | Rear ~0.1 Hz above front. |
-| Front roll centre | ~139 mm | working | Kinematic, static ride height. |
+| Front wheel travel | 83 mm bump / 103 mm droop | working | 127 mm stroke, 45% in bump (assumed). Stock Miata travel needs a ~106–112 mm stroke. |
+| Front roll centre | 139.2 mm | working | Kinematic, static ride height (Miata 142.4). |
 | Rear roll centre | 80–150 mm assumed | model | Narrowed Miata rear; model or measure. |
-| Springs-only roll at 0.8 g | ~6.5–7° | working | Anti-roll bars must add ~16–33 kN·m/rad for 3–4°. See [suspension tuning](./suspension-tuning). |
+| Spring roll stiffness | 13.5 F + 14.4 R = 28.0 kN·m/rad | working | $K_w T^2/2$. |
+| Springs-only roll at 0.8 g | 6.5 / 6.9 / 7.1° | working | At rear RC 150 / 100 / 80 mm. Anti-roll bars must add 15.5–33 kN·m/rad for 3–4° (23.8 for 3.5° at rear RC 100). See [suspension tuning](./suspension-tuning). |
 
 ## Drivetrain
 

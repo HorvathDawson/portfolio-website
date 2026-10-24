@@ -69,7 +69,7 @@ Outer-to-outer minus stock A40 (1365 mm). Per-side figure is half this. Positive
 | 195 mm | +90 | +80 | +64 | +50 |
 | **205 mm (chosen)** | +100 | +90 | **+74** | +60 |
 
-**The chosen 205/ET38 sits about 35-37 mm per side outside the stock A40 tyres** (outer edge 719.5 mm from CL vs 682.5 mm stock). It also reaches about 35 mm further *inboard* than the stock tyre (inner edge 514.5 vs 549.5 mm). The earlier version of this table showed ~10 mm/side; every cell carried a +25 mm error. Nothing in the 95 mm narrowing gets the outer edge back to stock: no ET in the table brings a 205 under +60.
+**Tyre poke: ~35 mm per side outside the stock A40 tyres.** Outer-to-outer is 1230 + 205 = **1435 mm** vs 1232 + 133 = 1365 mm stock: +70 mm, 35 mm/side. This is the figure used across the build posts. At the exact 1234 mm track the table gives +74 (37 mm/side: outer edge 719.5 mm from CL vs 682.5 mm stock); the 2 mm difference is inside the ET and donor-track uncertainty. The tyre also reaches ~35 mm further *inboard* than the stock tyre (inner edge 514.5 vs 549.5 mm). The earlier version of this table showed ~10 mm/side; every cell carried a +25 mm error. Nothing in the 95 mm narrowing gets the outer edge back to stock: no ET in the table brings a 205 under +60.
 
 This is the main fitment risk. Check against the scanned body envelope:
 
