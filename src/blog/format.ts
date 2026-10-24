@@ -1,4 +1,4 @@
-import type { Category, Status } from './frontmatter';
+import type { Category, PostKind, Status } from './frontmatter';
 import type { CarKind } from './cars';
 
 export const statusLabel: Record<Status, string> = {
@@ -13,6 +13,13 @@ export const categoryLabel: Record<Category, string> = {
   repair: 'Repair',
   mod: 'Mod',
   inspection: 'Inspection',
+};
+
+/** Post kinds, as shown on the post header chip. */
+export const kindChipLabel: Record<PostKind, string> = {
+  log: 'Log',
+  reference: 'Reference',
+  tutorial: 'Tutorial',
 };
 
 export const kindLabel: Record<CarKind, string> = {

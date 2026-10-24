@@ -1,11 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { loadPost, type BlogPost } from './blogData';
 import { carPath, getCar, postPath, roadmapPath, type Car, type Epic } from './cars';
 import { CATEGORIES, type Category, type PostMeta } from './frontmatter';
 import { postsFor, serviceTable } from './postIndex';
 import { CarSwitcher } from './CarSwitcher';
-import { categoryLabel, formatDate, formatKm, statusLabel } from './format';
+import { PostSearch } from './PostSearch';
+import { RoadmapTasks, TOC_MIN, TocAside, TocInline, decoratePost, useOverflowHints, useScrollMemory } from './PostTools';
+import { categoryLabel, formatDate, formatKm, kindChipLabel, statusLabel } from './format';
 import { NotFound } from '../components/NotFound';
 import { useBreakpoint } from '../utils/useBreakpoint';
 import { usePageMeta } from '../utils/usePageMeta';
@@ -41,82 +43,107 @@ const PostDate: React.FC<{ date: string; long?: boolean; className: string }> = 
 
 /* ── Sidebar items ─────────────────────────────────── */
 
+/** Posts in an epic often repeat its first word ("Narrowing: …" under
+ *  "Narrowing & Geometry"); drop it there so the distinguishing part shows. */
+function shortTitle(title: string, epic?: Epic): string {
+  const m = title.match(/^([\p{L}\p{N}-]+):\s+(.+)$/u);
+  if (!m || !epic) return title;
+  return epic.title.toLowerCase().startsWith(m[1].toLowerCase()) ? m[2] : title;
+}
+
 const PostItem: React.FC<{
   post: PostMeta;
   active: boolean;
-  onSelect: (slug: string) => void;
+  search: string;
+  epic?: Epic;
   mobile?: boolean;
   showCategory?: boolean;
-}> = ({ post, active, onSelect, mobile, showCategory }) => (
-  <button
-    type="button"
-    className={`sb-item${mobile ? ' sb-item--mobile' : ''}${active ? ' sb-item--active' : ''}`}
-    onClick={() => onSelect(post.slug)}
-    aria-current={active ? 'page' : undefined}
-    role="listitem"
-  >
-    <span className={`sb-status-dot sb-dot--${post.status}`} aria-hidden="true" />
-    <span className="sb-item-text">
-      <span className="sb-item-title">{post.title}</span>
-      <span className="sb-item-sub">
-        <PostDate date={post.date} className="sb-item-date" />
-        {showCategory && post.category && <span className="sb-item-cat">{categoryLabel[post.category]}</span>}
-        {post.mileage_km !== undefined && <span className="sb-item-km">{formatKm(post.mileage_km)}</span>}
-      </span>
-    </span>
-  </button>
-);
+}> = ({ post, active, search, epic, mobile, showCategory }) => {
+  const label = shortTitle(post.title, epic);
+  return (
+    <li>
+      <Link
+        to={postPath(post.car, post.slug) + search}
+        className={`sb-item${mobile ? ' sb-item--mobile' : ''}${active ? ' sb-item--active' : ''}`}
+        aria-current={active ? 'page' : undefined}
+        title={label !== post.title ? post.title : undefined}
+      >
+        <span className={`sb-status-dot sb-dot--${post.status}`} aria-hidden="true" />
+        <span className="sb-item-text">
+          <span className="sb-item-title">{label}</span>
+          <span className="sb-item-sub">
+            <PostDate date={post.updated ?? post.date} className="sb-item-date" />
+            {post.kind === 'reference' && <span className="sb-item-kind">ref</span>}
+            {showCategory && post.category && <span className="sb-item-cat">{categoryLabel[post.category]}</span>}
+            {post.mileage_km !== undefined && <span className="sb-item-km">{formatKm(post.mileage_km)}</span>}
+          </span>
+        </span>
+      </Link>
+    </li>
+  );
+};
 
 const EpicGroup: React.FC<{
   epic: Epic;
   posts: PostMeta[];
   activeSlug?: string;
-  onSelect: (slug: string) => void;
+  search: string;
   mobile?: boolean;
-}> = ({ epic, posts, activeSlug, onSelect, mobile }) => {
+}> = ({ epic, posts, activeSlug, search, mobile }) => {
   const hasActive = posts.some((p) => p.slug === activeSlug);
   const [open, setOpen] = useState(hasActive);
+  const badge = statusLabel[epic.status] ?? epic.status;
 
   if (mobile) {
     return (
       <div className="sb-epic-group sb-epic-group--mobile">
-        <div className="sb-epic-header sb-epic-header--mobile">
+        <h2 className="sb-epic-header sb-epic-header--mobile">
           <span className={`sb-status-dot sb-dot--${epic.status}`} aria-hidden="true" />
           <span className="sb-epic-title">{epic.title}</span>
-          <span className={`sb-epic-badge sb-badge--${epic.status}`}>{statusLabel[epic.status]}</span>
-        </div>
-        {posts.map((post) => <PostItem key={post.slug} post={post} active={false} onSelect={onSelect} mobile />)}
+          <span className={`sb-epic-badge sb-badge--${epic.status}`}>{badge}</span>
+        </h2>
+        <ul className="sb-list">
+          {posts.map((post) => <PostItem key={post.slug} post={post} active={false} search={search} epic={epic} mobile />)}
+        </ul>
       </div>
     );
   }
 
+  const shown = open || hasActive;
   return (
     <div className="sb-epic-group">
       <button
         type="button"
         className={`sb-epic-header${hasActive ? ' sb-epic-header--active' : ''}`}
         onClick={() => setOpen((o) => !o)}
-        aria-expanded={open || hasActive}
+        aria-expanded={shown}
       >
         <span className={`sb-status-dot sb-dot--${epic.status}`} aria-hidden="true" />
         <span className="sb-epic-title">{epic.title}</span>
-        <span className={`sb-epic-badge sb-badge--${epic.status}`}>{statusLabel[epic.status]}</span>
-        <span className={`sb-epic-chevron${open || hasActive ? ' sb-epic-chevron--open' : ''}`} aria-hidden="true">&#9656;</span>
+        <span className={`sb-epic-badge sb-badge--${epic.status}`}>{badge}</span>
+        <span className={`sb-epic-chevron${shown ? ' sb-epic-chevron--open' : ''}`} aria-hidden="true">&#9656;</span>
       </button>
-      {(open || hasActive) && (
-        <div className="sb-epic-posts" role="list">
+      {shown && (
+        <ul className="sb-list sb-epic-posts">
           {posts.map((post) => (
-            <PostItem key={post.slug} post={post} active={post.slug === activeSlug} onSelect={onSelect} />
+            <PostItem key={post.slug} post={post} active={post.slug === activeSlug} search={search} epic={epic} />
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
 };
 
+/** A build car's posts in sidebar order: by epic, then any without a known epic. */
+function epicOrder(car: Car, posts: PostMeta[]): PostMeta[] {
+  if (car.kind !== 'build') return posts;
+  const grouped = car.epics.flatMap((e) => posts.filter((p) => p.epic === e.id));
+  return [...grouped, ...posts.filter((p) => !car.epics.some((e) => e.id === p.epic))];
+}
+
 /** Build cars: posts grouped by the car's epics. */
-const EpicList: React.FC<{ car: Car; activeSlug?: string; onSelect: (slug: string) => void; mobile?: boolean }> = ({
-  car, activeSlug, onSelect, mobile,
+const EpicList: React.FC<{ car: Car; activeSlug?: string; search: string; mobile?: boolean }> = ({
+  car, activeSlug, search, mobile,
 }) => {
   const posts = postsFor(car.id);
   const groups = car.epics
@@ -126,12 +153,12 @@ const EpicList: React.FC<{ car: Car; activeSlug?: string; onSelect: (slug: strin
   return (
     <>
       {groups.map(({ epic, posts: ps }) => (
-        <EpicGroup key={epic.id} epic={epic} posts={ps} activeSlug={activeSlug} onSelect={onSelect} mobile={mobile} />
+        <EpicGroup key={epic.id} epic={epic} posts={ps} activeSlug={activeSlug} search={search} mobile={mobile} />
       ))}
       {loose.length > 0 && (
-        <div className="sb-plain-group" role="list" aria-label="Other posts">
-          {loose.map((p) => <PostItem key={p.slug} post={p} active={p.slug === activeSlug} onSelect={onSelect} mobile={mobile} />)}
-        </div>
+        <ul className="sb-list sb-plain-group" aria-label="Other posts">
+          {loose.map((p) => <PostItem key={p.slug} post={p} active={p.slug === activeSlug} search={search} mobile={mobile} />)}
+        </ul>
       )}
     </>
   );
@@ -152,8 +179,8 @@ function useCategoryFilter(): [Category | null, (c: Category | null) => void] {
 }
 
 /** Garage cars: reference posts, then a dated log (newest first), filterable by category. */
-const DatedList: React.FC<{ car: Car; activeSlug?: string; onSelect: (slug: string) => void; mobile?: boolean }> = ({
-  car, activeSlug, onSelect, mobile,
+const DatedList: React.FC<{ car: Car; activeSlug?: string; search: string; mobile?: boolean }> = ({
+  car, activeSlug, search, mobile,
 }) => {
   const [category, setCategory] = useCategoryFilter();
   const posts = postsFor(car.id);
@@ -169,9 +196,9 @@ const DatedList: React.FC<{ car: Car; activeSlug?: string; onSelect: (slug: stri
       {reference.length > 0 && (
         <div className="sb-plain-group">
           <h2 className="sb-group-title">Reference</h2>
-          <div role="list">
-            {reference.map((p) => <PostItem key={p.slug} post={p} active={p.slug === activeSlug} onSelect={onSelect} mobile={mobile} />)}
-          </div>
+          <ul className="sb-list">
+            {reference.map((p) => <PostItem key={p.slug} post={p} active={p.slug === activeSlug} search={search} mobile={mobile} />)}
+          </ul>
         </div>
       )}
       <div className="sb-plain-group">
@@ -191,10 +218,10 @@ const DatedList: React.FC<{ car: Car; activeSlug?: string; onSelect: (slug: stri
             </button>
           ))}
         </div>
-        <div role="list">
-          {log.map((p) => <PostItem key={p.slug} post={p} active={p.slug === activeSlug} onSelect={onSelect} mobile={mobile} showCategory />)}
-          {log.length === 0 && <p className="sb-empty">No {category ? categoryLabel[category].toLowerCase() : ''} entries yet.</p>}
-        </div>
+        <ul className="sb-list">
+          {log.map((p) => <PostItem key={p.slug} post={p} active={p.slug === activeSlug} search={search} mobile={mobile} showCategory />)}
+        </ul>
+        {log.length === 0 && <p className="sb-empty">No {category ? categoryLabel[category].toLowerCase() : ''} entries yet.</p>}
       </div>
     </>
   );
@@ -275,79 +302,119 @@ const GarageFacts: React.FC<{ post: PostMeta }> = ({ post }) => {
   );
 };
 
+const PostNavLink: React.FC<{ car: Car; post: PostMeta; dir: 'prev' | 'next'; search: string }> = ({ car, post, dir, search }) => (
+  <Link to={postPath(car.id, post.slug) + search} className={`blog-nav-btn blog-nav-${dir}`} rel={dir}>
+    <span className="blog-nav-dir">{dir === 'prev' ? '← Previous' : 'Next →'}</span>
+    <span className="blog-nav-title">{post.title}</span>
+  </Link>
+);
+
 const PostContent: React.FC<{
+  car: Car;
   meta: PostMeta;
   post?: BlogPost;
   prev?: PostMeta;
   next?: PostMeta;
-  onNav: (slug: string) => void;
-  onBack?: () => void;
-}> = ({ meta, post, prev, next, onNav, onBack }) => {
+  search: string;
+  mobile?: boolean;
+}> = ({ car, meta, post, prev, next, search, mobile }) => {
   const contentRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const shown = post?.slug === meta.slug ? post : undefined;
+  const path = postPath(car.id, meta.slug);
+  const decorated = useMemo(() => (shown ? decoratePost(shown.html, path) : undefined), [shown, path]);
+  const toc = decorated && decorated.toc.length >= TOC_MIN ? decorated.toc : [];
+  const [copied, setCopied] = useState<string>();
 
+  useScrollMemory(contentRef, decorated);
+  useOverflowHints(bodyRef, decorated?.html);
   useEffect(() => {
-    if (!shown) return;
-    // Honour ./post#heading links; otherwise start each post at the top.
-    const hash = decodeURIComponent(window.location.hash.slice(1));
-    const target = hash ? document.getElementById(hash) : null;
-    if (target && contentRef.current?.contains(target)) target.scrollIntoView();
-    else contentRef.current?.scrollTo(0, 0);
-  }, [shown]);
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(undefined), 1800);
+    return () => clearTimeout(t);
+  }, [copied]);
 
-  // Links to other posts navigate in-app instead of reloading the page.
+  // Links to other posts navigate in-app instead of reloading the page;
+  // heading anchors copy their link.
   const onBodyClick = (e: React.MouseEvent) => {
     const a = (e.target as HTMLElement).closest('a');
     if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target) return;
     const url = new URL(a.href, window.location.href);
-    if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return;
+    if (url.origin !== window.location.origin) return;
     e.preventDefault();
-    navigate(url.pathname + url.search + url.hash);
+    if (a.classList.contains('heading-anchor')) {
+      navigate({ search, hash: url.hash }, { replace: true });
+      navigator.clipboard?.writeText(url.href).then(() => setCopied(url.hash.slice(1)), () => undefined);
+      return;
+    }
+    navigate(url.pathname === window.location.pathname ? { search, hash: url.hash } : url.pathname + url.search + url.hash);
   };
 
+  const kind = meta.kind && kindChipLabel[meta.kind];
   return (
-    <div className="blog-content-panel" ref={contentRef}>
-      {onBack && (
-        <button type="button" className="blog-mobile-back" onClick={onBack}>
-          &larr; All Posts
-        </button>
+    <div className="blog-content-panel" ref={contentRef} tabIndex={-1}>
+      {mobile && (
+        <nav className="blog-post-bar" aria-label="Post navigation">
+          <Link to={carPath(car.id) + search} className="blog-post-bar-back">&larr; Posts</Link>
+          <span className="blog-post-bar-title">{car.logTitle}</span>
+          {prev && <Link to={postPath(car.id, prev.slug) + search} className="blog-post-bar-step" aria-label={`Previous: ${prev.title}`} title={prev.title}>&lsaquo;</Link>}
+          {next && <Link to={postPath(car.id, next.slug) + search} className="blog-post-bar-step" aria-label={`Next: ${next.title}`} title={next.title}>&rsaquo;</Link>}
+        </nav>
       )}
 
-      <article className="blog-article">
-        <header className="blog-article-header">
-          <PostDate date={meta.date} long className="blog-article-date" />
-          <h1>{meta.title}</h1>
-          <div className="blog-article-meta">
-            {meta.category && <span className="blog-status blog-status--category">{categoryLabel[meta.category]}</span>}
-            <span className={`blog-status blog-status--${meta.status}`}>{statusLabel[meta.status]}</span>
-            {meta.tags.map((tag) => <span key={tag} className="blog-tag">{tag}</span>)}
-          </div>
-          <GarageFacts post={meta} />
-        </header>
+      <div className={`blog-post-layout${toc.length ? ' blog-post-layout--toc' : ''}`}>
+        <article className="blog-article">
+          <header className="blog-article-header">
+            <p className="blog-article-dates">
+              <PostDate date={meta.date} long className="blog-article-date" />
+              {meta.updated && meta.updated !== meta.date && (
+                <span className="blog-article-date"> · Updated <time dateTime={meta.updated}>{formatDate(meta.updated, true)}</time></span>
+              )}
+            </p>
+            <h1>{meta.title}</h1>
+            <div className="blog-article-meta">
+              {kind && <span className={`blog-status blog-status--kind blog-status--kind-${meta.kind}`}>{kind}</span>}
+              {meta.category && <span className="blog-status blog-status--category">{categoryLabel[meta.category]}</span>}
+              <span className={`blog-status blog-status--${meta.status}`}>{statusLabel[meta.status] ?? meta.status}</span>
+              {meta.tags.map((tag) => <span key={tag} className="blog-tag">{tag}</span>)}
+            </div>
+            <GarageFacts post={meta} />
+            <RoadmapTasks car={car.id} slug={meta.slug} />
+            {toc.length > 0 && <TocInline toc={toc} />}
+          </header>
 
-        {shown ? (
-          <div className="blog-article-body" onClick={onBodyClick} dangerouslySetInnerHTML={{ __html: shown.html }} />
-        ) : (
-          <p className="blog-loading" role="status">Loading…</p>
-        )}
+          {decorated ? (
+            <div className="blog-article-body" ref={bodyRef} onClick={onBodyClick} dangerouslySetInnerHTML={{ __html: decorated.html }} />
+          ) : (
+            <p className="blog-loading" role="status">Loading…</p>
+          )}
 
-        <nav className="blog-article-nav" aria-label="Previous and next posts">
-          {prev ? (
-            <button type="button" className="blog-nav-btn blog-nav-prev" onClick={() => onNav(prev.slug)}>
-              &larr; {prev.title}
-            </button>
-          ) : <span />}
-          {next ? (
-            <button type="button" className="blog-nav-btn blog-nav-next" onClick={() => onNav(next.slug)}>
-              {next.title} &rarr;
-            </button>
-          ) : <span />}
-        </nav>
-      </article>
+          <nav className="blog-article-nav" aria-label="Previous and next posts">
+            {prev ? <PostNavLink car={car} post={prev} dir="prev" search={search} /> : <span />}
+            {next ? <PostNavLink car={car} post={next} dir="next" search={search} /> : <span />}
+          </nav>
+          {mobile && <div className="blog-post-cars"><CarSwitcher current={car.id} /></div>}
+        </article>
+        {toc.length > 0 && <TocAside toc={toc} scroller={contentRef} />}
+      </div>
+      <p className="heading-copied" role="status" aria-live="polite">{copied ? 'Link copied' : ''}</p>
     </div>
   );
 };
+
+/** In-layout message for /garage/<car>/<unknown-slug>. */
+const PostNotFound: React.FC<{ car: Car; slug: string }> = ({ car, slug }) => (
+  <article className="blog-article blog-not-found">
+    <header className="blog-article-header">
+      <h1>Post not found</h1>
+    </header>
+    <p>
+      There is no post called <code>{slug}</code> in the {car.logTitle}. It may have been renamed.
+      Try the search, or go to the <Link to={carPath(car.id)}>{car.logTitle}</Link>.
+    </p>
+  </article>
+);
 
 /* ── Header bits ───────────────────────────────────── */
 
@@ -370,57 +437,62 @@ export const GarageBlog: React.FC = () => {
   return car ? <CarLog key={car.id} car={car} /> : <NotFound />;
 };
 
+/** The mobile post list, with its scroll position kept across Back. */
+const MobileList: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  useScrollMemory(ref, true, false);
+  return <div className="blog-mobile-list" ref={ref}>{children}</div>;
+};
+
 const CarLog: React.FC<{ car: Car }> = ({ car }) => {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const { search } = useLocation();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile' || bp === 'tablet';
   useLockHtmlScroll();
 
-  const posts = postsFor(car.id);
   const isBuild = car.kind === 'build';
-  const index = slug ? posts.findIndex((p) => p.slug === slug) : -1;
-  // Build cars open on their first post; garage cars on the car's home panel.
-  // An unknown slug falls back to that view, kept out of search.
-  const activeMeta = index >= 0 ? posts[index] : isBuild ? posts[0] : undefined;
+  const posts = epicOrder(car, postsFor(car.id));
+  const found = slug ? posts.find((p) => p.slug === slug) : undefined;
+  const missing = Boolean(slug) && !found;
+  // Build cars open on their overview post (else the first in sidebar order);
+  // garage cars on the car's home panel.
+  const landing = isBuild ? posts.find((p) => p.slug === 'overview') ?? posts[0] : undefined;
+  const activeMeta = slug ? found : landing;
   const activeIndex = activeMeta ? posts.indexOf(activeMeta) : -1;
   const post = useLoadedPost(car.id, activeMeta?.slug);
   const prev = activeIndex > 0 ? posts[activeIndex - 1] : undefined;
   const next = activeIndex >= 0 && activeIndex < posts.length - 1 ? posts[activeIndex + 1] : undefined;
-  const showingPost = index >= 0;
+  const showingPost = Boolean(found);
 
-  const path = showingPost ? postPath(car.id, posts[index].slug) : carPath(car.id);
-  usePageMeta(showingPost ? {
-    title: `${activeMeta!.title} · ${car.logTitle}`,
-    description: (post?.slug === activeMeta!.slug && post.excerpt) || car.description,
+  const path = found ? postPath(car.id, found.slug) : carPath(car.id);
+  usePageMeta(found ? {
+    title: `${found.title} · ${car.logTitle}`,
+    description: (post?.slug === found.slug && post.excerpt) || car.description,
     path,
     type: 'article',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'BlogPosting',
-      headline: activeMeta!.title,
-      datePublished: activeMeta!.date,
+      headline: found.title,
+      datePublished: found.date,
+      ...(found.updated ? { dateModified: found.updated } : {}),
       url: absoluteUrl(path),
       mainEntityOfPage: absoluteUrl(path),
       isPartOf: { '@type': 'Blog', name: car.logTitle, url: absoluteUrl(carPath(car.id)) },
       author: { '@type': 'Person', '@id': `${SITE_URL}/#person`, name: SITE_NAME, url: `${SITE_URL}/` },
     },
   } : {
-    title: car.logTitle,
+    title: missing ? `Post not found · ${car.logTitle}` : car.logTitle,
     description: car.description,
     path,
-    noindex: Boolean(slug),
+    noindex: missing,
   });
 
-  // Keep the category filter when moving between posts.
-  const selectPost = (s: string) => navigate(postPath(car.id, s) + search);
-  const goToList = () => navigate(carPath(car.id) + search);
   const accent = { '--car-accent': car.accent } as React.CSSProperties;
-
   const list = isBuild
-    ? <EpicList car={car} activeSlug={activeMeta?.slug} onSelect={selectPost} mobile={isMobile} />
-    : <DatedList car={car} activeSlug={showingPost ? activeMeta?.slug : undefined} onSelect={selectPost} mobile={isMobile} />;
+    ? <EpicList car={car} activeSlug={activeMeta?.slug} search={search} mobile={isMobile} />
+    : <DatedList car={car} activeSlug={showingPost ? activeMeta?.slug : undefined} search={search} mobile={isMobile} />;
   const roadmapLink = car.roadmap && (
     <Link to={roadmapPath(car.id)} className={`blog-roadmap-link${isMobile ? '' : ' blog-roadmap-link--footer'}`}>
       Roadmap &rarr;
@@ -431,7 +503,7 @@ const CarLog: React.FC<{ car: Car }> = ({ car }) => {
     if (showingPost && activeMeta) {
       return (
         <div className="blog-page blog-page--mobile" style={accent}>
-          <PostContent meta={activeMeta} post={post} prev={prev} next={next} onNav={selectPost} onBack={goToList} />
+          <PostContent car={car} meta={activeMeta} post={post} prev={prev} next={next} search={search} mobile />
         </div>
       );
     }
@@ -442,12 +514,14 @@ const CarLog: React.FC<{ car: Car }> = ({ car }) => {
           <span className="blog-topbar-title">{car.logTitle}</span>
           {roadmapLink}
         </nav>
-        <div className="blog-mobile-list">
+        <MobileList>
+          {missing && slug && <div className="blog-mobile-missing"><PostNotFound car={car} slug={slug} /></div>}
           <CarSwitcher current={car.id} />
+          <PostSearch car={car.id} />
           <Counter count={posts.length} />
           {!isBuild && <div className="garage-mobile-home"><ServiceTable car={car} /></div>}
           {list}
-        </div>
+        </MobileList>
       </div>
     );
   }
@@ -457,16 +531,19 @@ const CarLog: React.FC<{ car: Car }> = ({ car }) => {
       <aside className="blog-sidebar" aria-label="Post list">
         <div className="blog-sidebar-header">
           <CarSwitcher current={car.id} />
-          <h1 className="blog-sidebar-title">{car.logTitle}</h1>
-          <p className="blog-sidebar-sub"><span>{car.year} {car.make} {car.model}</span></p>
+          <p className="blog-sidebar-title">{car.logTitle}</p>
+          <p className="blog-sidebar-sub">{car.year} {car.make} {car.model}</p>
           <Counter count={posts.length} />
+          <PostSearch car={car.id} />
         </div>
         <nav className="blog-sidebar-nav" aria-label="Posts">{list}</nav>
         {roadmapLink && <div className="blog-sidebar-footer">{roadmapLink}</div>}
       </aside>
 
-      {activeMeta && (showingPost || isBuild) ? (
-        <PostContent meta={activeMeta} post={post} prev={prev} next={next} onNav={selectPost} />
+      {missing && slug ? (
+        <div className="blog-content-panel"><PostNotFound car={car} slug={slug} /></div>
+      ) : activeMeta ? (
+        <PostContent car={car} meta={activeMeta} post={post} prev={prev} next={next} search={search} />
       ) : (
         <div className="blog-content-panel"><CarHome car={car} /></div>
       )}

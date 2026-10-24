@@ -127,10 +127,9 @@
 .gc-visitor-counter {
   text-align: center;
   font-family: 'Space Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--icg);
   margin: 2px 0 0;
-  opacity: 0.7;
 }
 
 .gc-counter-value {
@@ -187,8 +186,8 @@
    ══════════════════════════════════════════════════ */
 
 .blog-sidebar {
-  width: 290px;
-  min-width: 290px;
+  width: 310px;
+  min-width: 310px;
   background:
     repeating-linear-gradient(
       0deg,
@@ -223,17 +222,10 @@
 
 .blog-sidebar-sub {
   font-size: 11px;
-  opacity: 0.7;
   margin: 0;
   letter-spacing: 0.5px;
-  color: #3898ec;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.blog-sidebar-sub span {
-  display: inline-block;
-  animation: gc-marquee 12s linear infinite;
+  /* Wraps instead of scrolling as a marquee, so the whole car name shows. */
+  color: #6cb4f5;
 }
 
 .blog-sidebar-nav {
@@ -246,7 +238,15 @@
 
 /* ── Sidebar item (button) ── */
 
+.sb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .sb-item {
+  box-sizing: border-box;
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -282,16 +282,21 @@
 }
 
 .sb-item-title {
-  white-space: nowrap;
+  /* Up to two lines; the full title is the tooltip when shortened. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
   font-weight: 700;
   font-size: 12px;
+  line-height: 1.4;
 }
 
 .sb-item-date {
   font-size: 10px;
-  opacity: 0.45;
+  opacity: 0.75;
 }
 
 /* ── Epic group ── */
@@ -335,9 +340,7 @@
 .sb-epic-title {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
 }
 
 .sb-epic-badge {
@@ -419,8 +422,12 @@
 
 .blog-content-panel {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
+  /* Wide tables and maths scroll in their own boxes, never the page. */
+  overflow-x: hidden;
   padding: 40px 48px 80px;
+  outline: none;
 }
 
 /* ── Article (shared desktop + mobile) ── */
@@ -445,7 +452,7 @@
 
 .blog-article-date {
   font-size: 11px;
-  opacity: 0.5;
+  opacity: 0.75;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -566,14 +573,11 @@
   margin-right: 6px;
 }
 
-/* Tables */
+/* Tables sit in a .scroll-x box (added in PostTools.tsx) */
 .blog-article-body table {
-  width: 100%;
   border-collapse: collapse;
-  margin: 1.5em 0;
   font-size: 0.9em;
-  overflow-x: auto;
-  display: block;
+  min-width: 100%;
 }
 
 .blog-article-body thead {
@@ -613,6 +617,11 @@
 }
 
 .blog-nav-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  line-height: 1.4;
   background: none;
   border: 1px dashed rgba(255, 255, 255, 0.2);
   color: var(--warm-white);
@@ -1756,4 +1765,430 @@
   .rm-filter .sb-status-dot { width: 6px; height: 6px; }
   .rm-zoom-btn { padding: 3px 7px; font-size: 11px; min-width: 26px; }
   .rm-lane-header { font-size: 10px; padding: 8px 10px; }
+}
+
+/* ==========================================================
+   Post usability (GAR-005): links, scroll boxes, heading
+   anchors, table of contents, search, roadmap tasks, mobile
+   post bar, print.
+   ========================================================== */
+
+/* ── Links in post text ──
+   #7cc0ff is 9.2:1 on the page blue, visited #c4a8ff 8.8:1, hover gold
+   13:1. Against body text they differ by colour and by the underline. */
+.blog-article-body a,
+.blog-not-found a {
+  color: #7cc0ff;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  font-weight: inherit;
+}
+.blog-article-body a:visited { color: #c4a8ff; }
+.blog-article-body a:hover,
+.blog-not-found a:hover {
+  color: var(--gold);
+  text-decoration-thickness: 2px;
+}
+/* Off-site links get an arrow. */
+.blog-article-body a[href^="http"]::after {
+  content: '\2197';
+  font-size: 0.8em;
+  margin-left: 1px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* ── Sideways scroll boxes: tables and display maths ──
+   Edge shadows show there is more to the side; a sticky hint labels it. */
+.blog-article-body .scroll-x,
+.blog-article-body .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  background:
+    linear-gradient(to right, var(--dark-blue) 30%, rgba(15, 23, 42, 0)) left / 24px 100% no-repeat local,
+    linear-gradient(to left, var(--dark-blue) 30%, rgba(15, 23, 42, 0)) right / 24px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(124, 192, 255, 0.45), transparent) left / 10px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(124, 192, 255, 0.45), transparent) right / 10px 100% no-repeat scroll;
+}
+.blog-article-body .scroll-x { margin: 1.5em 0; }
+.blog-article-body .katex-display { padding: 2px 0 6px; }
+.blog-article-body .katex-display > .katex { padding: 0 4px; }
+.blog-article-body .scroll-x[data-overflow]::before,
+.blog-article-body .katex-display[data-overflow]::before {
+  content: '\21C6  scroll sideways';
+  display: block;
+  position: sticky;
+  left: 0;
+  width: max-content;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: #7cc0ff;
+  margin-bottom: 2px;
+  text-align: left;
+}
+.blog-article-body .scroll-x:focus-visible,
+.blog-article-body .katex-display:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ── Heading anchors ── */
+.blog-article-body :is(h2, h3, h4) { scroll-margin-top: 16px; }
+.blog-article-body .heading-anchor {
+  margin-left: 0.4em;
+  color: #7cc0ff;
+  text-decoration: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75em;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.blog-article-body .heading-anchor::after { content: none; }
+.blog-article-body :is(h2, h3, h4):hover .heading-anchor,
+.blog-article-body .heading-anchor:focus-visible { opacity: 1; }
+@media (hover: none) {
+  .blog-article-body .heading-anchor { opacity: 0.55; }
+}
+.heading-copied {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--dark-blue);
+  background: var(--gold);
+  z-index: 50;
+}
+.heading-copied:not(:empty) { padding: 6px 14px; }
+
+/* ── Post layout + table of contents ── */
+.blog-post-layout--toc { display: block; }
+.toc--aside { display: none; }
+.toc-title {
+  margin: 0 0 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--gold);
+}
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.toc-item { margin: 0; }
+.toc-item--h3 { padding-left: 12px; font-size: 11px; }
+.toc-link {
+  display: block;
+  padding: 3px 0 3px 8px;
+  border-left: 2px solid transparent;
+  color: var(--warm-white);
+  opacity: 0.8;
+  text-decoration: none;
+  font-weight: 400;
+}
+.toc-link:hover { opacity: 1; color: var(--gold); text-decoration: underline; }
+.toc-link--on {
+  opacity: 1;
+  color: var(--gold);
+  border-left-color: var(--gold);
+}
+
+.toc--inline {
+  margin-top: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  padding: 8px 12px;
+}
+.toc--inline summary {
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.toc--inline .toc-count { font-weight: 400; color: var(--warm-white); opacity: 0.75; }
+.toc--inline .toc-list { margin-top: 8px; }
+.toc--inline .toc-link { padding: 5px 0 5px 8px; }
+
+/* Wide screens: article + sticky column on the right. */
+@media screen and (min-width: 1360px) {
+  .blog-post-layout--toc {
+    display: grid;
+    grid-template-columns: minmax(0, 780px) 220px;
+    gap: 40px;
+    justify-content: center;
+    align-items: start;
+  }
+  .blog-post-layout--toc .blog-article { margin: 0; min-width: 0; }
+  .blog-post-layout--toc .toc--aside {
+    display: block;
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    padding: 4px 4px 4px 0;
+  }
+  .blog-post-layout--toc .toc--inline { display: none; }
+}
+
+/* ── Status details on the post header ── */
+.blog-article-dates { margin: 0; }
+.blog-status--kind-reference { color: var(--icg); opacity: 1; }
+.sb-item-kind {
+  color: var(--icg);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.post-tasks {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border: 2px ridge rgba(112, 56, 207, 0.5);
+  background: rgba(112, 56, 207, 0.08);
+  font-size: 12px;
+}
+.post-tasks-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11px;
+  color: var(--gold);
+}
+.post-tasks ul { list-style: none; margin: 0; padding: 0; }
+.post-tasks li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+}
+.post-tasks li .sb-status-dot { flex-shrink: 0; align-self: center; }
+.post-tasks a {
+  flex: 1;
+  min-width: 0;
+  color: #7cc0ff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.post-tasks a:hover { color: var(--gold); }
+.post-tasks-status {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+.post-tasks-err { margin: 0; opacity: 0.8; }
+
+.blog-nav-dir { font-size: 10px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.8px; }
+.blog-nav-next { align-items: flex-end; }
+
+.blog-not-found code {
+  font-family: 'Space Mono', monospace;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 5px;
+}
+.blog-mobile-missing { padding: 12px 8px 4px; font-family: 'Lora', serif; }
+
+/* ── Sidebar search ── */
+.post-search {
+  margin-top: 10px;
+  font-family: 'Space Mono', monospace;
+}
+.post-search-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 10px;
+  border: 2px inset rgba(112, 56, 207, 0.6);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--warm-white);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+}
+.post-search-input::placeholder { color: rgba(252, 247, 240, 0.65); }
+.post-search-input:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.post-search-scope {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.post-search-scope input { accent-color: var(--gold); margin: 0; }
+.post-search-results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 55vh;
+  overflow-y: auto;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+}
+.post-search-empty { padding: 8px 10px; font-size: 11px; opacity: 0.8; }
+.post-search-hit {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+  color: var(--warm-white);
+  text-decoration: none;
+  font-weight: 400;
+}
+.post-search-hit:hover,
+.post-search-hit:focus-visible {
+  background: rgba(112, 56, 207, 0.3);
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+.post-search-title { font-weight: 700; font-size: 12px; }
+.post-search-car { color: var(--car-accent); }
+.post-search-heading { font-size: 11px; color: #7cc0ff; }
+.post-search-snippet { font-size: 10.5px; opacity: 0.8; line-height: 1.45; overflow-wrap: anywhere; }
+.post-search mark { background: rgba(243, 222, 64, 0.3); color: inherit; }
+.blog-mobile-list .post-search { padding: 0 8px 4px; }
+.blog-mobile-list .post-search-input { font-size: 16px; }
+
+/* ── Mobile post bar ── */
+.blog-post-bar {
+  position: sticky;
+  top: -20px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -20px -16px 16px;
+  padding: 8px 12px;
+  border-bottom: 3px ridge rgba(112, 56, 207, 0.6);
+  background: linear-gradient(180deg, rgba(15, 10, 40, 0.98), rgba(5, 5, 30, 0.98));
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+}
+.blog-post-bar a {
+  color: var(--warm-white);
+  text-decoration: none;
+}
+.blog-post-bar-back { white-space: nowrap; }
+.blog-post-bar-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  color: var(--gold);
+  font-weight: 700;
+}
+.blog-post-bar-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 30px;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  font-size: 18px;
+}
+.blog-post-bar a:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.blog-post-cars {
+  margin-top: 28px;
+  padding-top: 12px;
+  border-top: 2px dashed rgba(255, 255, 255, 0.12);
+  font-family: 'Space Mono', monospace;
+}
+@media screen and (max-width: 991px) {
+  .blog-post-bar { top: -24px; margin-top: -24px; }
+  .blog-page--mobile .blog-content-panel { padding-top: 24px; }
+}
+
+/* ── Reduced motion: no blinking, spinning, glowing or marquee ──
+   (App.css already turns every animation off; this is explicit for the log.) */
+@media (prefers-reduced-motion: reduce) {
+  .gc-under-construction,
+  .sb-dot--in-progress,
+  .blog-sidebar-title,
+  .blog-topbar-title { animation: none; }
+  .heading-anchor, .sb-epic-chevron { transition: none; }
+}
+
+/* ── Print: the post only, in full, dark on white ── */
+@media print {
+  @page { margin: 16mm 14mm; }
+  html, body { overflow: visible !important; height: auto !important; background: #fff !important; }
+  :root { color-scheme: light; background: #fff; }
+  .blog-page,
+  .blog-page--desktop,
+  .blog-page--mobile {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    width: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .blog-content-panel {
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  .blog-sidebar,
+  .blog-topbar,
+  .blog-post-bar,
+  .blog-post-cars,
+  .blog-article-nav,
+  .blog-mobile-list,
+  .toc,
+  .heading-anchor,
+  .heading-copied,
+  .post-search,
+  [class^='gc-'],
+  .blog-sidebar-divider { display: none !important; }
+  .blog-post-layout--toc { display: block !important; }
+  .blog-article { max-width: none !important; margin: 0 !important; }
+  .blog-article,
+  .blog-article-body,
+  .blog-article-body :is(p, li, td, th, h1, h2, h3, h4, strong, figcaption, blockquote) { color: #111 !important; text-shadow: none !important; }
+  .blog-article-header { border-bottom-color: #999; }
+  .blog-article-header h1 { font-size: 24pt; }
+  .blog-article-date, .blog-status, .blog-tag { color: #333 !important; opacity: 1 !important; }
+  .blog-article-body { font-size: 10.5pt; line-height: 1.5; }
+  .blog-article-body h2 { border-bottom-color: #999; }
+  .blog-article-body :is(h2, h3, h4) { break-after: avoid; page-break-after: avoid; }
+  .blog-article-body :is(img, figure, pre, blockquote, .katex-display) { break-inside: avoid; page-break-inside: avoid; }
+  .blog-article-body img { border-color: #ccc; max-height: 230mm; }
+  .blog-article-body figure,
+  .blog-article-body figure.wide { max-width: 100%; }
+  .blog-article-body .scroll-x,
+  .blog-article-body .katex-display { overflow: visible !important; background: none !important; }
+  .blog-article-body .scroll-x::before,
+  .blog-article-body .katex-display::before { content: none !important; display: none !important; }
+  .blog-article-body table { font-size: 9pt; width: 100%; }
+  .blog-article-body tr { break-inside: avoid; }
+  .blog-article-body thead { display: table-header-group; background: #eee !important; }
+  .blog-article-body :is(th, td) { border-color: #999 !important; }
+  .blog-article-body th { color: #111 !important; white-space: normal; }
+  .blog-article-body tbody tr:nth-child(even) { background: #f6f6f6 !important; }
+  .blog-article-body :is(code, pre) { background: #f3f3f3 !important; border-color: #ccc !important; color: #111 !important; white-space: pre-wrap; }
+  .blog-article-body a { color: #0b4fa8 !important; }
+  .blog-article-body a[href^="http"]::after {
+    content: ' (' attr(href) ')';
+    font-size: 8pt;
+    color: #444;
+    overflow-wrap: anywhere;
+  }
+  .post-tasks { border: 1px solid #999; background: none; color: #111; }
+  .post-tasks a { color: #0b4fa8; }
+  .sb-status-dot { display: none; }
+  .katex { color: #111; }
 }
