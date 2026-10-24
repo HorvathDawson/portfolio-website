@@ -135,14 +135,14 @@ export const roadmap: Roadmap = {
       epic: 'research',
       kind: 'decision',
       status: 'decided',
-      decision: `Rack: Miata NA (manual or depowered, ${k('rack_narrowing')} narrowed). Assist is now an open choice (see t-decide-steering-assist): manual steering, or a Toyota Prius Gen 4 (2016–2022) column-mount EPAS, driven by the dash Pi acting as a dual-bus CAN gateway (Haltech → Toyota frames) for speed-sensitive assist. The column has a hard-wired IG wake; what it does without frames (fixed assist, reduced assist or a DTC latched until key cycle) is to be bench-tested.`,
+      decision: `Rack: Miata NA (manual or depowered, ${k('rack_narrowing')} narrowed). Assist is now an open choice (see t-decide-steering-assist): manual steering, or a Toyota Prius Gen 4 (2016–2022) column-mount EPAS, driven by the dash Pi acting as a dual-bus CAN gateway (Haltech → Toyota frames) for speed-sensitive assist. The column has a hard-wired IG wake; what it does without frames (fixed assist, reduced assist or a DTC latched until key cycle) is to be bench-tested. Any power, CAN, gateway or column fault fails to manual steering (the column keeps its mechanical shaft).`,
       posts: ['steering', 'epas-can-gateway'],
       summary: 'Lock the rack donor and the EPAS column donor (if assist is used). Output: parts list, dual-bus gateway architecture, and a bench-tested loss-of-frames plan.',
       notes: [
         `Rack: Miata NA, depowered (Flyin' Miata method), narrowed by ${k('rack_narrowing')} total (${k('front_narrowing')} per side) to match the front-track delta`,
         'Column: Toyota Prius Gen 4 (2016–2022). openpilot supports all of these, and opendbc decodes their powertrain CAN in one DBC (toyota_nodsu_pt_generated), so the speed (0xB4) and rpm (0x1C4) frames, scaling and checksum are known. Which frames the column needs: confirm with a donor log and on the bench',
         'Control strategy: dash Pi rebroadcasts Haltech RPM + speed as Toyota 0x1C4 + 0xB4 frames — see t-decide-epas-control',
-        'Loss of frames: column behaviour unknown (fixed assist / reduced / no assist / latched DTC) — bench-test; gateway policy on stale Haltech data is hold last speed then ramp toward low assist, never toward 0',
+        'Loss of frames: column behaviour unknown (fixed assist / reduced / no assist / latched DTC) — bench-test; gateway policy on stale Haltech data is hold last speed then ramp toward low assist, never toward 0. Every fault fails to manual steering through the mechanical shaft',
         'Reject: hydraulic, electro-hydraulic pump, $1500+ kits',
         'Collapsible column is non-negotiable',
       ],
@@ -410,7 +410,7 @@ export const roadmap: Roadmap = {
         'Engine sits as low as possible with radiator clearance and pedal-box room',
         'Engine/trans sit 3° down at the rear (tail-down); RX-8 pinion set parallel',
         'Trans mount NOT finalized — moves with t-decide-trans',
-        'If CD009 wins: bigger tunnel + crossmember mount nodes shift back',
+        'Tunnel is sized for the CD009, so either gearbox fits; only the bolt-in crossmember position and shifter hole move with the choice',
       ],
     },
     {
@@ -837,7 +837,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Replacement column + U-joints + collapsible shaft sized to the EPAS-to-rack path. Length depends on quick-release decision.',
+      summary: 'Collapsible column (the Prius EPAS column if EPAS is chosen, otherwise a manual column) + U-joints + intermediate shaft sized to the column-to-rack path. Length depends on quick-release decision.',
     },
     {
       id: 't-buy-seats',
@@ -1895,7 +1895,7 @@ export const roadmap: Roadmap = {
       epic: 'research',
       kind: 'decision',
       status: 'decided',
-      decision: 'Dual-bus CAN gateway on the dash Pi: rebroadcast Haltech RPM + speed as Toyota 0x1C4 + 0xB4 frames so the Prius column delivers speed-sensitive assist. The column has a hard-wired IG wake; its behaviour without frames (fixed assist, reduced assist or latched DTC) is to be bench-tested.',
+      decision: 'Dual-bus CAN gateway on the dash Pi: rebroadcast Haltech RPM + speed as Toyota 0x1C4 + 0xB4 frames so the Prius column delivers speed-sensitive assist. The column has a hard-wired IG wake; its behaviour without frames (fixed assist, reduced assist or latched DTC) is to be bench-tested. Any fault fails to manual steering (mechanical shaft).',
       posts: ['epas-can-gateway'],
       summary: 'Failsafe-mode column EPAS (default, simple) vs ECU-controlled assist over CAN. Chosen: gateway. Implementation lives outside the Godot dash app as a separate systemd service for safety isolation.',
       notes: [

@@ -124,7 +124,7 @@ The front-view four-bar is set by four points: LCA pivot, UCA pivot, LBJ and UBJ
 
 <figure style="margin:1rem 0">
   <img src="/assets/projects/a40-austin/blog/plots/uca_plan.png" alt="UCA plan view schematic" style="width:100%" />
-  <figcaption>UCA plan view (top-down). BJ at origin, +x outboard, +y forward. Symmetric arm: front pivot at +110 mm, rear pivot at -110 mm from the BJ; total fore-aft span = 220 mm. Lateral arm length (UBJ -> pivot line) = 250 mm; the UCA pivot line sits {{uca_lca_offset}} outboard of the LCA pivot line. Pivot bushings shown as 57 mm rectangles. Schematic: the bushing axis is drawn parallel to the CL; the real axis is tilted ~3.5° front-high and canted in plan.</figcaption>
+  <figcaption>UCA plan view (top-down). BJ at origin, +x outboard, +y forward. Symmetric arm: both pivots 110 mm from the BJ along the bushing axis (220 mm c-to-c), 57 mm bushings drawn along that axis. Lateral arm length (UBJ -> pivot-line midpoint) = 250 mm; the UCA pivot line sits {{uca_lca_offset}} outboard of the LCA pivot line. The axis is drawn at its plan cant, {{uca_plan_cant}} (front pivot {{uca_cant_offset}} outboard of the rear; dotted line = parallel to the CL), so the pivots sit +124 mm and −96 mm fore-aft of the BJ. The cant is inferred from the scanned UBJ position and the symmetric arm, not measured directly (see the [narrowing analysis](./narrowing-analysis#scanned-donor-geometry-what-it-changes)). The axis is also tilted ~3.5° front-high in side view.</figcaption>
 </figure>
 
 <figure style="margin:1rem 0">
@@ -139,7 +139,7 @@ The front-view four-bar is set by four points: LCA pivot, UCA pivot, LBJ and UBJ
 
 <figure class="wide" style="margin:1rem 0">
   <img src="/assets/projects/a40-austin/blog/plots/pickups_3view.png" alt="Pickup point 3-view schematic - front, plan, and side views stacked vertically" style="width:100%" />
-  <figcaption>Donor (stock) inner pivot positions - front, plan, and side views. Gold squares = LCA inner pivots, blue triangles = UCA inner pivots. Lateral from car CL / fore-aft from LCA front pivot / height from LCA pivot. The A40 build moves every lateral value {{front_narrowing}} inboard (LCA {{lca_pivot:raw}}, UCA {{uca_pivot:0}}); heights and fore-aft are unchanged. The plan view draws the UCA axis parallel to the CL; the real axis is canted (see the narrowing analysis).</figcaption>
+  <figcaption>Donor (stock) inner pivot positions - front, plan, and side views. Gold squares = LCA inner pivots, blue triangles = UCA inner pivots. Lateral from car CL / fore-aft from LCA front pivot / height from LCA pivot. The A40 build moves every lateral value {{front_narrowing}} inboard (LCA {{lca_pivot:raw}}, UCA {{uca_pivot:0}}); heights and fore-aft are unchanged. The plan view draws the UCA bushing axis at its {{uca_plan_cant}} plan cant (front pivot outboard); the front view shows the pivot-line midpoint.</figcaption>
 </figure>
 
 ## Donor engineering drawings

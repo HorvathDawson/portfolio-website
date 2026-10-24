@@ -55,8 +55,8 @@ These set the wire gauge, the fuses and which loads get a relay instead of an EC
 | Fuel pump (external Aeromotive 340 + surge tank) | Relay or a high-current output, own fuse | 10-12 AWG | Size for the pump at full voltage and pressure (**verify** the pump's current draw). Lift pump for the surge tank is a separate small branch if used. |
 | Radiator fans (2, staged) | Relay or high-current outputs | Sized to fuse | Start-up inrush is several times the running current. Size fuses and relays for the inrush, or soft-start with PWM. |
 | EPAS column motor (if EPAS) | **Own fuse at the battery, ~50-80 A** (**verify** against the donor Prius fuse box rating) | Sized to that fuse (about 8 AWG class for a few metres; verify) | Heavy chassis ground at the column. Not through the ECU. |
-| EPAS IG wake | Ignition-switched, small fuse | 18-20 AWG | Hard-wired. The column has to wake with the engine stopped, the same as in a Prius. See [EPAS CAN gateway](./epas-can-gateway). |
-| EPAS CAN (`can1`) | From the dash Pi | 22 AWG twisted pair + ground, about 1-1.5 m | 120 Ω at each end. Separate from the Haltech bus. |
+| EPAS IG wake (if EPAS) | Ignition-switched, small fuse | 18-20 AWG | Hard-wired. The column has to wake with the engine stopped, the same as in a Prius. See [EPAS CAN gateway](./epas-can-gateway). |
+| EPAS CAN (`can1`, if EPAS) | From the dash Pi | 22 AWG twisted pair + ground, about 1-1.5 m | 120 Ω at each end. Separate from the Haltech bus. |
 | Dash Pi + display | Constant +12 V, 5 A fuse, plus ignition sense, into the DCDC-USB (V(out) jumpered to 5 V, ~33 W, ~3 A from 12 V) | 18-14 AWG | Detail in the [digital dash](./digital-dash) wiring section. |
 
 ## Branch list
@@ -66,7 +66,7 @@ Each branch is a connector and a run of wire to budget for in the bulkhead.
 - **Engine management:** crank trigger (CAS or wheel + sensor, decide when the front cover is off), cam trigger, coolant temp, IAT (added), MAP (internal), knock (1-2, depending on channel allocation), 4 injectors, 4 coils, DBW TB (6-pin) and pedal (6-pin, the pedal run goes through the bulkhead).
 - **Pressures (3-pin ratiometric, 5 V / signal / ground):** oil pressure (0-150 psi transducer such as AEM 30-2130-150, **not** the OEM switch, teed at the block boss) and fuel pressure (rail).
 - **Wideband:** LSU 4.9, 6-pin Bosch connector. Mounting rules are in the dash post.
-- **Power:** fuel pump, 2 fans, starter relay, ignition/crank signal, EPAS motor + IG wake.
+- **Power:** fuel pump, 2 fans, starter relay, ignition/crank signal, EPAS motor + IG wake (only if EPAS is fitted).
 - **Gearbox:** reverse light, neutral safety switch.
 - **Dash adds** (signals the stock SR20 doesn't have):
 

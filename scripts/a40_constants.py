@@ -226,7 +226,7 @@ def derive(i):
     # Drivetrain: rpm at the reference speed, U-joint angles
     wheel_rpm = put("wheel_rpm_ref", i["reference_speed"] / 3.6 / circ * 60, "rpm", decimals=0)
     for fd_key, fd_tag in (("final_drive", "fd"), ("final_drive_alt1", "alt1"), ("final_drive_alt2", "alt2")):
-        for gear in ("5th", "6th"):
+        for gear in ("5th", "6th", "z32_top"):
             put(f"rpm_{fd_tag}_{gear}", wheel_rpm * i[fd_key] * i[f"gear_{gear}"], "rpm",
                 note=f"Engine rpm at {i['reference_speed']:.0f} km/h, {gear} gear, final drive {i[fd_key]}.",
                 round_to=10)
@@ -258,6 +258,16 @@ def derive_geometry(i, g):
         note="Critical damping at the damper: wheel value / MR².", decimals=1)
     put("stroke_for_stock_travel_lo", i["miata_wheel_travel_lo"] * mr, "mm", decimals=0)
     put("stroke_for_stock_travel_hi", i["miata_wheel_travel_hi"] * mr, "mm", decimals=0)
+    # Front bump-travel budget: roll travel plus a road input amplified at
+    # resonance by 1/(2ζ) (relative motion, base excitation).
+    amp_lo = put("travel_road_lo", i["road_input"] / (2 * i["damping_ride_hi"]), "mm", decimals=0,
+                 note="Road input / (2ζ) at the high end of the ride damping band.")
+    amp_hi = put("travel_road_hi", i["road_input"] / (2 * i["damping_ride_lo"]), "mm", decimals=0,
+                 note="Road input / (2ζ) at the low end of the ride damping band.")
+    put("travel_budget_lo", g["roll_travel_wheel"]["value"] + amp_lo, "mm", decimals=0,
+        note="Roll travel at the nominal roll target + amplified road input.")
+    put("travel_budget_hi", g["roll_travel_wheel"]["value"] + amp_hi, "mm", decimals=0,
+        note="Roll travel at the nominal roll target + amplified road input.")
     put("roll_arm_lo", i["cg_height"] - g["roll_axis_rc_hi"]["value"], "mm", decimals=0,
         note="CG height − roll-axis height (rear RC high end).")
     put("roll_arm_hi", i["cg_height"] - g["roll_axis_rc_lo"]["value"], "mm", decimals=0,
@@ -443,6 +453,7 @@ A40_000_INPUTS = dict(
     ride_freq_front_lo=1.2, ride_freq_front_hi=1.6, ride_freq_rear_lo=1.3, ride_freq_rear_hi=1.7,
     rear_mr_lo=0.65, rear_mr_mid=0.75, rear_mr_hi=0.85, lltd_offset_lo=3, lltd_offset_hi=5,
     final_drive=4.44, final_drive_alt1=4.10, final_drive_alt2=3.91, gear_5th=1.0, gear_6th=0.794,
+    gear_z32_top=0.759,
     reference_speed=100, engine_angle=3, pinion_angle=3, shaft_drop=3.5, shaft_length=37,
     wheelbase_miata=2265,
 )

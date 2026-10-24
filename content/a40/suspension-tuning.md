@@ -84,14 +84,14 @@ Use adjustable dampers: damping can't be finalised until the shock positions are
 
 ## Alignment
 
-**Camber.** At 3–4° of roll the outside tyre gains ~1.7–2.6° positive relative to static. Static camber offsets this:
+**Camber.** At {{roll_target_lo:raw}}–{{roll_target_hi}} of roll the outside front tyre goes ~{{camber_roll_lo:raw}}–{{camber_roll_hi}} positive relative to the ground (front-view four-bar in the geometry script). Static camber offsets this:
 
 | Use | Front | Rear |
 |---|---|---|
 | Street | −1.5 to −2.0° | start −1.5° |
 | Mixed / track | −2.5 to −3.0° | start −2.0° |
 
-**Caster.** The scanned knuckle gives {{caster}} stock. With about ±2° of adjustment, {{caster_target_lo:raw}}–{{caster_target_hi}} is realistic. More caster adds stability and self-centring but also parking effort, which matters if the steering stays manual (see [steering](./steering)).
+**Caster.** The scanned knuckle gives {{caster}} stock. With about ±2° of adjustment, {{caster_target_lo:raw}}–{{caster_target_hi}} is realistic. More caster adds stability and self-centring but also parking effort. Assist is still open: with manual steering that effort is felt at the wheel; with the optional EPAS column the motor covers it (see [steering](./steering#manual-or-epas)).
 
 **Toe.**
 - Front: ~0 for the street; 1–2 mm total toe-out sharpens turn-in but feels nervous on the highway.

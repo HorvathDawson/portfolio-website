@@ -21,7 +21,7 @@ The original A40 cluster is coming out. In its place, a Raspberry Pi 5 behind th
 | ECU | Haltech Nexus S2 | CAN broadcast source (`can0`, 1 Mbit/s) |
 | Computer | Raspberry Pi 5, **4 GB** | Official Active Cooler is required: it throttles fast in a closed dash pod |
 | Storage | Freenove M.2 adapter V2 + Crucial 256 GB NVMe | Boots from NVMe |
-| CAN | [PiCAN FD Duo Isolated (non-SMPS)](https://copperhilltech.com/pican-fd-duo-board-with-real-time-clock-for-raspberry-pi/) | `can0` Haltech 1 Mbit/s, `can1` Prius EPAS 500 kbit/s. Two isolated channels on SPI0 CE0/CE1 |
+| CAN | [PiCAN FD Duo Isolated (non-SMPS)](https://copperhilltech.com/pican-fd-duo-board-with-real-time-clock-for-raspberry-pi/) | `can0` Haltech 1 Mbit/s, `can1` Prius EPAS 500 kbit/s (only if EPAS is fitted). Two isolated channels on SPI0 CE0/CE1 |
 | Power manager / 5 V supply | Mini-Box DCDC-USB | Ignition-aware shutdown, V(out) jumpered to **5 V** (default is 12 V). Only 5 V source: Pi + display ([manual](/assets/projects/a40-austin/blog/dash/PWR-DCDC-USB-manual.pdf)) |
 | Display | [Waveshare 12.3-DSI-TOUCH-A](https://www.waveshare.com/wiki/12.3-DSI-TOUCH-A), 1920×720 | DSI ribbon; 5 V ≥ 1 A input |
 | Bench PSU | Official Pi 5 27 W USB-C | Desk testing only |
@@ -41,7 +41,7 @@ Power budget at 5 V: Pi 5 at 5 A (25 W) + display ~1-1.5 A (~5-7.5 W) ≈ **33 W
 | Display | DCDC-USB V(out) 5 V → display 5 V/GND (separate pair) | 18-20 AWG, short. **This is the display's only feed.** Not also from the Pi GPIO 5 V pins, and not 12 V. |
 | Shutdown | DCDC-USB PSW → Pi 5 **J2** power-button header | 2-wire, verify polarity |
 | `can0` | HAT ch0 → Haltech CAN (H, L, CAN ground) | Twisted pair. HAT terminator **off** (the bus already has two) |
-| `can1` | HAT ch1 → Prius column (H, L, ground) | Twisted pair, ~1-1.5 m, 120 Ω **at each end** |
+| `can1` (if EPAS) | HAT ch1 → Prius column (H, L, ground) | Twisted pair, ~1-1.5 m, 120 Ω **at each end** |
 
 Rules:
 
@@ -233,7 +233,7 @@ Warning icons sit as an overlay above the gauges: indicators, high beam, CEL, lo
 - Exhaust gas at the sensor within the LSU 4.9 limit (**about 930 °C**).
 - Heater powered whenever the engine runs.
 
-## Generate gauge assets (Mac)
+## Generate gauge assets
 
 [scripts/a40-gauge-placeholders.py](https://github.com/HorvathDawson/portfolio-website/blob/master/scripts/a40-gauge-placeholders.py) draws the dial faces, the needles, a preview and `gauges_manifest.json` (pivots, sweeps, formulas, window anchors, panel placement), and prints the Godot numbers below.
 
@@ -243,18 +243,18 @@ python3 scripts/a40-gauge-placeholders.py
 # → public/assets/projects/a40-austin/blog/dash/gauges/
 ```
 
-Run it on the Mac. It uses macOS fonts (Futura, Menlo), and other systems fall back to a default font.
+It runs on any machine: the fonts are bundled in `scripts/fonts` (Jost Medium for the Futura-style numerals, DejaVu Sans Mono for the Menlo-style readouts), so the output is the same everywhere.
 
-> **Art status:** the images below predate the script's latest changes: the oil band moved to the low end, the boost scale is now −15 to +30 psi, and slot 5's window changed from ODO to IAT. Rerun on the Mac and commit the new PNGs and manifest.
+> **Art status:** the gauge PNGs and `gauges_manifest.json` were regenerated with the bundled fonts (Oct 2026) and match the layout table above: oil band at the low end, boost −15 to +30 psi, IAT in slot 5. The bezel fit-check below still shows the previous art revision.
 
 <figure class="wide">
   <img src="/assets/projects/a40-austin/blog/dash/gauges/dashboard_preview.png" alt="Mockup of the A40 digital cluster: centre tach flanked by four pill gauges" />
-  <figcaption>Cluster mockup with demo values (previous art revision).</figcaption>
+  <figcaption>Cluster mockup with demo values (current art).</figcaption>
 </figure>
 
 <figure>
   <img src="/assets/projects/a40-austin/blog/dash/dash-gauge-layout.jpg" alt="Generated cluster artwork overlaid on the scanned A40 dash bezel for fit-check" />
-  <figcaption>Fit-check: generated artwork on the scanned bezel mesh.</figcaption>
+  <figcaption>Fit-check: generated artwork on the scanned bezel mesh (previous art revision).</figcaption>
 </figure>
 
 ## Build the UI in Godot

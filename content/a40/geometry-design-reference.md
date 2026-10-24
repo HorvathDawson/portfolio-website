@@ -72,7 +72,7 @@ The taller tyre is not a few-mm effect: on the custom frame the pickups move up 
   <figcaption>Front-view RC construction: stock Miata ({{front_track_miata}}, {{tyre_size_miata}} ET{{et_miata:raw}}) vs the A40 build ({{front_track}}, {{tyre_size}} ET{{wheel_et:raw}}). The IC sits past the centreline on the far side for both.</figcaption>
 </figure>
 
-**Migration.** Sweeping body heave and roll across the full wheel travel ({{travel_bump:raw}}/{{travel_droop}}), the A40 RC stays within ±68 mm laterally (Miata ±203 mm) and 41-286 mm vertically (Miata 38-321 mm). The longer swing arm relative to the half-track makes the A40 behave more like a long swing axle: steadier balance through curbs and asymmetric inputs.
+**Migration.** Sweeping body heave and roll across the full wheel travel ({{travel_bump:raw}}/{{travel_droop}}), the A40 RC stays within ±69 mm laterally (Miata ±203 mm) and 41-286 mm vertically (Miata 38-321 mm). The longer swing arm relative to the half-track makes the A40 behave more like a long swing axle: steadier balance through curbs and asymmetric inputs.
 
 <figure class="wide">
   <img src="/assets/projects/a40-austin/blog/plots/rc_migration_a40.png" alt="RC migration cloud for the A40 build across the heave and roll envelope" />
@@ -151,7 +151,7 @@ Front wheel rate {{kw_front}} ({{ride_freq_front}} on a {{corner_mass_front}} co
   <figcaption>MR through travel for 70°, 80° and 90° shocks ({{shock_length_ride}} eye-to-eye at ride assumed). At 80° it is nearly constant; travel limits come from the {{shock_stroke}} stroke.</figcaption>
 </figure>
 
-**Travel budget.** {{roll_target_nom}} of roll moves the outside front wheel {{roll_travel_wheel}}. A 20 mm road input amplifies to 26-30 mm at ζ ≈ {{damping_ride_lo}}-{{damping_ride_hi}}. Together that is 64-68 mm of the {{travel_bump}} bump, before the bump stop takes its share. Size the bump stops to that and make them engage at similar points front and rear, or the balance changes abruptly mid-corner.
+**Travel budget.** {{roll_target_nom}} of roll moves the outside front wheel {{roll_travel_wheel}}. A {{road_input}} road input amplifies to {{travel_road_lo:raw}}–{{travel_road_hi}} at resonance (×1/2ζ, ζ ≈ {{damping_ride_lo}}–{{damping_ride_hi}}). Together that is {{travel_budget_lo:raw}}–{{travel_budget_hi}} of the {{travel_bump}} bump, before the bump stop takes its share. Size the bump stops to that and make them engage at similar points front and rear, or the balance changes abruptly mid-corner.
 
 The shock tower must fit between the rails, clear the engine and carry about 5 kN in bump. Treat it as a frame-design constraint.
 

@@ -92,7 +92,7 @@ Coordinates are in [donor geometry dimensions](./donor-geometry-dimensions). Poi
 | UCA inner pivots | {{uca_pivot_miata:0}} | **{{uca_pivot:0}}** | {{uca_lca_offset}} **outboard** of the LCA pivots (normal short-long-arm layout) |
 
 - **Arm-length ratio 1.34 : 1** (LCA 336.25 mm, UCA 250 mm, lateral). Closer to equal than the ~1.9 : 1 often assumed, so camber gain per mm of bump is modest. Static negative camber comes from alignment shims, not the camber curve.
-- **UCA bushing axis is tilted and canted.** Side view: front pivot 13.56 mm higher than rear over 220 mm (≈3.5° nose-up). Plan: the axis is not parallel to the car centreline. The brackets must reproduce both rotations, not just the pivot centres.
+- **UCA bushing axis is tilted and canted.** Side view: front pivot 13.56 mm higher than rear over 220 mm (≈3.5° nose-up). Plan: the axis is canted **{{uca_plan_cant}}** to the car centreline, front pivot {{uca_cant_offset}} outboard of the rear. That cant is inferred, not measured directly: the arm is symmetric about the UBJ, and the scanned UBJ sits 14.15 mm aft of the pivot pair's midpoint, so the axis has to be square to that line (atan(14.15 / 250)). **Verify** it on the donor subframe. The brackets must reproduce both rotations, not just the pivot centres.
 - **Scrub and trail on the A40 package** (scanned knuckle, ET{{et_miata:raw}} → ET{{wheel_et:raw}}, hub ~{{hub_z_delta:0}} higher):
 
 | | Miata stock ({{tyre_size_miata}}, ET{{et_miata:raw}}) | A40 ({{tyre_size}}, ET{{wheel_et:raw}}) |
@@ -107,7 +107,7 @@ Near-zero scrub means less kickback and less self-centring under braking; the ex
 1. Build to the hub face ({{front_hub_face}} from CL), not to "track". The scanned LBJ/UBJ offsets are measured from the hub-face plane and do not change with narrowing.
 2. LCA brackets: both pivots at {{lca_pivot}} from CL, 322.5 mm apart fore-aft.
 3. UCA brackets: {{uca_pivot:0}} from CL ({{uca_lca_offset}} outboard of the LCA pivots). Check clearance to the SR20 valve cover, exhaust manifold side and inner fender before committing.
-4. Fixture the UCA brackets off the actual arm with a bar through the bushing axis so the 3.5° tilt and plan cant are captured. ±1 mm on pivot centres is necessary but not sufficient: orientation errors matter as much.
+4. Fixture the UCA brackets off the actual arm with a bar through the bushing axis so the 3.5° tilt and the {{uca_plan_cant}} plan cant are captured. ±1 mm on pivot centres is necessary but not sufficient: orientation errors matter as much.
 
 ---
 

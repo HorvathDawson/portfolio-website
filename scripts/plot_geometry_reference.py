@@ -18,7 +18,7 @@ Working inputs at the time of writing (all "working" -- verify on the car):
   - Rear: NA Miata IRS narrowed to a 1340 mm track, RX-8 diff (sprung).
     Rear RC and rear MR are NOT known yet: they are parameterised
     (rear RC 80-150 mm, rear MR shown as a sensitivity range).
-  - Tire 205/65R15 (OD 647.5 mm).  Donor tire 185/60R14 (OD 577 mm).
+  - Tire 205/65R15 (OD 647.5 mm).  Donor tire 185/60R14 (OD 577.6 mm).
   - Sprung mass ~825 kg; sprung corners 231 kg F / 181 kg R; 55/45 F/R.
   - CG 575 +/- 50 mm.
   - Front motion ratio from the front-view instant centre (four-bar
@@ -35,6 +35,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
 from matplotlib.patches import Arc
 from matplotlib.ticker import MultipleLocator
 
@@ -2377,10 +2378,15 @@ def _draw_arm_core(
 ):
     """Draw an A-arm in plan view.  inner_f/inner_r/bj are np.array([x, y]).
     BJ at origin by convention; pivots at negative x (inboard).
-    bushing_lengths: (front_len, rear_len) in mm for pivot rectangles."""
+    bushing_lengths: (front_len, rear_len) in mm for pivot rectangles, drawn
+    along the line through the two pivots (the bushing axis).
+    mounts: ((x, y), label) or ((x, y), label, (dx, dy, ha)) for the label
+    placement."""
     inner_f = np.array(inner_f, dtype=float)
     inner_r = np.array(inner_r, dtype=float)
     bj = np.array(bj, dtype=float)
+    axis = inner_f - inner_r
+    axis_deg = np.degrees(np.arctan2(axis[0], axis[1]))  # 0 = parallel to the CL
 
     # Arm blades
     for ip in (inner_f, inner_r):
@@ -2423,6 +2429,9 @@ def _draw_arm_core(
                 lw=1.2,
                 zorder=2,
             )
+            rect.set_transform(
+                mtransforms.Affine2D().rotate_deg_around(ip[0], ip[1], -axis_deg) + ax.transData
+            )
             ax.add_patch(rect)
         ax.plot(*ip, "s", color=color, markersize=7, zorder=5)
         ax.text(
@@ -2441,9 +2450,11 @@ def _draw_arm_core(
 
     # Extra mount points
     if mounts:
-        for (mx, my), mlabel in mounts:
+        for mount in mounts:
+            (mx, my), mlabel = mount[0], mount[1]
+            dx, dy, ha = mount[2] if len(mount) > 2 else (6, 12, "left")
             ax.plot(mx, my, "^", color=GREEN, markersize=8, zorder=5)
-            ax.text(mx + 6, my + 12, mlabel, fontsize=6.5, color=GREEN, alpha=0.9)
+            ax.text(mx + dx, my + dy, mlabel, fontsize=6.5, color=GREEN, alpha=0.9, ha=ha)
 
     mid = (inner_f + inner_r) / 2.0
     if show_annotations:
@@ -2510,19 +2521,37 @@ def _lca_coords():
     return bj, f, r, cov, arb
 
 
+def uca_plan_cant():
+    """Plan cant of the UCA bushing axis, from the scanned points.
+
+    The pivot pair is centred fore-aft on the LBJ (susp_geometry: lca_bj_fa
+    ± uca_fa), and the scan puts the UBJ 14.15 mm aft of the LBJ
+    (lbj_from_hub vs ubj_from_hub).  The arm is symmetric (both pivots
+    uca_fa_front from the UBJ along the bushing axis), so the UBJ lies on the
+    perpendicular bisector of the two pivots: the bushing axis is square to
+    the UBJ -> pivot-midpoint line, i.e. rotated atan(14.15 / 250) in plan
+    with the front pivot outboard.  Verify on the donor.
+
+    Returns (cant_deg, dlat, dfa, mid_lat, mid_fa), relative to the UBJ
+    (+x outboard, +y forward): front pivot at (mid_lat + dlat, mid_fa + dfa),
+    rear pivot at (mid_lat - dlat, mid_fa - dfa).
+    """
+    lat = SUSP["uca_hub_to_pivot"] - abs(SUSP["ubj_from_hub"][0])  # 250
+    mid_fa = SUSP["lbj_from_hub"][1] - SUSP["ubj_from_hub"][1]  # 14.15
+    cant = np.arctan2(mid_fa, lat)
+    half = SUSP["uca_fa_front"]  # 110 along the axis (symmetric arm)
+    return np.degrees(cant), half * np.sin(cant), half * np.cos(cant), -lat, mid_fa
+
+
 def _uca_coords():
-    # BJ at origin, +x outboard, +y forward.  UBJ sits at
-    # (hub_face + ubj_from_hub[0]) from CL; UCA pivot line is
-    # uca_hub_to_pivot mm inboard of the hub face.  So BJ→pivot lateral
-    # = uca_hub_to_pivot − |ubj_from_hub[0]|.
-    bj_to_pivot = SUSP["uca_hub_to_pivot"] - abs(SUSP["ubj_from_hub"][0])
+    # BJ (UBJ) at origin, +x outboard, +y forward.  UBJ sits at
+    # (hub_face + ubj_from_hub[0]) from CL; the UCA pivot-line midpoint is
+    # uca_hub_to_pivot mm inboard of the hub face.  The bushing axis is
+    # canted in plan (uca_plan_cant).
+    _, dlat, dfa, mid_lat, mid_fa = uca_plan_cant()
     bj = np.array([0.0, 0.0])
-    f = np.array(
-        [-bj_to_pivot, SUSP["uca_fa_front"]], dtype=float
-    )
-    r = np.array(
-        [-bj_to_pivot, -SUSP["uca_fa_rear"]], dtype=float
-    )
+    f = np.array([mid_lat + dlat, mid_fa + dfa], dtype=float)
+    r = np.array([mid_lat - dlat, mid_fa - dfa], dtype=float)
     return bj, f, r
 
 
@@ -2552,10 +2581,12 @@ def plot_lca_plan():
             (
                 cov_pt,
                 f"Coilover\n({SUSP['lca_coilover_perp']:.0f}mm out, {SUSP['lca_coilover_fa']:.0f}mm)",
+                (10, 12, "left"),  # label up and outboard of the marker
             ),
             (
                 arb_pt,
                 f"ARB link\n({SUSP['lca_arb_perp']:.0f}mm out, {SUSP['lca_arb_fa']:.0f}mm)",
+                (-12, 12, "right"),  # label up and inboard, clear of the coilover label
             ),
         ],
         color=GOLD,
@@ -2653,7 +2684,7 @@ def plot_lca_plan():
     pad = 40
     left_pad = 110  # extra room for inboard-side fa-offset labels
     all_x = [bj[0], lca_f[0], lca_r[0], cov_pt[0], arb_pt[0]]
-    all_y = [bj[1] + 20, lca_f[1], lca_r[1], y_bot - 28]
+    all_y = [bj[1] + 20, lca_f[1], lca_r[1], y_bot - 28, max(cov_pt[1], arb_pt[1]) + 45]
     ax.set_xlim(min(all_x) - left_pad, max(all_x) + pad)
     ax.set_ylim(min(all_y) - pad, max(all_y) + pad)
     _note(ax)
@@ -2664,10 +2695,13 @@ def plot_lca_plan():
 # 13b. UCA plan view
 # ====================================================================
 def plot_uca_plan():
-    """Top-down view of the Miata NA front upper control arm."""
+    """Top-down view of the Miata NA front upper control arm, with the bushing
+    axis at its plan cant (uca_plan_cant)."""
     fig, ax = styled_fig(figsize=(8, 6))
 
     bj, uca_f, uca_r = _uca_coords()
+    cant_deg, dlat, _, mid_lat, mid_fa = uca_plan_cant()
+    mid = np.array([mid_lat, mid_fa])
 
     _draw_arm_core(
         ax,
@@ -2680,40 +2714,41 @@ def plot_uca_plan():
         bushing_lengths=(SUSP["uca_bushing"], SUSP["uca_bushing"]),
     )
 
-    uca_lat = abs(uca_f[0])  # 324.5 mm
-    spread = uca_f[1] - uca_r[1]  # 113.5 + 143.5 = 257 mm
+    uca_lat = abs(mid_lat)  # 250 mm, UBJ -> pivot-line midpoint
+    span = np.linalg.norm(uca_f - uca_r)  # 220 mm along the axis
     y_bot = uca_r[1] - 25
 
-    # Lateral: pivot → BJ
+    # Lateral: pivot-line midpoint -> BJ
     ax.annotate(
         "",
         xy=(bj[0], y_bot),
-        xytext=(uca_f[0], y_bot),
+        xytext=(mid_lat, y_bot),
         arrowprops=dict(arrowstyle="<->", color=TEXT, lw=1.0, alpha=0.7),
     )
     ax.text(
-        (bj[0] + uca_f[0]) / 2,
+        (bj[0] + mid_lat) / 2,
         y_bot - 14,
-        f"{uca_lat:.0f} mm  (inner pivot → BJ, lateral)",
+        f"{uca_lat:.0f} mm  (pivot-line midpoint → BJ, lateral)",
         fontsize=7,
         color=TEXT,
         ha="center",
         alpha=0.85,
     )
 
-    # Fore-aft offsets (relative to BJ)
+    # Fore-aft offsets of each pivot (relative to the BJ)
     for ip, label in [
         (uca_f, f"+{uca_f[1]:.0f} mm\nfwd"),
         (uca_r, f"−{abs(uca_r[1]):.0f} mm\nrear"),
     ]:
+        x_dim = min(uca_f[0], uca_r[0]) - 18
         ax.annotate(
             "",
-            xy=(ip[0] - 18, bj[1]),
-            xytext=(ip[0] - 18, ip[1]),
+            xy=(x_dim, bj[1]),
+            xytext=(x_dim, ip[1]),
             arrowprops=dict(arrowstyle="<->", color=TEXT, lw=0.8, alpha=0.6),
         )
         ax.text(
-            ip[0] - 30,
+            x_dim - 12,
             ip[1] / 2,
             label,
             fontsize=6.5,
@@ -2723,23 +2758,40 @@ def plot_uca_plan():
             alpha=0.8,
         )
 
-    # Spread
-    mid_x = (uca_f[0] + uca_r[0]) / 2 + 25
+    # Span along the bushing axis, drawn parallel to it
+    u = (uca_f - uca_r) / span
+    n = np.array([u[1], -u[0]])  # outboard normal
+    off = 25 * n
     ax.annotate(
         "",
-        xy=(mid_x, uca_f[1]),
-        xytext=(mid_x, uca_r[1]),
+        xy=tuple(uca_f + off),
+        xytext=tuple(uca_r + off),
         arrowprops=dict(arrowstyle="<->", color=BLUE, lw=0.9, alpha=0.55),
     )
     ax.text(
-        mid_x + 8,
-        (uca_f[1] + uca_r[1]) / 2,
-        f"{spread:.0f} mm\nspan",
+        mid[0] + off[0] + 8,
+        mid[1] + off[1] + 30,
+        f"{span:.0f} mm\nalong axis",
         fontsize=6.5,
         color=BLUE,
         ha="left",
         va="center",
         alpha=0.8,
+    )
+
+    # Plan cant: CL-parallel reference through the midpoint vs the axis
+    ax.plot([mid_lat, mid_lat], [uca_r[1] - 10, uca_f[1] + 10], color=TEXT, lw=0.8,
+            ls=":", alpha=0.5, zorder=2)
+    ax.text(
+        mid_lat + 30,
+        uca_f[1] + 36,
+        f"Bushing axis canted {cant_deg:.1f}° in plan\n"
+        f"(front pivot {2 * dlat:.1f} mm outboard of rear; dotted = parallel to CL)",
+        fontsize=6.5,
+        color=BLUE,
+        ha="left",
+        va="bottom",
+        alpha=0.9,
     )
 
     ax.axhline(bj[1], color=GRID2, lw=0.9, alpha=0.55, linestyle=":")
@@ -2752,7 +2804,7 @@ def plot_uca_plan():
     pad = 36
     left_pad = 110  # extra room for inboard-side fa-offset labels
     all_x = [bj[0], uca_f[0], uca_r[0]]
-    all_y = [bj[1], uca_f[1], uca_r[1], y_bot - 28]
+    all_y = [bj[1], uca_f[1] + 62, uca_r[1], y_bot - 28]
     ax.set_xlim(min(all_x) - left_pad, max(all_x) + pad)
     ax.set_ylim(min(all_y) - pad, max(all_y) + pad)
     _note(ax)
@@ -3240,10 +3292,13 @@ def plot_pickups_3view():
     LCAF_z = g["lca_f"][2]  # 0, 0
     LCAR_fa = g["lca_r"][1]
     LCAR_z = g["lca_r"][2]  # −322.5, 0
-    UCAF_fa = g["uca_f"][1]
-    UCAF_z = g["uca_f"][2]  # +135, +181.78
-    UCAR_fa = g["uca_r"][1]
-    UCAR_z = g["uca_r"][2]  # −85, +168.22
+    UCAF_z = g["uca_f"][2]  # +181.78
+    UCAR_z = g["uca_r"][2]  # +168.22
+    # Bushing axis canted in plan (uca_plan_cant): front pivot outboard.
+    UCA_cant, UCA_dlat, UCA_dfa, _, _ = uca_plan_cant()
+    UCA_mid_fa = (g["uca_f"][1] + g["uca_r"][1]) / 2  # +25 (centred on the LBJ)
+    UCAF_fa = UCA_mid_fa + UCA_dfa  # ~+134.8
+    UCAR_fa = UCA_mid_fa - UCA_dfa  # ~−84.8
     HT_MIATA = g["half_track"]  # 710 mm
 
     # ── axis ranges ──────────────────────────────────────────────────
@@ -3440,14 +3495,17 @@ def plot_pickups_3view():
 
     for side in (+1, -1):
         lca_x = side * LCA_lat
-        uca_x = side * UCA_lat
+        uca_x = side * UCA_lat  # pivot-line midpoint
+        ucaf_x = side * (UCA_lat + UCA_dlat)  # front pivot (outboard)
+        ucar_x = side * (UCA_lat - UCA_dlat)  # rear pivot (inboard)
 
-        # Pivot bushing rectangles (plan view: rpw lateral × bushing fore-aft)
-        for px, py, bush, col in [
-            (lca_x, LCAF_fa, SUSP["lca_f_bushing"], GOLD),
-            (lca_x, LCAR_fa, SUSP["lca_r_bushing"], GOLD),
-            (uca_x, UCAF_fa, SUSP["uca_bushing"], BLUE),
-            (uca_x, UCAR_fa, SUSP["uca_bushing"], BLUE),
+        # Pivot bushing rectangles (plan view: rpw lateral × bushing length),
+        # the UCA ones turned to the canted bushing axis.
+        for px, py, bush, col, rot in [
+            (lca_x, LCAF_fa, SUSP["lca_f_bushing"], GOLD, 0.0),
+            (lca_x, LCAR_fa, SUSP["lca_r_bushing"], GOLD, 0.0),
+            (ucaf_x, UCAF_fa, SUSP["uca_bushing"], BLUE, side * UCA_cant),
+            (ucar_x, UCAR_fa, SUSP["uca_bushing"], BLUE, side * UCA_cant),
         ]:
             rect = plt.Rectangle(
                 (px - rpw / 2, py - bush / 2),
@@ -3458,6 +3516,9 @@ def plot_pickups_3view():
                 alpha=0.22,
                 lw=1.2,
                 zorder=2,
+            )
+            rect.set_transform(
+                mtransforms.Affine2D().rotate_deg_around(px, py, -rot) + ax_plan.transData
             )
             ax_plan.add_patch(rect)
 
@@ -3473,17 +3534,17 @@ def plot_pickups_3view():
         ax_plan.plot(lca_x, LCAF_fa, "s", color=GOLD, markersize=9, zorder=5)
         ax_plan.plot(lca_x, LCAR_fa, "s", color=GOLD, markersize=9, zorder=5)
 
-        # UCA arm line
+        # UCA bushing axis (canted in plan)
         ax_plan.plot(
-            [uca_x, uca_x],
+            [ucaf_x, ucar_x],
             [UCAF_fa, UCAR_fa],
             color=BLUE,
             lw=2.5,
             solid_capstyle="round",
             zorder=3,
         )
-        ax_plan.plot(uca_x, UCAF_fa, "^", color=BLUE, markersize=9, zorder=5)
-        ax_plan.plot(uca_x, UCAR_fa, "^", color=BLUE, markersize=9, zorder=5)
+        ax_plan.plot(ucaf_x, UCAF_fa, "^", color=BLUE, markersize=9, zorder=5)
+        ax_plan.plot(ucar_x, UCAR_fa, "^", color=BLUE, markersize=9, zorder=5)
 
         ax_plan.axvline(lca_x, color=GOLD, lw=0.4, alpha=0.18, linestyle=":")
         ax_plan.axvline(uca_x, color=BLUE, lw=0.4, alpha=0.18, linestyle=":")
@@ -3510,14 +3571,14 @@ def plot_pickups_3view():
             ax_plan.text(
                 uca_x + 10,
                 UCAF_fa + 14,
-                f"UCA-F ({uca_x:.1f}, +{UCAF_fa:.1f})",
+                f"UCA-F ({ucaf_x:.1f}, +{UCAF_fa:.1f})",
                 fontsize=6.5,
                 color=BLUE,
             )
             ax_plan.text(
                 uca_x + 10,
                 UCAR_fa - 22,
-                f"UCA-R ({uca_x:.1f}, {UCAR_fa:.1f})",
+                f"UCA-R ({ucar_x:.1f}, {UCAR_fa:.1f})",
                 fontsize=6.5,
                 color=BLUE,
             )
@@ -3535,13 +3596,22 @@ def plot_pickups_3view():
             # UCA fore-aft span dim: right of UCA column
             dim(
                 ax_plan,
-                (uca_x + 35, UCAF_fa),
-                (uca_x + 35, UCAR_fa),
+                (ucaf_x + 35, UCAF_fa),
+                (ucaf_x + 35, UCAR_fa),
                 f"{UCAF_fa - UCAR_fa:.1f}mm",
                 BLUE,
                 xoff=0,
                 yoff=0,
                 ha="left",
+            )
+            ax_plan.text(
+                ucaf_x + 60,
+                (UCAF_fa + UCAR_fa) / 2 - 40,
+                f"UCA axis canted {UCA_cant:.1f}°\n(front pivot {2 * UCA_dlat:.1f}mm\noutboard of rear)",
+                fontsize=6.5,
+                color=BLUE,
+                ha="left",
+                va="top",
             )
             # LCA→UCA lateral dim at bottom
             dim(
@@ -4020,6 +4090,24 @@ def plot_ujoint_life():
 RESULTS_PATH = a40_constants.GEOMETRY_PATH
 
 
+def camber_in_roll(roll_deg, cfg=None):
+    """Camber change of the outside front wheel relative to the ground when
+    the body rolls roll_deg (tyres pinned, front-view four-bar).  Positive =
+    towards positive camber (top of the tyre leaning out of the turn)."""
+    params = _kin_params(cfg or CFG_A40)
+    r_tyre = (cfg or CFG_A40)["tire_od"] / 2
+
+    def knuckle_deg(st):
+        v = st["ubj"] - st["lbj"]
+        return np.degrees(np.arctan2(v[0], v[1]))
+
+    static = _solve_side_body_pose(params, 1, 0.0, 0.0, r_tyre)
+    # The right (+x) side is the outside wheel when the body rotates by
+    # -roll (it compresses).
+    rolled = _solve_side_body_pose(params, 1, 0.0, -np.radians(roll_deg), r_tyre)
+    return knuckle_deg(rolled) - knuckle_deg(static)
+
+
 def compute_results():
     """name -> (value, unit, decimals[, signed])."""
     res = {}
@@ -4073,6 +4161,11 @@ def compute_results():
     put("front_mr_travel_lo", cur["mr"][m].min(), "", 3)
     put("front_mr_travel_hi", cur["mr"][m].max(), "", 3)
     put("roll_travel_wheel", T_A40 / 2 * np.tan(np.radians(ROLL_TARGETS[1])), "mm", 0)
+    put("camber_roll_lo", camber_in_roll(ROLL_TARGETS[0]), "deg", 1)
+    put("camber_roll_hi", camber_in_roll(ROLL_TARGETS[2]), "deg", 1)
+    cant_deg, dlat, _, _, _ = uca_plan_cant()
+    put("uca_plan_cant", cant_deg, "deg", 1)
+    put("uca_cant_offset", 2 * dlat, "mm", 1)
 
     rcs = (("hi", H_RC_REAR_HI), ("nom", H_RC_REAR_NOM), ("lo", H_RC_REAR_LO))
     tgts = (("lo", ROLL_TARGETS[0]), ("nom", ROLL_TARGETS[1]), ("hi", ROLL_TARGETS[2]))

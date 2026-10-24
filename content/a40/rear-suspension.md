@@ -21,11 +21,10 @@ Same idea as the front: keep the Miata geometry and move every inboard pickup to
 | Diff | Mazda RX-8 rear diff | decided |
 | Final drive | ~{{final_drive}} stock RX-8 6-speed | verify on the unit; ratio open |
 | Half-shafts | custom length, RX-8 diff flanges to Miata hubs | to order |
-| Rear sprung corner mass | ~{{corner_mass_rear}} | working |
-| Rear wheel rate target | {{kw_rear}} ({{ride_freq_rear}}), range {{kw_rear_lo:raw}}–{{kw_rear_hi}} | working |
 | Rear motion ratio | Miata rear, not yet measured | measure donor |
-| Rear spring | {{kw_rear:raw}} / MR²: {{spring_rear_lo:raw:0}} / {{spring_rear_mid:raw:0}} / {{spring_rear_hi:0}} at MR {{rear_mr_lo}} / {{rear_mr_mid}} / {{rear_mr_hi}} | pick once MR is measured |
 | Rear roll centre | not yet modelled; assume {{rear_rc_lo:raw}}–{{rear_rc_hi}} | model/measure |
+
+Rear corner mass, wheel rate and the spring rate for each possible motion ratio are in [suspension tuning](./suspension-tuning#springs).
 
 **Narrowing amount.** Narrowing per side = stock hub-face distance from centreline − {{rear_hub_face}}. If the donor's {{rear_track_miata}} rear track is quoted at ET{{rear_et_miata_lo:raw}}, that's {{rear_hub_face_miata_lo:raw}} − {{rear_hub_face:raw}} = **{{rear_narrowing_lo}}**. If it's at ET{{rear_et_miata_hi:raw}}, {{rear_hub_face_miata_hi:raw}} − {{rear_hub_face:raw}} = **{{rear_narrowing_hi}}**. Measure hub face to hub face on the donor subframe before cutting anything; don't trust the published track.
 
@@ -59,13 +58,13 @@ Miata rears are sized for a ~1000 kg car closer to 50/50; the A40 is ~{{operatin
 - **Why RX-8:** the NA Miata diff isn't suited to a 300+ whp SR20DET. The RX-8 unit is a common upgrade for high-power Miata-based builds. Weigh it when it arrives and add it to the [mass table](./build-constants).
 - **Ratio:** the stock RX-8 6-speed final drive is about {{final_drive}} (verify on the unit). Engine speed at {{reference_speed}} on {{tyre_size}} ({{tyre_circumference}} circumference):
 
-| Final drive | 5th ({{gear_5th}}) | 6th (CD009, {{gear_6th}}) |
+| Final drive | CD009 5th ({{gear_5th}}) | CD009 6th ({{gear_6th}}) | Z32 5th ({{gear_z32_top}}, verify) |
 |---|---|---|
-| {{final_drive}} | {{rpm_fd_5th}} | {{rpm_fd_6th}} |
-| {{final_drive_alt1}} | {{rpm_alt1_5th}} | {{rpm_alt1_6th}} |
-| {{final_drive_alt2}} | {{rpm_alt2_5th}} | {{rpm_alt2_6th}} |
+| {{final_drive}} | {{rpm_fd_5th}} | {{rpm_fd_6th}} | {{rpm_fd_z32_top}} |
+| {{final_drive_alt1}} | {{rpm_alt1_5th}} | {{rpm_alt1_6th}} | {{rpm_alt1_z32_top}} |
+| {{final_drive_alt2}} | {{rpm_alt2_5th}} | {{rpm_alt2_6th}} | {{rpm_alt2_z32_top}} |
 
-With the CD009's 6th, {{final_drive}} cruises reasonably. With a 5-speed it would be busy on the highway. Ratio swaps for this diff family exist (verify which fit the RX-8 case before buying).
+Both gearbox options have an overdrive top gear (CD009 6th, Z32 5th), so {{final_drive}} cruises at {{rpm_fd_z32_top:raw}}–{{rpm_fd_6th}} either way. Ratio swaps for this diff family exist (verify which fit the RX-8 case before buying).
 
 - **LSD:** RX-8s came with a torque-sensing (Torsen-type) LSD on some trims (verify on the unit). It biases torque but sends almost nothing when one wheel is unloaded. Fine for the street. A clutch-type LSD is the upgrade if it turns out to be a limitation.
 
@@ -88,7 +87,7 @@ U-joint life is roughly inversely proportional to operating angle (manufacturers
 **Ordering the driveshaft** (once the engine, gearbox and diff are in their final positions on the jig):
 
 1. Measure installed length at ride height, centre to centre of the joints.
-2. Give the shop the gearbox output yoke spec (CD009) and the RX-8 pinion flange spec.
+2. Give the shop the gearbox output yoke spec (CD009 or Z32, whichever is fitted) and the RX-8 pinion flange spec.
 3. 1330-series joints are typical at this power; tube size (3" × .065–.083") is the shop's critical-speed call, and they balance it.
 4. The slip yoke only has to cover engine movement and tolerance now, not axle travel.
 

@@ -345,6 +345,11 @@ constants:
     unit: ""
     status: target
     note: Ride damping ratio, high end.
+  road_input:
+    value: 20
+    unit: mm
+    status: working
+    note: Road bump amplitude for the front bump-travel budget (assumed).
   damping_roll_lo:
     value: 0.4
     unit: ""
@@ -405,12 +410,17 @@ constants:
     unit: ""
     decimals: 3
     status: working
-    note: 1:1 5th (5-speed reference).
+    note: CD009 5th gear (1:1).
   gear_6th:
     value: 0.794
     unit: ""
     status: working
     note: CD009 6th gear.
+  gear_z32_top:
+    value: 0.759
+    unit: ""
+    status: working
+    note: Z32 5-speed 5th gear (published; 4th is 1:1). Verify on the unit if the Z32 is the one bought.
   reference_speed:
     value: 100
     unit: km/h

@@ -23,6 +23,8 @@ These can't be settled from the desk. Each answer goes into the constants file (
 - [ ] **Rear donor hub-face width.** Same method on the rear. Half of it − 708 mm = rear narrowing per side (expected 42–47).
 - [ ] **Rear motion ratio.** Spring out, shock off or loose. Jack the hub through its travel in 10 mm steps; at each step record wheel-centre height and shock eye-to-eye length. MR = Δshock / Δwheel (average over ±30 mm of ride height).
 - [ ] **Rear pickup coordinates** (for the rear roll centre): every inboard and outboard joint centre, x/y/z from the subframe centreline and a floor datum. A tape, a square and a plumb bob are enough; scanning is better.
+- [ ] **UCA plan cant** (front pivot vs rear pivot lateral position on the donor arm). The posts use 3.2° inferred from the ball-joint offset; measure the two inner bushing centres from the subframe centreline.
+- [ ] **Z32 5th gear ratio** if the Z32 is chosen (0.759 published; check the tag/manual).
 - [ ] **Unsprung mass.** Weigh one complete front corner and one rear corner (hub, upright, brake, wheel+tyre) on a bathroom scale; add half the arms and, at the rear, half the half-shaft.
 - [ ] **RX-8 diff mass** (bathroom scale).
 - [ ] **Fuel tank capacity** (fill from empty with a measured can, or measure it).

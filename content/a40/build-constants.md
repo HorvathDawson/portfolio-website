@@ -38,7 +38,7 @@ Weight transfer scales directly with CG height and roll grows faster than linear
 | Item | Mass (kg, est.) | Notes |
 |---|---|---|
 | Engine (SR20DET, dressed) | 150–185 | Largest single mass, low and forward. Weigh or use service data. |
-| Transmission (CD009) | 50–70 | Low, in the tunnel. |
+| Transmission (CD009 or Z32) | 50–70 | Low, in the tunnel. |
 | Body shell (stripped, painted) | 200–260 | Biggest effect on CG **height**. ±10 mm in its centroid moves the whole-car CG ~2–3 mm. Use the scan's volume centroid. |
 | Ladder frame | 70–110 | Low. Take the centroid from the frame CAD. |
 | Fuel (full) | ~{{fuel_mass:raw}} | Assumes a stock-size ~30–35 L tank; update if the tank changes. Model full and empty. |
@@ -47,7 +47,7 @@ Weight transfer scales directly with CG height and roll grows faster than linear
 | Rear suspension: subframe, arms, uprights, brakes, wheels | ~85–95 | Two ~{{unsprung_rear}} corners plus subframe/arms. |
 | Half-shafts | ~8–12 | |
 | Front corners (×2) | ~{{unsprung_front:raw}} each | Wheel, tyre, hub, brake, half the arms. |
-| Battery | 15–20 | Moving it from the bay to the boot shifts F/R balance ~1–2%. |
+| Battery | 15–20 | Probably in the boot (not final). Boot vs engine bay shifts F/R balance ~1–2%. |
 | Seats (×2) | 12–18 each | |
 | Radiator + coolant | 8–12 | |
 | Exhaust | 12–18 | |
@@ -56,4 +56,9 @@ Weight transfer scales directly with CG height and roll grows faster than linear
 
 Mid values sum to ~{{operating_mass}} with the driver and a full tank.
 
-**Workflow:** place each item in the CAD assembly, assign its mass (measured where possible), read the assembly's mass properties, then repeat with the tank empty and with a passenger to bracket the range.
+**Workflow:**
+
+1. Place each item in the CAD assembly at its mounted position.
+2. Assign its mass (measured where possible).
+3. Read the assembly's mass properties.
+4. Repeat with the tank empty and with a passenger to bracket the range.

@@ -1,6 +1,6 @@
 {
  "_comment": "Written by scripts/plot_geometry_reference.py; merged by scripts/a40_constants.py. Do not edit.",
- "inputs_hash": "45f63b91e7056225",
+ "inputs_hash": "a49a7de4b844ef4f",
  "results": {
   "track_narrower_pct": {
    "value": 13.380282,
@@ -288,6 +288,34 @@
    "value": 37.615011,
    "unit": "mm",
    "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "camber_roll_lo": {
+   "value": 1.406608,
+   "unit": "deg",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "camber_roll_hi": {
+   "value": 1.817338,
+   "unit": "deg",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "uca_plan_cant": {
+   "value": 3.239485,
+   "unit": "deg",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "uca_cant_offset": {
+   "value": 12.432102,
+   "unit": "mm",
+   "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },

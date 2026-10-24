@@ -44,7 +44,7 @@ A signed-off cut list I can order from. The cut list **is** the BOM. Each line h
 ## Engine, gearbox and diff mounting
 
 - Frame pads for the **stock SR20 engine mounts**; no custom engine mounts.
-- Gearbox crossmember bolt-in, sized for the CD009 envelope.
+- Gearbox crossmember bolt-in, sized for the CD009 envelope; a Z32 only moves its position.
 - Engine/gearbox **{{engine_angle}} down at the rear (tail-down)**; RX-8 pinion set parallel ({{pinion_angle}} nose-up). Shaft angle {{shaft_angle}}, both joints {{ujoint_front}}. Detail in [rear suspension](./rear-suspension#driveshaft-and-u-joint-angles).
 
 ## Build sequence
