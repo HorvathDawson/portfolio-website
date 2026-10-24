@@ -1867,6 +1867,11 @@
 }
 .heading-copied:not(:empty) { padding: 6px 14px; }
 
+/* The post scroller is focused (tabindex=-1) so Page Down works; it is not
+   a control, so no focus ring. */
+.blog-content-panel[tabindex]:focus,
+.blog-content-panel[tabindex]:focus-visible { outline: none; }
+
 /* ── Post layout + table of contents ── */
 .blog-post-layout--toc { display: block; }
 .toc--aside { display: none; }
@@ -2071,10 +2076,12 @@
   margin: 0 -16px 16px;
   padding: 8px 12px;
   border-bottom: 3px ridge rgba(112, 56, 207, 0.6);
-  background: linear-gradient(180deg, rgba(15, 10, 40, 0.98), rgba(5, 5, 30, 0.98));
+  background: linear-gradient(180deg, rgb(15, 10, 40), rgb(5, 5, 30));
   font-family: 'Space Mono', monospace;
   font-size: 12px;
 }
+/* Headings land below the sticky bar. */
+.blog-page--mobile .blog-article-body :is(h2, h3, h4) { scroll-margin-top: 64px; }
 .blog-post-bar a {
   color: var(--warm-white);
   text-decoration: none;
@@ -2185,7 +2192,11 @@
     overflow-wrap: anywhere;
   }
   .post-tasks { border: 1px solid #999; background: none; color: #111; }
+  .post-tasks-title, .post-tasks-status { color: #111 !important; }
   .post-tasks a { color: #0b4fa8; }
   .sb-status-dot { display: none; }
   .katex { color: #111; }
 }
+
+/* Long inline code (file paths) wraps instead of pushing the page wide. */
+.blog-article-body :not(pre) > code { overflow-wrap: anywhere; }

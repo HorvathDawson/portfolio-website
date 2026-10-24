@@ -6,7 +6,12 @@ Run from the repo root:  python3 scripts/plot_geometry_reference.py
 The run also prints a summary of every number the posts quote
 (see print_summary()), so the posts can be checked against it.
 
-Working inputs (all "working" values -- verify on the car):
+Inputs come from content/a40/constants.yaml via scripts/a40_constants.py
+(`from a40_constants import C`); results quoted in the posts are written
+to scripts/a40_geometry_results.json and merged into
+src/blog/a40-constants.generated.json.  `--results-only` skips the plots.
+
+Working inputs at the time of writing (all "working" -- verify on the car):
   - Front: NA Miata double wishbone, every pickup translated 95 mm/side
     inboard.  Hub face 750 -> 655 mm from CL.  ET38 wheel -> 1234 mm
     track (~1230 nominal; vehicle-level ratios use 1230).
@@ -254,7 +259,7 @@ def susp_geometry():
 
 # ── Steering-axis derived numbers (KPI, caster, scrub, trail) ─────────
 # All measured from the scan, expressed in the car-CL/ground frame
-# (donor configuration: ET40, 577 mm tire, hub 265 mm above ground).
+# (donor configuration: ET40, 185/60R14, hub 265 mm above ground).
 _HUB_FACE_X = HUB_FACE_MIATA  # 750
 _LBJ_X = _HUB_FACE_X + SUSP["lbj_from_hub"][0]  # 665.75
 _LBJ_FA = SUSP["lbj_from_hub"][1]  # -3.75
@@ -274,7 +279,7 @@ SCRUB_MM = (T_MIATA / 2) - _KP_GND_X  # +ve = pierces inboard of CP  (~6.05)
 TRAIL_MM = _KP_GND_FA - 0.0  # +ve = pierces ahead of CP  (~7.57)
 
 # A40 build: taller tire raises the hub; ET38 moves the CP 2 mm outboard.
-HUB_Z_A40 = SUSP["hub_z_ground"] + (TIRE_OD_A40 - TIRE_OD_MIATA) / 2  # 300.25
+HUB_Z_A40 = C.hub_z  # hub height + half the tyre OD increase (~300)
 _DH = HUB_Z_A40 - SUSP["hub_z_ground"]
 SCRUB_A40_MM = (
     SCRUB_MM - _DH * np.tan(np.radians(KPI_DEG)) + (ET_MIATA - ET_A40)
@@ -345,28 +350,28 @@ def plot_roll_vs_cg():
                 linestyle="--" if k_add == 0 else "-",
                 alpha=0.8 if k_add == 0 else 1.0, label=lbl)
 
-    ax.axhspan(3.0, 4.0, color=PINK, alpha=0.08)
-    ax.axhline(3.5, color=PINK, linestyle=":", linewidth=1, alpha=0.7,
-               label="3-4° target")
+    ax.axhspan(ROLL_TARGETS[0], ROLL_TARGETS[2], color=PINK, alpha=0.08)
+    ax.axhline(ROLL_TARGETS[1], color=PINK, linestyle=":", linewidth=1, alpha=0.7,
+               label=f"{ROLL_TARGETS[0]:g}-{ROLL_TARGETS[2]:g}° target")
     ax.axvline(H_CG_A40, color=TEXT, linestyle=":", linewidth=0.6, alpha=0.4)
-    ax.axvspan(H_CG_A40 - 50, H_CG_A40 + 50, color=TEXT, alpha=0.04)
-    ax.text(H_CG_A40 + 3, 11.3, "est. CG\n575 ± 50", color=TEXT,
+    ax.axvspan(H_CG_A40 - CG_TOL, H_CG_A40 + CG_TOL, color=TEXT, alpha=0.04)
+    ax.text(H_CG_A40 + 3, 11.3, f"est. CG\n{H_CG_A40:.0f} ± {CG_TOL:.0f}", color=TEXT,
             fontsize=7, alpha=0.6)
 
-    for cg_val in (525, 575, 625):
+    for cg_val in (H_CG_A40 - CG_TOL, H_CG_A40, H_CG_A40 + CG_TOL):
         r = roll_angle_deg(np.array([cg_val]), K_PHI_SPRING)[0]
         ax.plot(cg_val, r, "s", color=TEXT, markersize=4, alpha=0.7, zorder=5)
         ax.annotate(f"{r:.1f}°", xy=(cg_val, r), xytext=(cg_val - 4, r + 0.6),
                     fontsize=6.5, color=TEXT, alpha=0.75, ha="right")
 
     ax.text(0.99, 0.02,
-            "Lines: rear RC 100 mm.  Bands: rear RC 150 (lower edge) to 80 mm.\n"
-            f"Front RC {H_RC_A40:.0f} mm (kinematic), sprung mass {M_S_A40} kg, "
+            f"Lines: rear RC {H_RC_REAR_NOM:.0f} mm.  Bands: rear RC {H_RC_REAR_HI:.0f} (lower edge) to {H_RC_REAR_LO:.0f} mm.\n"
+            f"Front RC {H_RC_A40:.0f} mm (kinematic), sprung mass {M_S_A40:.0f} kg, "
             f"springs {KW_FRONT/1000:.1f} / {KW_REAR/1000:.1f} N/mm wheel rate.",
             transform=ax.transAxes, fontsize=6.3, color=TEXT, alpha=0.65,
             ha="right", va="bottom")
     ax.set_xlabel("CG height (mm)")
-    ax.set_ylabel("Body roll at 0.8 G (°)")
+    ax.set_ylabel(f"Body roll at {AY:g} G (°)")
     ax.set_title("Body roll vs CG height and added ARB stiffness")
     ax.legend(fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
               loc="upper left")
@@ -528,8 +533,8 @@ def plot_rc_construction():
     a = _build_suspension(**CFG_MIATA)["rc"][1]
     b = H_RC_A40_MIATA_TIRE
     _plot_rc_pair(
-        [(f"Donor track ({T_MIATA} mm), 185/60R14", CFG_MIATA, MIATA_C, 0.45),
-         (f"A40 pickups ({2*CFG_A40_MIATA_TIRE['half_track']:.0f} mm), 185/60R14",
+        [(f"Donor track ({T_MIATA:.0f} mm), {C.tyre_size_miata}", CFG_MIATA, MIATA_C, 0.45),
+         (f"A40 pickups ({2*CFG_A40_MIATA_TIRE['half_track']:.0f} mm), {C.tyre_size_miata}",
           CFG_A40_MIATA_TIRE, A40_C, 0.9)],
         "rc_construction.png",
         "Roll centre construction: narrowing only (same tire)",
@@ -544,8 +549,8 @@ def plot_rc_tire_comparison():
     a = H_RC_A40_MIATA_TIRE
     b = H_RC_A40
     _plot_rc_pair(
-        [("185/60R14, ET40 (577 mm OD)", CFG_A40_MIATA_TIRE, MIATA_C, 0.45),
-         (f"205/65R15, ET38 ({TIRE_OD_A40} mm OD)", CFG_A40, A40_C, 0.9)],
+        [(f"{C.tyre_size_miata}, ET{ET_MIATA:.0f} ({TIRE_OD_MIATA:.1f} mm OD)", CFG_A40_MIATA_TIRE, MIATA_C, 0.45),
+         (f"{C.tyre_size}, ET{ET_A40:.0f} ({TIRE_OD_A40:.1f} mm OD)", CFG_A40, A40_C, 0.9)],
         "rc_tire_comparison.png",
         "Roll centre construction: tire height at the A40 pickups",
         [f"Taller tire lifts the whole linkage {HUB_Z_A40 - SUSP['hub_z_ground']:.2f} mm",
@@ -559,8 +564,8 @@ def plot_rc_combined():
     a, b = H_RC_MIATA, H_RC_A40
     pm, pa = _RC_MIATA_SUSP, _RC_A40_SUSP
     _plot_rc_pair(
-        [(f"Stock Miata ({T_MIATA} mm, 185/60R14 ET40)", CFG_MIATA, MIATA_C, 0.45),
-         (f"A40 build ({T_A40_EXACT} mm, 205/65R15 ET38)", CFG_A40, A40_C, 0.9)],
+        [(f"Stock Miata ({T_MIATA:.0f} mm, {C.tyre_size_miata} ET{ET_MIATA:.0f})", CFG_MIATA, MIATA_C, 0.45),
+         (f"A40 build ({T_A40_EXACT} mm, {C.tyre_size} ET{ET_A40:.0f})", CFG_A40, A40_C, 0.9)],
         "rc_combined.png",
         "Roll centre construction: stock Miata vs A40 build",
         [f"Miata: RC {a:.1f} mm, IC {pm['cp'][0] - pm['ic'][0]:.0f} mm inboard "
@@ -1108,9 +1113,9 @@ def plot_rc_migration():
     bump, droop = front_wheel_travel()
     for cfg, color, name, fname in (
         (CFG_MIATA, MIATA_C,
-         f"Stock Miata  ({T_MIATA} mm track, 185/60R14)", "rc_migration_miata.png"),
+         f"Stock Miata  ({T_MIATA:.0f} mm track, {C.tyre_size_miata})", "rc_migration_miata.png"),
         (CFG_A40, A40_C,
-         f"A40 build  ({T_A40_EXACT} mm track, 205/65R15 ET38)", "rc_migration_a40.png"),
+         f"A40 build  ({T_A40_EXACT} mm track, {C.tyre_size} ET{ET_A40:.0f})", "rc_migration_a40.png"),
     ):
         _plot_rc_migration_panel(
             cfg["half_track"], cfg["hub_z_ground"], cfg["tire_od"], color,
@@ -1228,8 +1233,8 @@ def plot_track_effects():
                 ha="right")
     ax.axvline(T_MIATA, color=MIATA_C, linestyle="--", linewidth=1, alpha=0.6)
     ax.axvline(T_A40, color=A40_C, linestyle="--", linewidth=1, alpha=0.6)
-    ax.text(T_MIATA + 8, 1.5, f"Miata\n{T_MIATA}", color=MIATA_C, fontsize=8, alpha=0.8)
-    ax.text(T_A40 + 8, 1.5, f"A40\n~{T_A40}", color=A40_C, fontsize=8, alpha=0.8)
+    ax.text(T_MIATA + 8, 1.5, f"Miata\n{T_MIATA:.0f}", color=MIATA_C, fontsize=8, alpha=0.8)
+    ax.text(T_A40 + 8, 1.5, f"A40\n~{T_A40:.0f}", color=A40_C, fontsize=8, alpha=0.8)
     ax.axhline(1.0, color=TEXT, linestyle=":", linewidth=0.5, alpha=0.3)
 
     ax.set_xlabel("Front track width (mm)")
@@ -1252,15 +1257,15 @@ def plot_arb_sizing():
     need = lambda cg, rr: (k_phi_required(target, cg, rr) - K_PHI_SPRING) / 1000
     ax.fill_between(target, need(H_CG_A40, H_RC_REAR_HI), need(H_CG_A40, H_RC_REAR_LO),
                     color=TEXT, alpha=0.12, linewidth=0,
-                    label="CG 575, rear RC 80-150 mm")
+                    label=f"CG {H_CG_A40:.0f}, rear RC {H_RC_REAR_LO:.0f}-{H_RC_REAR_HI:.0f} mm")
     ax.plot(target, need(H_CG_A40, H_RC_REAR_NOM), color=TEXT, linewidth=2,
-            label="CG 575, rear RC 100 mm")
-    for cg_edge, ls in ((525, ":"), (625, "--")):
+            label=f"CG {H_CG_A40:.0f}, rear RC {H_RC_REAR_NOM:.0f} mm")
+    for cg_edge, ls in ((H_CG_A40 - CG_TOL, ":"), (H_CG_A40 + CG_TOL, "--")):
         ax.plot(target, need(cg_edge, H_RC_REAR_NOM), color=TEXT, linewidth=0.9,
-                linestyle=ls, alpha=0.6, label=f"CG {cg_edge}, rear RC 100 mm")
+                linestyle=ls, alpha=0.6, label=f"CG {cg_edge:.0f}, rear RC {H_RC_REAR_NOM:.0f} mm")
 
-    ax.axvspan(3.0, 4.0, color=PINK, alpha=0.07)
-    for rd in (3.0, 3.5, 4.0):
+    ax.axvspan(ROLL_TARGETS[0], ROLL_TARGETS[2], color=PINK, alpha=0.07)
+    for rd in ROLL_TARGETS:
         v = need(H_CG_A40, H_RC_REAR_NOM)[np.argmin(abs(target - rd))]
         ax.plot(rd, v, "o", color=PINK, markersize=5, zorder=5)
         ax.text(rd + 0.05, v + 1.2, f"{v:.0f}", color=PINK, fontsize=7.5)
@@ -1272,7 +1277,7 @@ def plot_arb_sizing():
         ax.axhline(k, color=c, linestyle="--", linewidth=1.0, alpha=0.7,
                    label=f"{d} mm front bar alone ({k:.1f}, IR {IR_BAR:.2f} assumed)")
 
-    ax.set_xlabel("Target body roll at 0.8 G (°)")
+    ax.set_xlabel(f"Target body roll at {AY:g} G (°)")
     ax.set_ylabel("ARB roll stiffness to add, front + rear (kN-m/rad)")
     ax.set_title(f"ARB requirement on top of the springs ({K_PHI_SPRING/1000:.1f} kN-m/rad)")
     ax.legend(fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
@@ -1329,7 +1334,7 @@ def plot_motion_ratio_vs_angle():
         cfg = dict(CFG_A40, half_track=HUB_FACE_A40 - et, et=et)
         bands.append(np.array([front_mr(cfg, a) for a in alpha_deg]))
     ax.fill_between(alpha_deg, bands[0], bands[1], color=A40_C, alpha=0.15,
-                    linewidth=0, label=f"ET{ET_A40} ± {d_et} mm")
+                    linewidth=0, label=f"ET{ET_A40:.0f} ± {d_et} mm")
     ax.plot(alpha_deg, mr, color=A40_C, linewidth=2.4,
             label=f"MR = {front_mr(alpha_deg=90):.3f} · sin(α)  (IC-based)")
 
@@ -1366,16 +1371,17 @@ def plot_ride_frequency():
     fig, ax = styled_fig(figsize=(7.2, 4.8))
     kw = np.linspace(5, 35, 300)  # N/mm wheel rate
 
-    for m, c, lbl, band in ((M_CORNER_F, A40_C, "front", (1.2, 1.6)),
-                            (M_CORNER_R, BLUE, "rear", (1.3, 1.7))):
+    for m, c, lbl, band in ((M_CORNER_F, A40_C, "front", FREQ_BAND_F),
+                            (M_CORNER_R, BLUE, "rear", FREQ_BAND_R)):
         fn = np.sqrt(kw * 1000 / m) / (2 * np.pi)
         ax.plot(kw, fn, color=c, linewidth=2,
-                label=f"{lbl}: {m} kg sprung corner")
+                label=f"{lbl}: {m:.0f} kg sprung corner")
         for mm, ls in ((m * 0.9, ":"), (m * 1.1, ":")):
             ax.plot(kw, np.sqrt(kw * 1000 / mm) / (2 * np.pi), color=c,
                     linewidth=0.8, linestyle=ls, alpha=0.6)
-    ax.axhspan(1.2, 1.6, color=GOLD, alpha=0.07)
-    ax.text(5.5, 1.62, "1.2-1.6 Hz street band (rear runs ~0.1 Hz higher)", color=GOLD,
+    ax.axhspan(*FREQ_BAND_F, color=GOLD, alpha=0.07)
+    ax.text(5.5, FREQ_BAND_F[1] + 0.02, f"{FREQ_BAND_F[0]:g}-{FREQ_BAND_F[1]:g} Hz street band "
+            f"(rear runs ~{FREQ_R - FREQ_F:.1f} Hz higher)", color=GOLD,
             fontsize=7, alpha=0.8)
 
     ks_f = KW_FRONT / front_mr() ** 2 / 1000
@@ -1649,7 +1655,7 @@ def plot_ackermann_topview():
     ax.text(
         -120,
         -WB_A40 - 50,
-        f"Ideal: rear axle at {WB_A40} mm",
+        f"Ideal: rear axle at {WB_A40:.0f} mm",
         color=GREEN,
         fontsize=7.5,
         ha="right",
@@ -1713,10 +1719,10 @@ def plot_ackermann_topview():
             color=MIATA_C,
             linewidth=1.5,
             alpha=0.4,
-            label=f"Miata stock (T={T_MIATA}, WB={WB_MIATA})",
+            label=f"Miata stock (T={T_MIATA:.0f}, WB={WB_MIATA:.0f})",
         ),
         Line2D(
-            [0], [0], color=A40_C, linewidth=2, label=f"A40 layout (T~{T_A40}, WB={WB_A40})"
+            [0], [0], color=A40_C, linewidth=2, label=f"A40 layout (T~{T_A40:.0f}, WB={WB_A40:.0f})"
         ),
         Line2D([0], [0], color=GOLD, linewidth=2, label="Miata knuckle convergence"),
         Line2D(
@@ -1933,7 +1939,7 @@ def plot_ackermann_turn():
     ax.set_ylabel("Longitudinal position (mm)")
     ax.set_title(
         f"ICR at {d_out_deg}\u00b0 outer lock: Miata stock knuckle vs ideal\n"
-        f"A40 track ~{T_A40} mm  x  wheelbase {WB_A40} mm",
+        f"A40 track ~{T_A40:.0f} mm  x  wheelbase {WB_A40:.0f} mm",
         fontsize=10,
     )
 
@@ -2070,7 +2076,7 @@ def plot_ackermann():
     ax_top.set_ylabel("Excess Ackermann (\u00b0)")
     ax_top.set_title(
         f"Ackermann error: Miata stock knuckle ({np.degrees(THETA_KNUCKLE):.2f}\u00b0) on A40\n"
-        f"Track ~{T_A40} mm, wheelbase {WB_A40} mm",
+        f"Track ~{T_A40:.0f} mm, wheelbase {WB_A40:.0f} mm",
         fontsize=10,
     )
     ax_top.set_xlim(0, 30)
@@ -2143,11 +2149,11 @@ def plot_ackermann():
 def plot_weight_transfer():
     fig, ax = styled_fig()
     ay_range = np.linspace(0.1, 1.2, 200)
-    cg_lo, cg_hi = 525, 625  # CG uncertainty band: 575 +/- 50mm
+    cg_lo, cg_hi = H_CG_A40 - CG_TOL, H_CG_A40 + CG_TOL  # CG uncertainty band
 
     wt_miata = M_TOTAL * ay_range * G_ACC * (H_CG_MIATA / 1000) / (T_MIATA / 1000)
     ax.plot(
-        ay_range, wt_miata, color=MIATA_C, linewidth=2, label=f"Miata (T={T_MIATA}, CG={H_CG_MIATA})"
+        ay_range, wt_miata, color=MIATA_C, linewidth=2, label=f"Miata (T={T_MIATA:.0f}, CG={H_CG_MIATA:.0f})"
     )
 
     wt_a40_lo = M_TOTAL * ay_range * G_ACC * (cg_lo / 1000) / (T_A40 / 1000)
@@ -2158,7 +2164,7 @@ def plot_weight_transfer():
         wt_a40_hi,
         alpha=0.25,
         color=PINK,
-        label=f"A40 T~{T_A40}, CG={cg_lo}-{cg_hi}",
+        label=f"A40 T~{T_A40:.0f}, CG={cg_lo:.0f}-{cg_hi:.0f}",
     )
 
     wt_stock_lo = M_TOTAL * ay_range * G_ACC * (cg_lo / 1000) / (T_MIATA / 1000)
@@ -2169,7 +2175,7 @@ def plot_weight_transfer():
         wt_stock_hi,
         alpha=0.15,
         color=PURPLE,
-        label=f"A40 CG at Miata track (T={T_MIATA})",
+        label=f"A40 CG at Miata track (T={T_MIATA:.0f})",
     )
 
     ax.axvline(0.8, color=TEXT, linestyle=":", linewidth=0.5, alpha=0.3)
@@ -2229,10 +2235,10 @@ def plot_jacking():
 
     # RC from the geometry model for the three key configs
     markers = [
-        ("Stock Miata (1420 mm track)", H_RC_MIATA, T_MIATA / 2, MIATA_C),
+        (f"Stock Miata ({T_MIATA:.0f} mm track)", H_RC_MIATA, T_MIATA / 2, MIATA_C),
         ("A40 pickups, Miata tire", H_RC_A40_MIATA_TIRE,
          CFG_A40_MIATA_TIRE["half_track"], BLUE),
-        ("A40 build, 205/65R15 ET38", H_RC_A40, HT_A40, A40_C),
+        (f"A40 build, {C.tyre_size} ET{ET_A40:.0f}", H_RC_A40, HT_A40, A40_C),
     ]
     label_positions = [(40, 24), (40, 21.5), (40, 19)]
     for (lbl, rc_val, ht_val, col), (tx, ty) in zip(markers, label_positions):
@@ -2313,9 +2319,9 @@ def plot_rack_narrowing():
     # OO = outer-to-outer tire width = track + 205 mm section width.
     # Stock A40 OO is 1365 mm.
     scenarios = [
-        (1365 - TIRE_W_A40, "OO = stock A40 (1365)", PINK, (75, 20)),
-        (1400 - TIRE_W_A40, "OO 1400 (+17/side)", PURPLE, (-70, 40)),
-        (T_A40, f"build: OO {T_A40 + TIRE_W_A40} (+35/side)", GREEN, (40, 45)),
+        (C.a40_stock_outer - TIRE_W_A40, f"OO = stock A40 ({C.a40_stock_outer:.0f})", PINK, (75, 20)),
+        (1400 - TIRE_W_A40, f"OO 1400 (+{(1400 - C.a40_stock_outer) / 2:.0f}/side)", PURPLE, (-70, 40)),
+        (T_A40, f"build: OO {C.tyre_outer_front:.0f} (+{C.tyre_poke:.0f}/side)", GREEN, (40, 45)),
     ]
     for t, lbl, c, (dx, dy) in scenarios:
         n = T_MIATA - t
@@ -3713,14 +3719,14 @@ def plot_pickups_3view():
 #   nose-up), so both joint angles are equal and do NOT change with
 #   suspension travel.  Driveshaft 3.5" drop over 37" = 5.4 deg.
 # ====================================================================
-TRANS_ANGLE_DEG = 3.0  # trans output, tail-down, degrees
-DS_DROP_IN = 3.5  # driveshaft vertical drop, inches
-DS_LENGTH_IN = 37.0  # driveshaft horizontal run, inches
-PINION_ANGLE_DEG = 3.0  # pinion nose-up (axis parallel to the trans), degrees
+TRANS_ANGLE_DEG = C.engine_angle  # trans output, tail-down, degrees
+DS_DROP_IN = C.shaft_drop  # driveshaft vertical drop, inches
+DS_LENGTH_IN = C.shaft_length  # driveshaft horizontal run, inches
+PINION_ANGLE_DEG = C.pinion_angle  # pinion nose-up (axis parallel to the trans), degrees
 
-DS_ANGLE_DEG = np.degrees(np.arctan2(DS_DROP_IN, DS_LENGTH_IN))
-FRONT_UJ_DEG = DS_ANGLE_DEG - TRANS_ANGLE_DEG
-REAR_UJ_DEG = DS_ANGLE_DEG - PINION_ANGLE_DEG
+DS_ANGLE_DEG = C.shaft_angle  # atan(drop / length)
+FRONT_UJ_DEG = C.ujoint_front
+REAR_UJ_DEG = C.ujoint_rear
 
 
 def plot_driveshaft_angles():
@@ -4007,95 +4013,167 @@ def plot_ujoint_life():
 
 
 # ====================================================================
-# Summary of every number the posts quote
+# Results: every number the posts quote from this script.  Written to
+# scripts/a40_geometry_results.json and merged by a40_constants.py into
+# the generated JSON the posts read ({{rc_front}}, {{front_mr}}, ...).
 # ====================================================================
-def print_summary():
-    mr80, mr90 = front_mr(), front_mr(alpha_deg=90)
-    mr_cf, d_eff = front_mr_closed_form()
-    bump, droop = front_wheel_travel()
+RESULTS_PATH = a40_constants.GEOMETRY_PATH
+
+
+def compute_results():
+    """name -> (value, unit, decimals[, signed])."""
+    res = {}
+
+    def put(name, value, unit="", decimals=1, signed=False):
+        res[name] = (float(value), unit, decimals, signed)
+
     pm, pa = _RC_MIATA_SUSP, _RC_A40_SUSP
-    ks_f = KW_FRONT / mr80**2
     r = T_A40 / T_MIATA
-    print("\n── Summary (quote these in the posts) ──")
-    print(f"Track: Miata {T_MIATA}, A40 {T_A40_EXACT} exact at ET{ET_A40} (~{T_A40} nominal); "
-          f"narrower by {(1 - r) * 100:.1f}%  roll stiffness x{r**2:.3f} "
-          f"({(1 - r**2) * 100:.0f}% drop)  weight transfer x{1 / r:.3f} (+{(1 / r - 1) * 100:.1f}%)")
-    print(f"Hub height: Miata {SUSP['hub_z_ground']}, A40 {HUB_Z_A40:.2f} (+{_DH:.2f})")
-    for n, p in (("Miata", pm), ("A40", pa)):
-        print(f"{n}: RC {p['rc'][1]:.1f} mm, IC {p['cp'][0] - p['ic'][0]:.0f} mm inboard of CP, "
-              f"{p['ic'][1]:.0f} mm up; FVSA {p['cp'][0] - p['ic'][0]:.0f} mm = "
-              f"{(p['cp'][0] - p['ic'][0]) / p['cp'][0]:.2f} x half-track; "
-              f"jacking ratio {p['rc'][1] / p['cp'][0] * 100:.1f}%")
-    print(f"A40 pickups with Miata tire: RC {H_RC_A40_MIATA_TIRE:.1f} "
-          f"(narrowing {H_RC_A40_MIATA_TIRE - H_RC_MIATA:+.1f}, tire {H_RC_A40 - H_RC_A40_MIATA_TIRE:+.1f})")
-    print(f"Pivots from CL: LCA {pa['lca_inner'][0]:.1f}, UCA {pa['uca_inner'][0]:.1f} "
-          f"(donor {pm['lca_inner'][0]:.1f}/{pm['uca_inner'][0]:.1f})")
-    print(f"MR front: {mr90:.3f} at 90 deg, {mr80:.3f} at {SHOCK_ALPHA_DEG:.0f} deg "
-          f"(closed form {mr_cf:.3f}, effective wheel lever {d_eff:.1f} mm); "
-          f"old LCA-pivot value {240 / 380.5 * np.sin(np.radians(80)):.3f}")
-    print(f"Wheel rates: front {KW_FRONT / 1000:.1f} N/mm ({FREQ_F} Hz), rear {KW_REAR / 1000:.1f} N/mm ({FREQ_R} Hz)")
-    print(f"Front spring at MR {mr80:.3f}: {ks_f / 1000:.1f} N/mm ({ks_f / 1000 * 5.71:.0f} lb/in)")
-    print("Rear spring: " + ", ".join(f"MR {m}: {KW_REAR / m**2 / 1000:.1f} N/mm" for m in MR_REAR_CASES))
-    print(f"Wheel travel ({SHOCK_STROKE_MM:.0f} mm stroke, {BUMP_FRACTION:.0%} bump): "
-          f"bump {bump:.0f}, droop {droop:.0f}, total {bump + droop:.0f} mm")
-    print(f"Roll per 3.5 deg at the wheel: {T_A40 / 2 * np.tan(np.radians(3.5)):.0f} mm")
-    print(f"Spring roll stiffness: front {K_PHI_FRONT_SPRING / 1000:.1f}, rear {K_PHI_REAR_SPRING / 1000:.1f}, "
-          f"total {K_PHI_SPRING / 1000:.1f} kN-m/rad")
-    for rr in (H_RC_REAR_HI, H_RC_REAR_NOM, H_RC_REAR_LO):
-        need = [(k_phi_required(t, h_rc_rear=rr) - K_PHI_SPRING) / 1000 for t in (3.0, 3.5, 4.0)]
-        print(f"rear RC {rr:.0f}: roll axis {roll_axis_height(rr):.0f} mm, springs-only roll "
-              f"{float(roll_angle_deg(H_CG_A40, K_PHI_SPRING, h_rc_rear=rr)):.2f} deg; "
-              f"ARB to add for 3/3.5/4 deg: " + "/".join(f"{v:.1f}" for v in need))
-    for cg in (525, 625):
-        print(f"CG {cg} (rear RC 100): springs-only {float(roll_angle_deg(cg, K_PHI_SPRING)):.2f} deg, "
-              f"ARB for 3.5 deg {(k_phi_required(3.5, cg) - K_PHI_SPRING) / 1000:.1f}")
-    print("Front bar alone (IR %.2f assumed): " % IR_BAR
-          + ", ".join(f"{d} mm {arb_roll_stiffness(d) / 1000:.1f}" for d in (19, 22, 25, 28)))
-    zc_f = 2 * np.sqrt(KW_FRONT * M_CORNER_F)
-    zc_r = 2 * np.sqrt(KW_REAR * M_CORNER_R)
-    print(f"Critical damping at wheel: front {zc_f / 1000:.1f}, rear {zc_r / 1000:.1f} kN-s/m")
-    print(f"KPI {KPI_DEG:.2f}, caster {CASTER_DEG:.2f}; scrub Miata {SCRUB_MM:.2f} -> A40 {SCRUB_A40_MM:.2f} mm; "
-          f"trail {TRAIL_MM:.2f} -> {TRAIL_A40_MM:.2f} mm")
-    print(f"Knuckle Ackermann angle {np.degrees(THETA_KNUCKLE):.2f} deg; rack narrowing {T_MIATA - T_A40} mm")
-    wt = lambda m, h, t: m * AY * G_ACC * h / t
-    print(f"Lateral WT at 0.8 G, {M_TOTAL} kg: Miata CG460 {wt(M_TOTAL, .46, 1.42):.0f} N, "
-          f"A40 CG575 {wt(M_TOTAL, .575, T_A40 / 1000):.0f} N "
-          f"(+{(wt(M_TOTAL, .575, T_A40 / 1000) / wt(M_TOTAL, .46, 1.42) - 1) * 100:.0f}%)")
-    print(f"Driveshaft {DS_ANGLE_DEG:.1f} deg; joints {FRONT_UJ_DEG:.1f} / {REAR_UJ_DEG:.1f} deg")
+    put("track_narrower_pct", (1 - r) * 100, "%", 1)
+    put("roll_stiffness_ratio", r**2, "", 3)
+    put("roll_stiffness_drop_pct", (1 - r**2) * 100, "%", 0)
+    put("wt_ratio", 1 / r, "", 3)
+    put("wt_increase_track_pct", (1 / r - 1) * 100, "%", 1)
+    put("camber_per_roll_ratio", T_A40_EXACT / T_MIATA, "", 3)
+
+    for tag, p in (("_miata", pm), ("", pa)):
+        put("rc_miata" if tag else "rc_front", p["rc"][1], "mm", 1)
+        put(f"ic_inboard{tag}", p["cp"][0] - p["ic"][0], "mm", 0)
+        put(f"ic_height{tag}", p["ic"][1], "mm", 0)
+        put(f"fvsa_ratio{tag}", (p["cp"][0] - p["ic"][0]) / p["cp"][0], "", 2)
+        put(f"jacking_pct{tag}", p["rc"][1] / p["cp"][0] * 100, "%", 1)
+    put("rc_a40_miata_tyre", H_RC_A40_MIATA_TIRE, "mm", 1)
+    put("rc_delta_narrowing", H_RC_A40_MIATA_TIRE - H_RC_MIATA, "mm", 1, True)
+    put("rc_delta_tyre", H_RC_A40 - H_RC_A40_MIATA_TIRE, "mm", 1, True)
+    put("jacking_force_front", FRONT_FRAC * M_TOTAL * AY * G_ACC * H_RC_A40 / HT_A40, "N", 0)
+
+    put("lca_pivot", pa["lca_inner"][0], "mm", 1)
+    put("uca_pivot", pa["uca_inner"][0], "mm", 1)
+    put("lca_pivot_miata", pm["lca_inner"][0], "mm", 1)
+    put("uca_pivot_miata", pm["uca_inner"][0], "mm", 1)
+    put("uca_lca_offset", pa["uca_inner"][0] - pa["lca_inner"][0], "mm", 1)
+
+    mr_cf, d_eff = front_mr_closed_form()
+    put("front_mr", front_mr(), "", 3)
+    put("front_mr_vertical", front_mr(alpha_deg=90), "", 3)
+    put("front_mr_closed_form", mr_cf, "", 3)
+    put("mr_lever", d_eff, "mm", 1)
+    old_lever = T_MIATA / 2 - SUSP["lca_from_cl"]
+    put("mr_lever_old", old_lever, "mm", 1)
+    put("front_mr_old", SUSP["lca_coilover_perp"] / old_lever * np.sin(np.radians(SHOCK_ALPHA_DEG)), "", 3)
+    put("lca_coilover_lever", SUSP["lca_coilover_perp"], "mm", 0)
+    for a in (65, 75, 85):
+        put(f"front_mr_{a}", front_mr(alpha_deg=a), "", 3)
+    bump, droop = front_wheel_travel()
+    put("travel_bump", bump, "mm", 0)
+    put("travel_droop", droop, "mm", 0)
+    put("travel_total", bump + droop, "mm", 0)
+    cur = front_shock_curve()
+    m = (cur["wheel_z"] >= -droop) & (cur["wheel_z"] <= bump)
+    put("front_mr_travel_lo", cur["mr"][m].min(), "", 3)
+    put("front_mr_travel_hi", cur["mr"][m].max(), "", 3)
+    put("roll_travel_wheel", T_A40 / 2 * np.tan(np.radians(ROLL_TARGETS[1])), "mm", 0)
+
+    rcs = (("hi", H_RC_REAR_HI), ("nom", H_RC_REAR_NOM), ("lo", H_RC_REAR_LO))
+    tgts = (("lo", ROLL_TARGETS[0]), ("nom", ROLL_TARGETS[1]), ("hi", ROLL_TARGETS[2]))
+    for rtag, rr in rcs:
+        put(f"roll_axis_rc_{rtag}", roll_axis_height(rr), "mm", 0)
+        put(f"roll_springs_rc_{rtag}", float(roll_angle_deg(H_CG_A40, K_PHI_SPRING, h_rc_rear=rr)), "deg", 1)
+        for ttag, t in tgts:
+            put(f"arb_add_rc_{rtag}_{ttag}", (k_phi_required(t, h_rc_rear=rr) - K_PHI_SPRING) / 1000, "kN·m/rad", 1)
+    put("arb_add_min", res["arb_add_rc_hi_hi"][0], "kN·m/rad", 1)
+    put("arb_add_max", res["arb_add_rc_lo_lo"][0], "kN·m/rad", 1)
+    for ctag, cg in (("low", H_CG_A40 - CG_TOL), ("high", H_CG_A40 + CG_TOL)):
+        put(f"roll_springs_cg_{ctag}", float(roll_angle_deg(cg, K_PHI_SPRING)), "deg", 1)
+        put(f"arb_add_cg_{ctag}", (k_phi_required(ROLL_TARGETS[1], cg) - K_PHI_SPRING) / 1000, "kN·m/rad", 0)
+    put("bar_ir", IR_BAR, "", 2)
+    for dmm in (19, 22, 25, 28):
+        put(f"bar_k_{dmm}", arb_roll_stiffness(dmm) / 1000, "kN·m/rad", 1)
+
+    put("kpi", KPI_DEG, "deg", 2)
+    put("caster", CASTER_DEG, "deg", 2)
+    put("scrub_miata", SCRUB_MM, "mm", 2, True)
+    put("scrub", SCRUB_A40_MM, "mm", 1, True)
+    put("scrub_delta", SCRUB_A40_MM - SCRUB_MM, "mm", 1, True)
+    put("trail_miata", TRAIL_MM, "mm", 2)
+    put("trail", TRAIL_A40_MM, "mm", 1)
+    put("trail_delta", TRAIL_A40_MM - TRAIL_MM, "mm", 1, True)
+    put("kpi_tan", np.tan(np.radians(KPI_DEG)), "", 3)
+
+    d_actual = (T_A40 / 2) / np.tan(THETA_KNUCKLE)
+    for a in (15, 20, 25):
+        put(f"ackermann_excess_{a}", _ideal_inside(a, T_A40, d_actual) - _ideal_inside(a, T_A40, WB_A40), "deg", 2)
+
+    wt = lambda m, h, t: m * AY * G_ACC * h / t  # noqa: E731
+    wt_m = wt(M_TOTAL, H_CG_MIATA / 1000, T_MIATA / 1000)
+    wt_a = wt(M_TOTAL, H_CG_A40 / 1000, T_A40 / 1000)
+    put("wt_miata", wt_m, "N", 0)
+    put("wt_a40", wt_a, "N", 0)
+    put("wt_increase_pct", (wt_a / wt_m - 1) * 100, "%", 0)
+
     # Lock loss -> turning circle (kerb-to-kerb ~ 2 x WB / sin(outer lock))
-    d_miata = np.degrees(np.arcsin(WB_MIATA / 4700))
-    for loss in (12, 18):
-        d = d_miata - loss
-        print(f"Lock {d_miata:.1f} - {loss} = {d:.1f} deg -> turning circle "
-              f"~{2 * WB_A40 / np.sin(np.radians(d)) / 1000:.1f} m")
+    d_miata = np.degrees(np.arcsin(WB_MIATA / (C.turning_circle_miata * 500)))
+    put("lock_miata", d_miata, "deg", 0)
+    for tag, loss in (("lo", C.lock_loss_lo), ("hi", C.lock_loss_hi)):
+        put(f"lock_left_{tag}", d_miata - loss, "deg", 0)
+        put(f"turning_circle_{tag}", 2 * WB_A40 / np.sin(np.radians(d_miata - loss)) / 1000, "m", 1)
+    return res
+
+
+def write_results(res):
+    inputs, _ = a40_constants.load_yaml()
+    doc = {
+        "_comment": "Written by scripts/plot_geometry_reference.py; merged by scripts/a40_constants.py. Do not edit.",
+        "inputs_hash": a40_constants.inputs_hash(inputs),
+        "results": {
+            k: dict(value=round(v, 6), unit=u, decimals=d, status="working",
+                    **({"signed": True} if sg else {}),
+                    note="Computed by scripts/plot_geometry_reference.py.")
+            for k, (v, u, d, sg) in res.items()
+        },
+    }
+    with open(RESULTS_PATH, "w", encoding="utf-8") as f:
+        f.write(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+    print(f"  wrote {os.path.relpath(RESULTS_PATH, a40_constants.ROOT)} ({len(res)} results)")
+
+
+def print_summary(res):
+    print("\n── Summary (the posts quote these via {{name}}) ──")
+    for k, (v, u, d, sg) in res.items():
+        print(f"  {k:28s} {a40_constants.format_number(v, d, signed=sg)}{a40_constants.suffix_for(u)}")
 
 
 # ====================================================================
 def main():
-    print("Generating plots...")
-    plot_roll_vs_cg()
-    plot_rc_construction()
-    plot_rc_tire_comparison()
-    plot_rc_combined()
-    plot_rc_migration()
-    plot_track_effects()
-    plot_arb_sizing()
-    plot_ride_frequency()
-    plot_ackermann()
-    plot_ackermann_topview()
-    plot_ackermann_turn()
-    plot_motion_ratio()
-    plot_motion_ratio_vs_angle()
-    plot_weight_transfer()
-    plot_jacking()
-    plot_rack_narrowing()
-    plot_lca_plan()
-    plot_uca_plan()
-    plot_knuckle_3view()
-    plot_pickups_3view()
-    plot_driveshaft_angles()
-    plot_ujoint_life()
-    print_summary()
+    results_only = "--results-only" in sys.argv[1:]
+    if not results_only:
+        print("Generating plots...")
+        plot_roll_vs_cg()
+        plot_rc_construction()
+        plot_rc_tire_comparison()
+        plot_rc_combined()
+        plot_rc_migration()
+        plot_track_effects()
+        plot_arb_sizing()
+        plot_ride_frequency()
+        plot_ackermann()
+        plot_ackermann_topview()
+        plot_ackermann_turn()
+        plot_motion_ratio()
+        plot_motion_ratio_vs_angle()
+        plot_weight_transfer()
+        plot_jacking()
+        plot_rack_narrowing()
+        plot_lca_plan()
+        plot_uca_plan()
+        plot_knuckle_3view()
+        plot_pickups_3view()
+        plot_driveshaft_angles()
+        plot_ujoint_life()
+    res = compute_results()
+    print_summary(res)
+    write_results(res)
+    a40_constants.write_generated()
     print("Done.")
 
 

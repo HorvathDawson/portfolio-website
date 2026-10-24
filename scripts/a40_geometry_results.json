@@ -1,0 +1,621 @@
+{
+ "_comment": "Written by scripts/plot_geometry_reference.py; merged by scripts/a40_constants.py. Do not edit.",
+ "inputs_hash": "45f63b91e7056225",
+ "results": {
+  "track_narrower_pct": {
+   "value": 13.380282,
+   "unit": "%",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_stiffness_ratio": {
+   "value": 0.750298,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_stiffness_drop_pct": {
+   "value": 24.970244,
+   "unit": "%",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "wt_ratio": {
+   "value": 1.154472,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "wt_increase_track_pct": {
+   "value": 15.447154,
+   "unit": "%",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "camber_per_roll_ratio": {
+   "value": 0.869014,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "rc_miata": {
+   "value": 142.393012,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "ic_inboard_miata": {
+   "value": 1392.268906,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "ic_height_miata": {
+   "value": 279.224454,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "fvsa_ratio_miata": {
+   "value": 1.960942,
+   "unit": "",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "jacking_pct_miata": {
+   "value": 20.055354,
+   "unit": "%",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "rc_front": {
+   "value": 139.03031,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "ic_inboard": {
+   "value": 1394.268906,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "ic_height": {
+   "value": 314.174454,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "fvsa_ratio": {
+   "value": 2.259755,
+   "unit": "",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "jacking_pct": {
+   "value": 22.533276,
+   "unit": "%",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "rc_a40_miata_tyre": {
+   "value": 123.340425,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "rc_delta_narrowing": {
+   "value": -19.052586,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "signed": true,
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "rc_delta_tyre": {
+   "value": 15.689884,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "signed": true,
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "jacking_force_front": {
+   "value": 923.994989,
+   "unit": "N",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "lca_pivot": {
+   "value": 234.5,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "uca_pivot": {
+   "value": 273.0,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "lca_pivot_miata": {
+   "value": 329.5,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "uca_pivot_miata": {
+   "value": 368.0,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "uca_lca_offset": {
+   "value": 38.5,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr": {
+   "value": 0.679594,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr_vertical": {
+   "value": 0.690078,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr_closed_form": {
+   "value": 0.679594,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "mr_lever": {
+   "value": 347.786606,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "mr_lever_old": {
+   "value": 380.5,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr_old": {
+   "value": 0.621167,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "lca_coilover_lever": {
+   "value": 240.0,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr_65": {
+   "value": 0.625423,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr_75": {
+   "value": 0.666564,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr_85": {
+   "value": 0.687452,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "travel_bump": {
+   "value": 83.469354,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "travel_droop": {
+   "value": 102.8196,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "travel_total": {
+   "value": 186.288953,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr_travel_lo": {
+   "value": 0.677811,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "front_mr_travel_hi": {
+   "value": 0.690634,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_travel_wheel": {
+   "value": 37.615011,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_axis_rc_hi": {
+   "value": 143.96667,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_springs_rc_hi": {
+   "value": 6.527676,
+   "unit": "deg",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_hi_lo": {
+   "value": 28.769249,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_hi_nom": {
+   "value": 21.164228,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_hi_hi": {
+   "value": 15.460463,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_axis_rc_nom": {
+   "value": 121.46667,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_springs_rc_nom": {
+   "value": 6.919863,
+   "unit": "deg",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_nom_lo": {
+   "value": 31.730008,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_nom_nom": {
+   "value": 23.728005,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_nom_hi": {
+   "value": 17.726502,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_axis_rc_lo": {
+   "value": 112.46667,
+   "unit": "mm",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_springs_rc_lo": {
+   "value": 7.078388,
+   "unit": "deg",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_lo_lo": {
+   "value": 32.914312,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_lo_nom": {
+   "value": 24.753515,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_rc_lo_hi": {
+   "value": 18.632917,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_min": {
+   "value": 15.460463,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_max": {
+   "value": 32.914312,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_springs_cg_low": {
+   "value": 6.056183,
+   "unit": "deg",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_cg_low": {
+   "value": 18.030724,
+   "unit": "kN·m/rad",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "roll_springs_cg_high": {
+   "value": 7.812779,
+   "unit": "deg",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "arb_add_cg_high": {
+   "value": 29.425285,
+   "unit": "kN·m/rad",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "bar_ir": {
+   "value": 1.712472,
+   "unit": "",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "bar_k_19": {
+   "value": 7.503971,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "bar_k_22": {
+   "value": 13.488619,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "bar_k_25": {
+   "value": 22.492452,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "bar_k_28": {
+   "value": 35.392308,
+   "unit": "kN·m/rad",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "kpi": {
+   "value": 12.046657,
+   "unit": "deg",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "caster": {
+   "value": 3.618579,
+   "unit": "deg",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "scrub_miata": {
+   "value": 6.05,
+   "unit": "mm",
+   "decimals": 2,
+   "status": "working",
+   "signed": true,
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "scrub": {
+   "value": 0.591397,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "signed": true,
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "scrub_delta": {
+   "value": -5.458603,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "signed": true,
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "trail_miata": {
+   "value": 7.57,
+   "unit": "mm",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "trail": {
+   "value": 9.780246,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "trail_delta": {
+   "value": 2.210246,
+   "unit": "mm",
+   "decimals": 1,
+   "status": "working",
+   "signed": true,
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "kpi_tan": {
+   "value": 0.213408,
+   "unit": "",
+   "decimals": 3,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "ackermann_excess_15": {
+   "value": 0.541036,
+   "unit": "deg",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "ackermann_excess_20": {
+   "value": 1.037574,
+   "unit": "deg",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "ackermann_excess_25": {
+   "value": 1.713774,
+   "unit": "deg",
+   "decimals": 2,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "wt_miata": {
+   "value": 2415.194366,
+   "unit": "N",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "wt_a40": {
+   "value": 3485.341463,
+   "unit": "N",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "wt_increase_pct": {
+   "value": 44.308943,
+   "unit": "%",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "lock_miata": {
+   "value": 28.810542,
+   "unit": "deg",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "lock_left_lo": {
+   "value": 16.810542,
+   "unit": "deg",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "turning_circle_lo": {
+   "value": 16.251284,
+   "unit": "m",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "lock_left_hi": {
+   "value": 10.810542,
+   "unit": "deg",
+   "decimals": 0,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  },
+  "turning_circle_hi": {
+   "value": 25.058376,
+   "unit": "m",
+   "decimals": 1,
+   "status": "working",
+   "note": "Computed by scripts/plot_geometry_reference.py."
+  }
+ }
+}

@@ -75,9 +75,10 @@ class Entry(dict):
     def raw(self, decimals=None, round_to=None):
         if isinstance(self["value"], str):
             return self["value"]
+        if round_to is None and decimals is None:
+            round_to = self.get("round_to")  # an explicit :N overrides the entry's rounding
         return format_number(self["value"], self["decimals"] if decimals is None else decimals,
-                             round_to if round_to is not None else self.get("round_to"),
-                             self.get("signed", False))
+                             round_to, self.get("signed", False))
 
     def text(self, decimals=None, round_to=None):
         if isinstance(self["value"], str):
@@ -131,6 +132,8 @@ def derive(i):
     put("curb_mass", i["operating_mass"] - i["driver_mass"], "kg", note="Operating mass minus the driver.")
     ff = i["front_weight_fraction"] / 100
     put("rear_weight_fraction", 100 - i["front_weight_fraction"], "%")
+    put("front_weight_ratio", ff, "", decimals=2, note="Front fraction as a ratio.")
+    put("rear_weight_ratio", 1 - ff, "", decimals=2)
     put("axle_load_front", i["operating_mass"] * ff, "kg", decimals=0, note="Operating mass × front fraction.")
     put("sprung_mass", i["operating_mass"] - 2 * i["unsprung_front"] - 2 * i["unsprung_rear"], "kg",
         note="Operating mass minus four unsprung corners.")
@@ -255,6 +258,10 @@ def derive_geometry(i, g):
         note="Critical damping at the damper: wheel value / MR².", decimals=1)
     put("stroke_for_stock_travel_lo", i["miata_wheel_travel_lo"] * mr, "mm", decimals=0)
     put("stroke_for_stock_travel_hi", i["miata_wheel_travel_hi"] * mr, "mm", decimals=0)
+    put("roll_arm_lo", i["cg_height"] - g["roll_axis_rc_hi"]["value"], "mm", decimals=0,
+        note="CG height − roll-axis height (rear RC high end).")
+    put("roll_arm_hi", i["cg_height"] - g["roll_axis_rc_lo"]["value"], "mm", decimals=0,
+        note="CG height − roll-axis height (rear RC low end).")
     return d
 
 

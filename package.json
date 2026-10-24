@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && node scripts/check-roadmap-plan.mjs && vite build",
+    "build": "node scripts/check-constants.mjs && tsc -b && node scripts/check-roadmap-plan.mjs && vite build",
+    "constants": "python3 scripts/plot_geometry_reference.py --results-only",
+    "check-constants": "node scripts/check-constants.mjs && python3 scripts/a40_constants.py --check",
     "lint": "eslint .",
     "preview": "npm run build && wrangler dev",
     "record-demos": "node scripts/record-demos.mjs",

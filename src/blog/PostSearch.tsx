@@ -143,7 +143,9 @@ export const PostSearch: React.FC<{ car: string }> = ({ car }) => {
           id={`${listId}-q`}
           type="search"
           className="post-search-input"
-          placeholder="Search posts…  ( / )"
+          placeholder="Search posts…"
+          title="Search post titles, headings and text (shortcut: /)"
+          aria-keyshortcuts="/"
           value={query}
           autoComplete="off"
           spellCheck={false}
