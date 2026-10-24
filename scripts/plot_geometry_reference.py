@@ -1249,9 +1249,8 @@ def plot_arb_sizing():
     colors = [PURPLE, BLUE, GREEN, GOLD]
     for d, c in zip(diameters, colors):
         k = arb_roll_stiffness(d) / 1000
-        ax.axhline(k, color=c, linestyle="--", linewidth=1.0, alpha=0.7)
-        ax.text(5.95, k + 0.6, f"{d} mm front bar alone (IR {IR_BAR:.2f} assumed)",
-                color=c, fontsize=6.5, ha="right", va="bottom")
+        ax.axhline(k, color=c, linestyle="--", linewidth=1.0, alpha=0.7,
+                   label=f"{d} mm front bar alone ({k:.1f}, IR {IR_BAR:.2f} assumed)")
 
     ax.set_xlabel("Target body roll at 0.8 G (°)")
     ax.set_ylabel("ARB roll stiffness to add, front + rear (kN-m/rad)")

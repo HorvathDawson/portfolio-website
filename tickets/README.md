@@ -62,7 +62,7 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [A40-003](./A40-003-rear-suspension.md) | Rear suspension post (Miata IRS, RX-8 diff) | review |
 | [A40-004](./A40-004-constants-and-tuning.md) | Build constants and suspension tuning posts | review |
 | [A40-005](./A40-005-electrical-dash.md) | Electrical, CAN gateway and dash | in-progress |
-| [A40-006](./A40-006-roadmap-overview.md) | Roadmap and overview posts | in-progress |
+| [A40-006](./A40-006-roadmap-overview.md) | Roadmap and overview posts | review |
 | [A40-007](./A40-007-shared-constants.md) | Shared constants file (YAML → Python → JSON → posts) | todo |
 | [A40-008](./A40-008-use-constants.md) | Replace hard-coded numbers with constants | todo |
 | [A40-009](./A40-009-consistency-review.md) | Independent cross-post consistency review | todo |

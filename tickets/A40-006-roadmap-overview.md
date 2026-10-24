@@ -1,8 +1,8 @@
 ---
 id: A40-006
 title: Roadmap and overview posts
-status: in-progress
-owner: roadmap agent
+status: review
+owner: roadmap agent (done: build + lint pass, roadmap validation passes)
 reviewer:
 blocked_by:
 ---
@@ -20,3 +20,11 @@ blocked_by:
 
 ## Verification
 _Filled by the reviewer._
+
+## Implementer notes (roadmap agent)
+- Removed Ford 9"/four-link tasks; added t-decide-rear-suspension, t-measure-donor-rear, t-buy-miata-rear, t-buy-rx8-diff, t-buy-half-shafts, t-rear-irs-fab.
+- e-brake decided: cable into NA rear calipers. Brake split flagged open.
+- Heading ids: custom marked renderer (GitHub-style slugs). A40Blog.tsx now scrolls to #hash on load.
+- Transmission kept as "CD009 or Z32"; build-constants updated to match.
+- t-buy-miata-rear and t-buy-rx8-diff set to planning: owner to flip to complete if parts are on hand.
+- Leftovers in other agents' files relayed to them (geometry reference MR/caster/dead links; wiring/dash/EPAS text).

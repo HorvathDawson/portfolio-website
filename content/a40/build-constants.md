@@ -55,7 +55,7 @@ The headline numbers for the build, in one place. Other posts use these. If a po
 | Parameter | Value | Status | Notes |
 |---|---|---|---|
 | Engine | SR20DET | locked | Mounted 3° down at the rear (tail-down). |
-| Transmission | CD009 (350Z 6-speed) | leaning | See the roadmap decision for the current choice. |
+| Transmission | CD009 or Z32 (Nissan 6-/5-speed) | decided shortlist | OEM 5-speed rejected. Remote shifter expected. See the roadmap. |
 | Differential | Mazda RX-8 rear diff | decided | Custom mounts. Final drive ~4.44 stock (verify); ratio open. |
 | Half-shafts | Custom length | to order | RX-8 flanges to Miata hubs. |
 | Driveshaft | One-piece, 1330 joints | to order | 5.4° shaft angle, 2.4° per joint, pinion parallel to the gearbox. |

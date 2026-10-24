@@ -21,7 +21,7 @@ This is the starting point for the engine harness: the ECU choice, the decisions
 | Coils | Smart coils: LS truck (4-pin) or R35 GT-R | Open |
 | Wideband | Bosch LSU 4.9 on the Nexus wideband controller | Chosen (verify the S2 has the internal WB) |
 | Harness | Haltech universal trunk + custom engine sub-harnesses | Leaning, price both first |
-| Battery | Boot-mounted | Chosen; cabling below |
+| Battery | Boot assumed for cable sizing below | Location decision still open (boot / under-floor / footwell) |
 
 ### Why the Nexus S2
 
@@ -50,7 +50,7 @@ These set the wire gauge, the fuses and which loads get a relay instead of an EC
 
 | Load | Feed | Wire | Notes |
 |---|---|---|---|
-| Battery + to starter / main bus (boot battery, about 4 m) | Main fuse or breaker **within ~300 mm of the battery** | 4 AWG (6 AWG minimum) | Matching ground: battery - to chassis in the boot, plus engine-to-chassis strap of the same size. About 4 m each way, so don't undersize it. Master switch on this run. |
+| Battery + to starter / main bus (boot battery, about 4 m; resize if the location changes) | Main fuse or breaker **within ~300 mm of the battery** | 4 AWG (6 AWG minimum) | Matching ground: battery - to chassis in the boot, plus engine-to-chassis strap of the same size. About 4 m each way, so don't undersize it. Master switch on this run. |
 | Starter solenoid | **Relay** (ECU or ignition switch drives the coil) | 12 AWG to solenoid | The solenoid pull-in current is too high for an ECU output. Not a PDM channel. |
 | Fuel pump | Relay or a high-current output, own fuse | 10-12 AWG | Size for the pump at full voltage and pressure (**verify** the pump's current draw). |
 | Radiator fans (2, staged) | Relay or high-current outputs | Sized to fuse | Start-up inrush is several times the running current. Size fuses and relays for the inrush, or soft-start with PWM. |
