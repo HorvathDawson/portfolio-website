@@ -131,9 +131,9 @@ export const roadmap: Roadmap = {
       epic: 'research',
       kind: 'decision',
       status: 'decided',
-      decision: 'Miata NA rack (depowered, 190 mm narrowed) + Toyota Prius Gen 4 (2016–2022) column-mount EPAS, driven by the dash Pi acting as a dual-bus CAN gateway (Haltech → Toyota frames) for speed-sensitive assist. The column has a hard-wired IG wake; what it does without frames (fixed assist, reduced assist or a DTC latched until key cycle) is to be bench-tested.',
+      decision: 'Rack: Miata NA (manual or depowered, 190 mm narrowed). Assist is now an open choice (see t-decide-steering-assist): manual steering, or a Toyota Prius Gen 4 (2016–2022) column-mount EPAS, driven by the dash Pi acting as a dual-bus CAN gateway (Haltech → Toyota frames) for speed-sensitive assist. The column has a hard-wired IG wake; what it does without frames (fixed assist, reduced assist or a DTC latched until key cycle) is to be bench-tested.',
       posts: ['steering', 'epas-can-gateway'],
-      summary: 'Lock the rack donor and the EPAS column donor. Output: parts list, dual-bus gateway architecture, and a bench-tested loss-of-frames plan.',
+      summary: 'Lock the rack donor and the EPAS column donor (if assist is used). Output: parts list, dual-bus gateway architecture, and a bench-tested loss-of-frames plan.',
       notes: [
         'Rack: Miata NA, depowered (Flyin\' Miata method), narrowed by 190 mm total (95 mm per side) to match the front-track delta',
         'Column: Toyota Prius Gen 4 (2016–2022). openpilot supports all of these, and opendbc decodes their powertrain CAN in one DBC (toyota_nodsu_pt_generated), so the speed (0xB4) and rpm (0x1C4) frames, scaling and checksum are known. Which frames the column needs: confirm with a donor log and on the bench',
@@ -825,6 +825,7 @@ export const roadmap: Roadmap = {
       status: 'planning',
       kind: 'purchase',
       summary: 'Toyota Prius Gen 4 (2016–2022) column-mount EPAS assembly — column + integrated controller. All years use the same opendbc powertrain DBC (toyota_nodsu_pt_generated); still confirm the column part number and log a donor car if possible.',
+      deferrable: 'Only needed if EPAS is chosen (t-decide-steering-assist). Manual steering skips it.',
     },
     {
       id: 't-buy-steering-column',
@@ -1147,6 +1148,7 @@ export const roadmap: Roadmap = {
       kind: 'purchase',
       summary: 'Purchased: PiCAN FD Duo Isolated (non-SMPS) from Copperhill. Two galvanically-isolated CAN channels: can0 (Haltech, 1 Mbps) + can1 (Toyota Prius column, 500 kbps). Pi gets 5 V directly from the Mini-Box DCDC-USB, V(out) jumpered to 5 V.',
       posts: ['epas-can-gateway'],
+      deferrable: 'Only needed if EPAS is chosen (t-decide-steering-assist). Manual steering skips it.',
     },
     {
       id: 't-dash-fdduo-swap',
@@ -1161,6 +1163,7 @@ export const roadmap: Roadmap = {
         'Pi power topology: HAT does NOT feed Pi over GPIO — 5 V comes from the DCDC-USB V(out), jumpered to 5 V',
         'CAN: restart-ms via networkd RestartSec on can0 + can1; can0 HAT terminator off (Haltech bus already has two); can1 120 Ω at each end (~60 Ω measured)',
       ],
+      deferrable: 'Only needed if EPAS is chosen (t-decide-steering-assist). Manual steering skips it.',
     },
     {
       id: 't-epas-gateway-software',
@@ -1177,6 +1180,7 @@ export const roadmap: Roadmap = {
         'No UI dependency — logs to journald only',
         'Bench-developable against recorded Haltech logs replayed on vcan0',
       ],
+      deferrable: 'Only needed if EPAS is chosen (t-decide-steering-assist). Manual steering skips it.',
     },
     {
       id: 't-epas-gateway-bench',
@@ -1190,6 +1194,7 @@ export const roadmap: Roadmap = {
         'Loss tests: pull can0 / can1 and kill the gateway at different simulated speeds; record what the column actually does (fixed assist / reduced / no assist / DTC until key cycle)',
         'Measure termination on both buses (~60 Ω)',
       ],
+      deferrable: 'Only needed if EPAS is chosen (t-decide-steering-assist). Manual steering skips it.',
     },
 
     /* ─────────── Paint ─────────── */
@@ -1417,6 +1422,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       summary: 'Fit the EPAS unit and column, integrate harness.',
+      deferrable: 'Only needed if EPAS is chosen (t-decide-steering-assist). Manual steering skips it.',
     },
 
     /* ─────────── Transmission mount ─────────── */
@@ -1864,8 +1870,24 @@ export const roadmap: Roadmap = {
       summary: 'In-tank conversion vs external pump + surge tank. Locked to external + surge because the Aeromotive 340 is already purchased. Gates fuel-line + tank-prep scope.',
     },
     {
+      id: 't-decide-steering-assist',
+      title: 'Decide: Manual Steering or EPAS',
+      epic: 'design',
+      kind: 'decision',
+      status: 'planning',
+      posts: ['steering'],
+      summary: 'The car is light: about 520 kg on the front axle (950 kg at 55/45), about the same as an NA Miata, which was sold with a manual rack. Manual steering drops the EPAS column, the CAN gateway, its bench tests and a safety-critical failure mode. EPAS stays an add-on if parking effort is too high.',
+      notes: [
+        'Manual: Miata NA manual rack (or depowered), any collapsible column; nothing electrical in the steering',
+        'Heavier than a stock Miata at parking speed: wider 205/65R15 tyres and more caster (target 4–5.5°). Estimate by feel before deciding: drive or push a manual-rack NA Miata on 205-width tyres',
+        'Wheel size is the main tuning knob for effort: a 14–15 in (350–380 mm) wheel instead of a small aftermarket one',
+        'EPAS: Prius Gen 4 column + Pi gateway (t-decide-epas-control). Keep the column mounting and dash space able to take it later',
+        'Decide before buying the column (t-buy-steering-column)',
+      ],
+    },
+    {
       id: 't-decide-epas-control',
-      title: 'Decide: EPAS Control Strategy',
+      title: 'Decide: EPAS Control Strategy (if EPAS)',
       epic: 'research',
       kind: 'decision',
       status: 'decided',
@@ -2421,7 +2443,10 @@ export const roadmap: Roadmap = {
     { from: 't-decide-fuel-architecture', to: 't-prep-fuel-tank',   kind: 'hard' },
 
     /* EPAS control strategy decision drives ECU/harness scope. */
-    { from: 't-steering-research',  to: 't-decide-epas-control',    kind: 'hard' },
+    { from: 't-steering-research',  to: 't-decide-steering-assist', kind: 'hard' },
+    { from: 't-decide-steering-assist', to: 't-decide-epas-control', kind: 'hard', label: 'Only if EPAS is chosen.' },
+    { from: 't-decide-steering-assist', to: 't-buy-steering-column', kind: 'hard', label: 'Manual or EPAS sets which column to buy.' },
+    { from: 't-decide-steering-assist', to: 't-buy-epas',            kind: 'hard' },
     { from: 't-decide-epas-control', to: 't-buy-steering-column',   kind: 'hard' },
     { from: 't-decide-epas-control', to: 't-decide-ecu',            kind: 'soft' },
 
