@@ -1,9 +1,9 @@
 ---
 id: A40-009
 title: Independent cross-post consistency review
-status: review
+status: in-progress
 owner: consistency-review agent (2026-10-24)
-reviewer: a fresh agent that did not edit any A40 file
+reviewer: independent reviewer agent (2026-10-24, did not edit any A40 file)
 blocked_by: A40-001 … A40-008
 ---
 
@@ -11,7 +11,7 @@ blocked_by: A40-001 … A40-008
 Each fix agent saw only its own files. Someone needs to read the whole build log as the owner will use it.
 
 ## Acceptance criteria
-- [x] Every A40 post read end to end; any number that disagrees with constants.yaml listed and fixed
+- [ ] Every A40 post read end to end; any number that disagrees with constants.yaml listed and fixed
 - [x] Physics spot-checks redone by hand: ride frequency, roll angle, LLTD, damping, rpm table, U-joint angles, track/ET, tyre OD
 - [x] No mention of Ford 9", four-link, live-axle coilovers or 950 mm spring base except as history
 - [x] No pronoun or name errors; first-person voice kept in log posts
@@ -83,4 +83,22 @@ Not changed (judgement): suspension-tuning "Quick reference" and geometry "Resul
 Files touched: content/a40/{constants.yaml, build-constants, design-finalization, design-overview, digital-dash, donor-geometry-dimensions, geometry-design-reference, narrowing-analysis, rear-suspension, suspension-tuning, wiring-overview}.md, scripts/plot_geometry_reference.py, scripts/a40_constants.py, scripts/a40_geometry_results.json, src/blog/a40-constants.generated.json, src/blog/roadmapData.ts (text only), plots lca_plan / uca_plan / pickups_3view.png.
 
 ## Verification
-_Filled by a second reviewer who re-checks a sample of the findings._
+Independent reviewer, 2026-10-24 (working tree 6d0da56, clean). Rendered all 18 content/a40 posts through the site's `parsePost()` (vite `ssrLoadModule`), converted to text and read them; also diffed the render at 715dd0b against now to see exactly what this ticket changed.
+
+**Passes**
+- Commands: `npm run build`, `npm run lint`, `npm run check-constants` (736 placeholders, 18 posts), `python3 scripts/a40_constants.py --test` (17 ok), `node scripts/check-roadmap-plan.mjs` (0 FAIL): all exit 0.
+- Physics spot-checks redone independently (numbers in the A40-007 Verification table): ride frequency/wheel rates, roll angle 6.5/6.9/7.1°, ARB 31.7/23.7/17.7, damping 4.1/3.4 (8.8 at the damper), rpm table 3640/2890/2760 etc., U-joints 5.4°/2.4°, track 1234 and rear hub face 708, tyre OD 647.5/577.6, weight transfer +44%. Travel budget: 615·tan 3.5° = 37.6 mm; 20/(2·0.4) = 25, 20/(2·0.3) = 33.3 → 63–71 mm (JSON travel_budget_lo/hi 62.6/70.9). UCA cant: atan(14.15/250) = 3.24°, 2·110·sin 3.24° = 12.4 mm. LLTD start 58–60%. All match the posts.
+- Stale decisions: Ford 9"/four-link/live axle only as history (overview change log, rear-suspension intro and "Why the change", suspension-options update, build-constants Rear row note); "950 mm" spring base, "nose-down", "Gen 3", 240.5/290.5, 646 mm OD: 0 hits (646 only as the stock A40 crossply). EPAS optional everywhere (steering decisions table "Open", gateway "If power assist is chosen", dash/wiring "if EPAS", fails-to-manual stated in steering and gateway). DCDC-USB V(out) jumpered to 5 V feeding Pi + display, buck only as fallback (digital-dash, gateway hardware list). Gearbox "CD009 or Z32" in overview, design-overview, frame-design, design-finalization, build-constants, rear-suspension; Z32 5th 0.759 marked verify. Battery "probably the boot (not final)" in build-constants and wiring-overview; design-overview battery row agrees (boot floor or custom cell).
+- No pronoun/name errors (grep he/she/his/her/owner/Dawson/Claude: 0 hits in rendered text); log posts keep first person.
+- Links/images: 126 internal links (post slugs, #anchors, /assets) resolved against rendered heading ids and public/: 0 broken; all 30 image srcs exist. No `{{` / `}}` in any rendered post.
+- A40-004/005 review notes: suspension-tuning caster text now conditional on manual vs EPAS; epas-can-gateway:10 and digital-dash:10 conditional on EPAS; gateway states every fault fails to manual; "Gen 3" 0 hits in scripts/a40-dash-wiring.py, content/a40, plots and roadmapData.ts.
+- Plots: lca_plan.png opened, "ARB link" and "Coilover" labels clear of each other and of the markers. uca_plan.png draws the axis canted 3.2° with pivots at +124/−96 mm (arm lengths 271/271.5 mm, so the arm is symmetric about the BJ as stated), dotted CL-parallel reference; caption numbers match (3.2°, 12.4 mm, +124/−96, 38.5 mm).
+
+**Fails**: see below. The rpm table broken by fix #1 is visible to the owner on the rear-suspension page.
+
+### Failed checks
+1. content/a40/rear-suspension.md:62: the rpm table's separator row has 3 cells for a 4-column header (`|---|---|---|`), so marked does not build a table and the page shows the raw pipes ("| Final drive | CD009 5th (1.000) | …" then "|---|---|---|"). Fix: change line 62 to `|---|---|---|---|`. Re-render rear-suspension and confirm a `<table>` with 4 columns.
+2. (wording) content/a40/donor-geometry-dimensions.md:127 uca_plan caption: "both pivots 110 mm from the BJ along the bushing axis" is wrong (they are ~271 mm from the BJ). Fix: "both pivots 110 mm either side of the pivot-line midpoint, along the bushing axis (220 mm c-to-c)".
+3. Dependent literals in narrowing-analysis:72/:80 (+74, 2 mm, ~35 mm inboard, ET45 −7) are tracked in A40-008 Failed checks; fix them there.
+
+Optional, not blocking: lca_plan.png "−25 mm rear" and "−348 mm rear" dimension labels sit on top of their arrows, and uca_plan.png's "Rear pivot" label is half under the bushing rectangle; narrowing-analysis "UCA brackets: 273 mm from CL" could add "(pivot-line midpoint; front pivot +6.2, rear −6.2 mm with the 3.2° cant)" so nobody builds both brackets at 273.

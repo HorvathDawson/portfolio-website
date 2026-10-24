@@ -63,9 +63,9 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [A40-004](./A40-004-constants-and-tuning.md) | Build constants and suspension tuning posts | done |
 | [A40-005](./A40-005-electrical-dash.md) | Electrical, CAN gateway and dash | in-progress |
 | [A40-006](./A40-006-roadmap-overview.md) | Roadmap and overview posts | done |
-| [A40-007](./A40-007-shared-constants.md) | Shared constants file (YAML → Python → JSON → posts) | review |
-| [A40-008](./A40-008-use-constants.md) | Replace hard-coded numbers with constants | review |
-| [A40-009](./A40-009-consistency-review.md) | Independent cross-post consistency review | todo |
+| [A40-007](./A40-007-shared-constants.md) | Shared constants file (YAML → Python → JSON → posts) | done |
+| [A40-008](./A40-008-use-constants.md) | Replace hard-coded numbers with constants | in-progress (review: 2 literal fixes in narrowing-analysis) |
+| [A40-009](./A40-009-consistency-review.md) | Independent cross-post consistency review | in-progress (review: broken rpm table in rear-suspension) |
 | [A40-010](./A40-010-build-and-visual-check.md) | Build, lint, links and visual check | todo |
 | [A40-011](./A40-011-ship.md) | PR, preview check, merge, live check | todo |
 | [A40-012](./A40-012-owner-decisions.md) | Owner measurements and decisions | blocked |

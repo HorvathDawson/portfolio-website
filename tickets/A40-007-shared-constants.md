@@ -1,9 +1,9 @@
 ---
 id: A40-007
 title: Shared constants file (YAML → Python → JSON → posts)
-status: review
+status: done
 owner: constants agent
-reviewer:
+reviewer: independent reviewer agent (2026-10-24, did not implement)
 blocked_by: A40-001, A40-004
 ---
 
@@ -45,4 +45,37 @@ Intended corrections that changed rendered numbers (both resolve review notes fr
 4. build-constants: rear RC status "model" → "measure" (status now comes from the constant); legend gains "measure" and a line saying the tables are generated from constants.yaml.
 
 ## Verification
-_Filled by the reviewer._
+Independent reviewer, 2026-10-24. Working tree at 6d0da56 (clean). Scratch work in a copy of the repo (node_modules symlinked); nothing in the real repo changed except tickets/.
+
+**Commands (real repo, all exit 0):** `npm run build` (check-constants → tsc → roadmap check → vite build, built in 4.5 s); `npm run lint`; `npm run check-constants` ("736 placeholders in 18 posts resolve", "generated constants are up to date"); `python3 scripts/a40_constants.py --test` ("ok: 17 self-tests"); `node scripts/check-roadmap-plan.mjs` (0 FAIL lines).
+
+**Read:** content/a40/constants.yaml (header explains entry format, how to add a constant in 4 steps, modifiers, tables; every entry has value/unit/status/note) and scripts/a40_constants.py (`derive()`, `derive_geometry()`, input-hash guard on the geometry results, `--check`/`--test`).
+
+**Hand recomputation vs src/blog/a40-constants.generated.json** (independent Python, not importing the module; all equal to float precision):
+| Value | Hand | JSON text |
+|---|---|---|
+| front_track 2·(1420/2+40−95−38) | 1234 | 1234 mm |
+| tyre_od 15·25.4+2·205·0.65 / Miata 14·25.4+2·185·0.60 | 647.5 / 577.6 | 647.5 / 577.6 mm |
+| corner masses (950·0.55−60)/2, (950·0.45−66)/2; sprung 950−60−66 | 231.25 / 180.75 / 824 | 231 / 181 / 824 kg |
+| kw_front/rear (2πf)²m | 17.894 / 16.055 | 17.9 / 16.1 N/mm |
+| kw_front_lo (1.2 Hz) / kw_rear_hi (1.7 Hz) | 13.15 / 20.62 | 13 / 21 |
+| spring_front 17.894/0.679594² ; lb/in ÷0.17513 | 38.74 ; 221.2 | 38.7 N/mm ; 221 lb/in |
+| spring_rear_mid 16.055/0.75² | 28.54 | 28.5 |
+| roll stiffness 17.894·1.23²/2, 16.055·1.34²/2 | 13.54 / 14.41 | 13.5 / 14.4 (28.0) |
+| roll angle, rear RC 100: h_RA 139.03+0.45·(100−139.03)=121.47, arm 0.4535 m, φ = 824·0.8·9.81·0.4535/(27950−824·9.81·0.4535) | 0.1208 rad = 6.92° | 6.9° |
+| roll angle at RC 150 / 80 (same formula) | 6.53° / 7.08° | 6.5 / 7.1° |
+| ARB to add, 3° at RC 100: 2933/0.05236+3666−27950 | 31.7 | 31.7 |
+| critical damping 2√(k·m) | 4.068 / 3.407 kN·s/m | 4.1 / 3.4; at damper 4.068/0.6796² = 8.81 → 8.8 |
+| rpm at 100 km/h, wheel 819.3 rpm (π·0.6475 m) ×4.44×{1, 0.794, 0.759}; ×4.10×0.794 | 3638 / 2888 / 2761; 2667 | 3640 / 2890 / 2760; 2670 |
+| shaft atan(3.5/37); joints −3° | 5.404° / 2.404° | 5.4° / 2.4° |
+| rear hub face 670+38; narrowing 750−708, 755−708 | 708; 42 / 47 | 708; 42 / 47 |
+| tyre poke (1230+205−1365)/2; Ackermann atan(710/2265) | 35; 17.404° | 35 mm; 17.40° |
+| lateral transfer 950·0.8·9.81·h/T: Miata 0.46/1.42, A40 0.575/1.23 | 2415 / 3485 N (+44%) | 2415 / 3485 N (+44%) |
+
+**Sensitivity (scratch copy):** `wheel_et` 38 → 40. `npm run check-constants` then failed (exit 1: "a40-constants.generated.json is stale"). `npm run constants` + `npm run build` passed. Rendered every content/a40 post through `parsePost()` (vite `ssrLoadModule`) before and after: 10 posts changed (build-constants 10 lines, geometry-design-reference 22, donor-geometry-dimensions 11, narrowing-analysis 7, suspension-tuning 5, rear-suspension 4, frame-design 2, design-overview 1, design-finalization 1, steering 1): track 1234→1230, rear hub face 708→710, rear narrowing 42–47→40–45, half-track 617→615, MR 0.680→0.681, spring 38.7→38.6, RC 139.0→138.8, scrub +0.6→−1.4 mm, ET labels. Full plot run (61 s): 11 PNGs changed (ackermann_topview, arb_sizing, jacking, motion_ratio, motion_ratio_vs_angle, rc_combined, rc_migration_a40/miata, rc_tire_comparison, ride_frequency, roll_vs_cg). Reverting to 38 and rerunning: all 23 plots, the JSON and a40_geometry_results.json byte-identical to the repo. Caveat: a few prose numbers in narrowing-analysis are still literals and did not follow the change (+74, "2 mm difference", "~35 mm further inboard", "ET45 = −7 mm/side"); that is placeholder coverage, tracked as a failed check in A40-008, not a pipeline fault. Roll stiffness uses the nominal 1230 mm track by design (documented in the YAML note), so it only moves in 10 mm track steps.
+
+**Unknown placeholder (scratch copy):** `{{bogus_track}}` appended to rear-suspension.md → `npm run build` exit 1, "content/a40/rear-suspension.md: unknown constant {{bogus_track}} (content/a40/constants.yaml)". `{{Front_Track}}` → exit 1, "malformed placeholder {{Front_Track}}". No `{{` left in any rendered post.
+
+**Plot script:** `from a40_constants import C`; grep for 1234/1230/655/647.5/577.6/950/575/17.9/16.1/231/181/0.68/4.44 in scripts/plot_geometry_reference.py finds only the docstring, comments and label x-positions (1420 in the rack-narrowing zone labels). Only scripts/plot_geometry_reference.py needs the constants (the other a40-*.py scripts are dash/splash/wiring).
+
+Result: all five boxes pass.
