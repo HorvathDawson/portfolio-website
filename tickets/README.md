@@ -78,4 +78,4 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [GAR-007](./GAR-007-autozam-art-redo.md) | Redo the Autozam AZ-1 line art | todo |
 | [GAR-008](./GAR-008-garage-animation.md) | Animated garage on the /garage page | review (component built; integration pending, see GAR-008-integration) |
 | [FUT-001](./FUT-001-stl-art-pipeline.md) | Future: 3D scans → stylised spinning art and printable models | idea |
-| [GAR-009](./GAR-009-visual-design-pass.md) | Visual design pass for the whole garage blog | todo |
+| [GAR-009](./GAR-009-visual-design-pass.md) | Visual design pass for the whole garage blog | blocked (owner picks A/B/C) |

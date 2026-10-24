@@ -1,10 +1,10 @@
 ---
 id: GAR-009
 title: Visual design pass for the whole garage blog (keep its character)
-status: todo
+status: blocked
 owner:
 reviewer: Dawson
-blocked_by: GAR-008 integration (same CSS files)
+blocked_by: owner picks a direction (mockups ready)
 ---
 
 ## Why
@@ -41,3 +41,11 @@ The blog works but looks assembled piece by piece: three type families, many bor
 
 ## Verification
 _Filled by the reviewer._
+
+## Mockups (Oct 2026)
+Three directions, same real content: [README](./assets/GAR-009-mockups/README.md)
+- A, Night garage notebook: `assets/GAR-009-mockups/A-*.png`
+- B, Blueprint: `assets/GAR-009-mockups/B-*.png`
+- C, Workshop zine: `assets/GAR-009-mockups/C-*.png`
+- Today's site for comparison: `assets/GAR-009-mockups/current-post.png`
+Sources and screenshot scripts were built outside the repo; each direction needs the same groundwork (tokens, callout syntax, chip tables, lightbox, code copy button).

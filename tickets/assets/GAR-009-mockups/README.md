@@ -1,0 +1,19 @@
+# GAR-009 design-direction mockups
+
+Same content in all three: the rear-suspension post (meta row, work-order card, decision / measure / safety callouts, numbers table with units and status chips, paper figure, formula, code block, sidebar with epics and search, TOC) and the A40 landing page. Copy and numbers are from `content/a40/rear-suspension.md`, `build-constants.md` and the generated constants. These are static HTML mockups, not the app. Fonts are the site's own (Playfair Display, Lora, Space Mono), loaded from local files, plus KaTeX fonts from node_modules for the formula.
+
+Files: `X-post.png` (1440x900, above the fold), `X-post-full.png` (full page), `X-phone.png` (390x844), `X-landing.png` (car landing, full page). `current-post.png` is the live site today. All text/background pairs pass WCAG AA (body ≥ 6:1, chips ≥ 5.8:1), and nothing scrolls sideways at 390 px.
+
+## A — Night garage notebook
+The site as it is now, tidied up. Dark navy layers, warm-white ink, gold accent, and the gradient used only for car art, progress bars and the active state. Callouts are coloured shop tags with a punched hole. Tables are ruled engineering sheets with right-aligned tabular numbers and dimmed units. Plots sit on cream paper cards. The car outline sits faintly behind the post title, and the landing hero sweeps gradient ink into the outline.
+**Code:** add `tokens.css` (colours, status colours, spacing, radii, type scale) and swap the one-off hex values in blogStyles/garage/roadmapViews. Add a callout plugin for `> [!decision|verify|safety|open|formula]`. Add a table renderer that splits value/unit and maps status to chips, a figure wrapper with a lightbox, and a filename tab and copy button for code blocks. The sidebar stays a list with thin progress bars, and the visitor counter moves to the footer. This is the smallest change of the three.
+
+## B — Blueprint
+Same dark base with a faint cyan drafting grid. The post header becomes a drafting title block (drawing no., sheet, rev, date, status, drawn by) in place of the meta row. Each h2 sits under a dimension line with tick ends and a `§ 02` label. Callouts are numbered drafting notes with corner brackets, and Safety gets a hazard-hatch edge. Figures get a crop-frame outline and a "FIG 3 · SCALE NTS" label. On the landing page the gradient car has leader-line annotations (SR20DET, IRS + RX-8, narrowed Miata, WB 2350).
+**Code:** everything in A, plus a grid background token and a TitleBlock component that needs a per-post drawing number (new frontmatter field or derived from epic + order). Add h2 decoration in CSS and per-car hero annotation data (points in SVG viewBox coordinates in `car.json`). This is the most "engineering", and the cyan replaces gold as the UI accent.
+
+## C — Workshop zine
+Warmer aubergine background with halftone dots and more fun. The work order is a manila shop tag, callouts are tilted stickers with offset shadows, and the plot is taped to the page with masking tape. Headings are Playfair 900 italic with a gradient squiggle and highlighter swash, and there is a handwritten-style margin note. It has the most web-1.0: hazard-stripe "under construction", a glowing odometer counter, 88x31 badges, a news ticker and a starburst "18 posts!" on the landing page.
+**Code:** everything in A, plus decoration-only CSS (rotations, tape and burst pseudo-elements). Add an optional `note:` frontmatter for the margin scribble and a ticker fed from the roadmap "next up". Rotations and shadows need print and reduced-motion overrides. This is the least formal, so dense reference posts like build-constants would need a calmer variant (no tilt on tables).
+
+Mockup sources (not committed): `/tmp/claude-0/-home-user/c87f3b61-444e-51a8-bee1-fcced4861d9c/scratchpad/mockups/` (`content.py`, `base.css`, `theme-{A,B,C}.css`, `build.py`, `shoot.cjs`).
