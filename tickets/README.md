@@ -71,7 +71,7 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [A40-012](./A40-012-owner-decisions.md) | Owner measurements and decisions | blocked |
 | [GAR-001](./GAR-001-garage-structure.md) | Turn /a40 into a multi-car garage | todo |
 | [GAR-002](./GAR-002-car-selector.md) | Car selector with outline art | todo |
-| [GAR-003](./GAR-003-autozam-art.md) | Autozam AZ-1 line art, gullwing doors up | blocked (photo) |
+| [GAR-003](./GAR-003-autozam-art.md) | Autozam AZ-1 line art, gullwing doors up | review |
 | [GAR-004](./GAR-004-autozam-log.md) | Autozam AZ-1 garage log | todo |
 | [GAR-005](./GAR-005-blog-usability.md) | Blog usability cleanup | todo (audit done) |
 | [GAR-006](./GAR-006-roadmap-views.md) | Roadmap views for deciding what to work on | review (owner to pick default) |

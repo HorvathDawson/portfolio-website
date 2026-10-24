@@ -1,10 +1,10 @@
 ---
 id: GAR-003
 title: Autozam AZ-1 line art, gullwing doors up
-status: blocked
-owner:
+status: review
+owner: Claude
 reviewer:
-blocked_by: photo from the owner
+blocked_by:
 ---
 
 ## Why
@@ -19,11 +19,18 @@ The selector needs the AZ-1 in the same traced white-outline + gradient style as
 ## Acceptance criteria
 - [ ] Doors are clearly open (gullwing) in the outline
 - [ ] Line weight and detail level look like the A40 drawing side by side at card size
-- [ ] Both SVGs under ~200 KB
-- [ ] Image is the owner's own photo (no third-party image rights)
+- [ ] Both SVGs under ~200 KB (outline 183 KB, colored 224 KB; the A40's are 175/182 KB)
+- [ ] Image is the owner's own photo (supplied by the owner in chat, Oct 2026; owner to confirm rights)
 
 ## Notes
 Wikimedia Commons is blocked from the build container, and a third-party photo would carry licence terms anyway, so the owner's own photo is the source.
 
 ## Verification
 _Filled by the reviewer._
+
+## Implementer notes
+- Source: owner's front three-quarter photo (960×640), doors up, bonnet shut.
+- Cut-out: OpenCV GrabCut seeded with the blue paint as sure-foreground and the wall/floor as background; wall beside the raised door and the floor strip under the sills removed; small holes (headlight, spoke gaps) filled; edge smoothed.
+- Licence plate blanked before tracing so the number isn't drawn.
+- Upscaled 2× with a CLAHE contrast boost, then `scripts/trace_outline.py --photo --weight 2.2` (new `--weight` option thickens lines to match the A40 at card size). Path coordinates rounded to whole units to cut file size.
+- Output: public/assets/garage/autozam/outline.svg and colored.svg. The photo and cut-out are not committed.
