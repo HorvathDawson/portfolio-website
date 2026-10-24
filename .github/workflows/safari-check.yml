@@ -1,9 +1,9 @@
-# Temporary: checks what the live resume generator serves.
+# Temporary: screenshots the branch preview of personal-website.
 name: Safari check
 on:
   push:
     branches: [claude/safari-check]
-    paths-ignore: ['ci-live/out.txt']
+    paths-ignore: ['ci-live/**']
 permissions:
   contents: write
 jobs:
@@ -11,15 +11,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i --no-save playwright@1.48.2 && npx playwright install --with-deps chromium
       - run: |
-          {
-            for base in https://dawsonhorvath.com https://personal-website.horvath-dawson.workers.dev; do
-              echo "== $base"; curl -sSL -D - -o page.html "$base/?v=$RANDOM" | grep -iE '^(HTTP|cf-cache|age|cache-control)'
-              for js in $(grep -oE '/assets/[A-Za-z0-9_.-]+\.js' page.html | sort -u); do
-                curl -sSL "$base$js" -o a.js; echo "$js clip-fix=$(grep -c 'polygon(' a.js)"
-              done
-            done
-          } > ci-live/out.txt 2>&1
-          cat ci-live/out.txt
+          rm -rf ci-live && mkdir -p ci-live
+          cat > shot.cjs <<'JS'
+          const { chromium } = require('playwright');
+          const base = 'https://claude-keen-planck-2zcc5f-personal-website.horvath-dawson.workers.dev';
+          const pages = ['/garage', '/garage/a40', '/garage/a40/build-constants', '/garage/a40/roadmap', '/garage/autozam', '/a40/steering'];
+          (async () => {
+            const b = await chromium.launch(); const out = [];
+            for (const [w, h, tag] of [[1440, 900, 'd'], [390, 844, 'm']]) {
+              const p = await b.newPage({ viewport: { width: w, height: h } });
+              const errs = []; p.on('pageerror', e => errs.push(e.message));
+              for (const path of pages) {
+                const r = await p.goto(base + path, { waitUntil: 'networkidle' }).catch(e => ({ status: () => 'ERR ' + e.message }));
+                await p.waitForTimeout(1500);
+                const name = tag + path.replace(/\//g, '_') + '.png';
+                await p.screenshot({ path: 'ci-live/' + name });
+                out.push(`${tag} ${path} -> ${p.url()} status=${r.status()} title=${await p.title()} hscroll=${await p.evaluate(() => document.documentElement.scrollWidth)}`);
+              }
+              out.push(`${tag} errors: ${JSON.stringify(errs)}`);
+            }
+            require('fs').writeFileSync('ci-live/out.txt', out.join('\n') + '\n');
+            await b.close();
+          })();
+          JS
+          node shot.cjs; cat ci-live/out.txt
           git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ci-live && git commit -m "Live check" && git push origin HEAD:claude/safari-check
+          git add ci-live && git commit -m "Preview check" && git push origin HEAD:claude/safari-check
