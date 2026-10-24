@@ -4,14 +4,14 @@ title: Blog usability cleanup
 status: todo
 owner:
 reviewer:
-blocked_by: audit report (in progress)
+blocked_by:
 ---
 
 ## Why
 The log is used as reference documentation while building. It has to be fast to find things and readable on a phone in the garage.
 
 ## Scope
-Filled in from the usability audit (`blog-audit` report). Expected areas: search, table of contents on long posts, heading anchors, prev/next, phone layout of tables and maths, status clarity (decided vs open), print styles, load performance, accessibility, broken links.
+Filled in from the usability audit: [GAR-005-audit.md](./GAR-005-audit.md) (26 items, prioritised, with evidence). Expected areas: search, table of contents on long posts, heading anchors, prev/next, phone layout of tables and maths, status clarity (decided vs open), print styles, load performance, accessibility, broken links.
 
 Each audit finding becomes a checkbox here or its own ticket if it is larger than S.
 
