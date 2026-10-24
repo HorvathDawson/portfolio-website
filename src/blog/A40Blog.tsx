@@ -92,7 +92,11 @@ const PostContent: React.FC<{
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    contentRef.current?.scrollTo(0, 0);
+    // Honour ./post#heading links; otherwise start each post at the top.
+    const hash = decodeURIComponent(window.location.hash.slice(1));
+    const target = hash ? document.getElementById(hash) : null;
+    if (target && contentRef.current?.contains(target)) target.scrollIntoView();
+    else contentRef.current?.scrollTo(0, 0);
   }, [post.slug]);
 
   return (

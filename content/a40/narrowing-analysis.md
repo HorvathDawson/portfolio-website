@@ -7,7 +7,21 @@ kind: tutorial
 tags: [suspension, geometry, analysis, miata, research]
 ---
 
-How much the Miata front suspension has to narrow to fit inside the A40 fenders, and what tire/wheel goes on the corner. Geometry consequences (RC, camber, scrub, anti-dive) are worked out in the [geometry design reference](./geometry-design-reference); this post sets the dimensional inputs.
+How much the Miata front suspension narrows, what wheel and tyre go on the corner, and where that puts the tyre relative to the A40 body. Geometry consequences (roll centre, camber, scrub, anti-dive) are in the [geometry design reference](./geometry-design-reference); donor coordinates are in [donor geometry dimensions](./donor-geometry-dimensions).
+
+## Decisions
+
+| Item | Value | Status |
+|---|---|---|
+| Front narrowing | **95 mm per side** | locked |
+| Hub face from CL | 750 → **655 mm** | locked (this is the dimension to build to) |
+| Wheel / tyre | 15×6 **ET38**, 4×100, **205/65R15** (OD 647.5 mm) | chosen |
+| Front track | 2 × (655 − 38) = **1234 mm** ("~1230 mm") | derived from hub face + ET |
+| Rack narrowing | 190 mm total | see [steering](./steering) |
+
+Lock the pickups and hub-face position, not the track number: track falls out of whatever ET goes on the hub.
+
+The donor baseline (1420 mm track at ET40 → hub face 750 mm from CL) is the scanned/reconciled figure; published NA figures range 1405-1425 mm. **Measure the donor hub-face-to-hub-face width** before cutting anything.
 
 ---
 
@@ -17,80 +31,94 @@ How much the Miata front suspension has to narrow to fit inside the A40 fenders,
 |---|---|---|---|
 | Wheelbase | 2350 mm | 2265 mm | +85 mm |
 | Front track | 1232 mm | 1420 mm | −188 mm |
-| Stock tire | 5.25-16 (133 × 646 mm) | 185/60R14 (185 × 577 mm) | width −52 mm, OD +69 mm |
-| Stock outer-to-outer | 1365 mm | 1525 mm | −160 mm |
-| Stock wheel | 16 in steel, no offset | 14×6, ET40 | — |
+| Stock tyre | 5.25-16 (133 × 646 mm) | 185/60R14 (185 × 578 mm) | width −52 mm, OD +68 mm |
+| Stock outer-to-outer | 1232 + 133 = **1365 mm** | 1420 + 185 = **1605 mm** | −240 mm |
+| Stock wheel | 16 in steel, no offset | 14×6 ET40 | — |
 | Bolt pattern | 4-stud | 4×100 | converting to 4×100 |
-| Curb weight | ~1010 kg (build target ~950 kg, [build constants](./build-constants)) | — | — |
+| Mass | build: ~875 kg curb, ~950 kg with driver and fuel ([build constants](./build-constants)) | — | — |
 
 A40 numbers from [automobile-catalog](https://www.automobile-catalog.com/car/1950/1767110/austin_a40_deluxe_devon.html) and [classiccarportraits](https://www.classiccarportraits.co.uk/pages/Austin_A40_Devon_4752.htm).
 
-**Starting point** for the narrowed track is the original A40 front track (**1232 mm**). The actual fender envelope comes from the body scan; final track gets adjusted within that envelope. Standard clearance budget for a build like this is 25-50 mm per side between sidewall and fender lip — accounts for full bump, steering lock, and tire growth.
-
 ---
 
-## Wheel and tire
+## Wheel and tyre
 
-Same size all four corners, 4×100 hubs (Miata), steel wheel so the original A40 hubcaps fit. Tire diameter has two paths:
+Same size all four corners, steel wheel so the original A40 hubcaps fit.
 
-| Path | Tire example | OD | Trade-off |
+| Path | Tyre | OD | Trade-off |
 |---|---|---|---|
-| **Match A40 stock height** | 205/65R15 | 648 mm | Period-correct ride height; entire suspension assembly translates up with the tire on a custom frame, so local geometry is preserved (camber curve, KPI, scrub all unchanged). |
-| Stay near Miata stock | 185/60R15 | 603 mm | Suspension closer to factory; car sits low and wheels look small in the A40 fenders. |
-
-**Decision: 205/65R15 on 15×6 ET+38** (see [build constants](./build-constants)). Near-perfect match to the original 646 mm OD. 205 mm width is wider than stock but the 15 in sidewall keeps the period look, and the bigger contact patch helps put the SR20DET's power down.
+| **Match A40 stock height (chosen)** | 205/65R15 | 647.5 mm | Period ride height. The whole corner rises with the tyre on the custom frame, so camber curve and KPI are preserved. Scrub and trail change slightly (below). |
+| Stay near Miata stock | 185/60R15 | 603 mm | Closer to factory; car sits low and the wheels look small in the fenders. |
 
 ---
 
-## Tire width × ET vs A40 envelope
+## Fitment: where the tyre sits vs stock
 
-For a fixed narrowed track (1230 mm hub-to-hub), the outer edge of the tire is set by tire width and wheel ET only — track itself doesn't depend on ET. The table gives outer-to-outer delta vs the stock A40 outer-to-outer (1365 mm). Negative = tucks inside the stock A40 envelope; positive = pokes outboard of it.
+The hub face is fixed at 655 mm from CL. Everything else follows:
 
-$$\text{outer-to-outer} = T_{narrowed} + w_{tire} - 2\,\text{ET} \qquad \Delta = \text{outer-to-outer} - 1365$$
+$$\text{wheel CL} = 655 - \text{ET} \qquad T = 2(655 - \text{ET}) \qquad \text{outer-to-outer} = T + w_{tyre}$$
 
-| Tire width | ET25 | ET30 | ET38 | ET45 |
+Track **does** depend on ET. Each 10 mm less ET moves each tyre 10 mm outboard (outer-to-outer +20 mm).
+
+Outer-to-outer minus stock A40 (1365 mm). Per-side figure is half this. Positive = further out than the stock tyres.
+
+| Tyre width | ET25 (T 1260) | ET30 (T 1250) | ET38 (T 1234) | ET45 (T 1220) |
 |---|---|---|---|---|
-| 175 mm | +15 | +5 | −11 | −25 |
-| 185 mm | +25 | +15 | −1 | −15 |
-| 195 mm | +35 | +25 | +9 | −5 |
-| **205 mm (chosen)** | +45 | +35 | **+19** | +5 |
+| 175 mm | +70 | +60 | +44 | +30 |
+| 185 mm | +80 | +70 | +54 | +40 |
+| 195 mm | +90 | +80 | +64 | +50 |
+| **205 mm (chosen)** | +100 | +90 | **+74** | +60 |
 
-All values in mm of outer-to-outer delta vs A40 stock (1365 mm). Lower ET pushes the tire outboard; every 10 mm of ET reduction grows outer-to-outer by 20 mm (10 per side).
+**The chosen 205/ET38 sits about 35-37 mm per side outside the stock A40 tyres** (outer edge 719.5 mm from CL vs 682.5 mm stock). It also reaches about 35 mm further *inboard* than the stock tyre (inner edge 514.5 vs 549.5 mm). The earlier version of this table showed ~10 mm/side; every cell carried a +25 mm error. Nothing in the 95 mm narrowing gets the outer edge back to stock: no ET in the table brings a 205 under +60.
 
-The chosen 205/ET+38 sits 19 mm outboard of stock A40 outer-to-outer (≈10 mm per side). The body scan gives the actual fender envelope to confirm this fits with the clearance budget; if it's tight, options are higher ET (ET+45 lands +5 mm), narrower tire, or a small fender flare.
+This is the main fitment risk. Check against the scanned body envelope:
+
+1. Place the tyre (205 × 647.5 mm, wheel CL 617 mm from CL) in the scan at ride height. Measure sidewall-to-fender-lip and tread-to-arch clearance. Budget: 25-50 mm per side.
+2. Sweep full bump with wheels straight. Watch the outer shoulder against the fender lip.
+3. Sweep full lock at ride height. Watch the inner shoulder against the inner arch and frame rail (the tyre now reaches further inboard).
+4. Combine full lock + full bump (see caveat below).
+5. If it does not fit, in order of preference: higher ET (ET45 = −7 mm/side, check caliper clearance), narrower tyre (195 = −5 mm/side), small fender flare or lip roll. More narrowing would move the rack, pickups and RC and is the last resort.
 
 ---
 
-## Narrowing target
+## Scanned donor geometry: what it changes
 
-**1230 mm front track, 95 mm narrowing per side — locked.** Within 2 mm of the stock A40 front track, with the chosen 205/ET+38 wheel/tire landing within the body-scan envelope. Pickup-point coordinates and donor-side dimensions are in the [donor geometry dimensions reference](./donor-geometry-dimensions#numbers).
+Coordinates are in [donor geometry dimensions](./donor-geometry-dimensions). Points that drive fabrication:
 
-### Geometry implications of the scanned donor
+| Item | Stock (from CL) | Narrowed (from CL) | Note |
+|---|---|---|---|
+| Hub face | 750 mm | **655 mm** | build reference plane |
+| LCA inner pivots (both) | 329.5 mm | **234.5 mm** | 322.5 mm fore-aft c-to-c |
+| UCA inner pivots | 368 mm | **273 mm** | 38.5 mm **outboard** of the LCA pivots (normal short-long-arm layout) |
 
-The donor front subframe was photogrammetrically scanned (Einstar 2). The values that follow come from that scan and drive every downstream kinematic plot. Two consequences of the scanned geometry change how the narrowing has to be executed compared with a naive "translate the LCA inboard 95 mm" approach:
+- **Arm-length ratio 1.34 : 1** (LCA 336.25 mm, UCA 250 mm, lateral). Closer to equal than the ~1.9 : 1 often assumed, so camber gain per mm of bump is modest. Static negative camber comes from alignment shims, not the camber curve.
+- **UCA bushing axis is tilted and canted.** Side view: front pivot 13.56 mm higher than rear over 220 mm (≈3.5° nose-up). Plan: the axis is not parallel to the car centreline. The brackets must reproduce both rotations, not just the pivot centres.
+- **Scrub and trail on the A40 package** (scanned knuckle, ET40 → ET38, hub ~35 mm higher):
 
-- **UCA pivot sits inboard of LCA pivot, not outboard.** UCA inner pivot is at 368 mm from CL; LCA inner pivot is at 329.5 mm from CL. After narrowing, UCA lands at 273 mm from CL and LCA at 234.5 mm. Frame UCA-bracket clearance against the SR20 valve cover and the inner fender both want a check at this new inboard position.
-- **Arm-length ratio is 1.34 : 1, not the textbook ~1.9 : 1.** LCA effective length (BJ → pivot) is 336.25 mm; UCA effective length is 250 mm. Closer-to-equal arms give a longer FVSA, a lower roll centre, and less negative camber gain per millimetre of bump than the more-unequal arm ratio commonly assumed for a Miata. The build's static negative camber needs to come from knuckle offset / shim packs, not from the camber curve.
-- **UCA bushing axis is canted in plan and tilted in side view.** Side view: front pivot sits 13.56 mm higher than the rear over a 220 mm fa span ≈ 3.5° nose-up. Plan: the bushing axis is not parallel to car fa — the UCA arm is symmetric ±110 mm in its own frame, but its inboard pivot centre projects ~54 mm forward of UBJ in car-frame fa. Frame UCA brackets must replicate both rotations, not just position. The ±1 mm pickup tolerance below applies to the pivot **centre**; orientation error compounds with arm length and is just as important.
-- **Caster is real (3.62°) and mechanical trail is +7.57 mm.** That gives the steering meaningful self-centring without relying on the EPAS column to manufacture all of the on-centre feel through torque overlay.
+| | Miata stock (185/60R14, ET40) | A40 (205/65R15, ET38) |
+|---|---|---|
+| Scrub radius | +6.05 mm | **≈ +0.5 mm** (near zero) |
+| Mechanical trail (3.62° caster) | 7.57 mm | **≈ 9.8 mm** |
 
-The lower arm itself — fa span between front and rear pivots (322.5 mm c-to-c), BJ offset relative to the front pivot (+25 mm fwd), z-rise from BJ to pivot line (+25 mm) — matches what the published Miata drawings show, so the donor LCA stays as-is. The UCA, the UCA bracket geometry, and the LCA inner-pivot position in the frame are the new fabrication inputs.
+Near-zero scrub means less kickback and less self-centring under braking; the extra trail adds a little on-centre feel. Derivation in the [geometry design reference](./geometry-design-reference).
 
 ### Fabrication notes
 
-- **UCA bracket orientation matters.** Holding the position to ±1 mm is necessary but not sufficient. The bracket bore axis has to be canted to match the scanned side-view tilt (3.5° nose-up) and the plan-view cant inferred from the symmetric-arm reconciliation. Fixture the brackets off the actual UCA arm + a scanned bushing axis, not off generic centerlines.
-- **LCA inner-pivot lateral is 234.5 mm from CL.** This is the narrowed value (329.5 − 95). Both LCA pivots share that lateral; fa positions track the scanned 322.5 mm span at the BJ-+25 mm reference.
-- **UCA inner-pivot lateral is 273 mm from CL.** This places the UCA bracket inboard of the LCA bracket by 38.5 mm — opposite of what published Miata drawings imply. Verify clearance against the SR20 valve cover, exhaust manifold side, and the inner fender wheel-well before committing to the bracket position.
-- **Hub-face position references the wheel-CL, not the LBJ.** Hub face sits at half-track + wheel offset = 615 + ET mm from CL. With ET+38 wheels that puts hub face at 653 mm; with ET+45 at 660 mm. The scanned LBJ-to-hub offset (84.25 mm inboard, 3.75 mm aft, 86 mm down) is taken from the hub face plane and is invariant under narrowing.
+1. Build to the hub face (655 mm from CL), not to "track". The scanned LBJ/UBJ offsets are measured from the hub-face plane and do not change with narrowing.
+2. LCA brackets: both pivots at 234.5 mm from CL, 322.5 mm apart fore-aft.
+3. UCA brackets: 273 mm from CL (38.5 mm outboard of the LCA pivots). Check clearance to the SR20 valve cover, exhaust manifold side and inner fender before committing.
+4. Fixture the UCA brackets off the actual arm with a bar through the bushing axis so the 3.5° tilt and plan cant are captured. ±1 mm on pivot centres is necessary but not sufficient: orientation errors matter as much.
 
-### Full-lock-and-full-bump caveat
+---
 
-The envelope check above is done at ride height. Sweeping the tire through the steering arc at ride height clears the body; sweeping it through the bump travel with the wheels pointed straight also clears. The one combination that doesn't quite clear is **simultaneous full steering lock + full suspension compression** — the inboard front corner of the tire kisses the inner fender / wheel arch by a few millimetres.
+## Full-lock and full-bump caveat
 
-It's not enough to justify another 5–10 mm of narrowing per side (which would compound back into the rack-narrowing, the inboard pickup geometry, and the front RC height). Three options for handling it, in order of preference:
+The earlier sweep found the inner front corner of the tyre touching the inner arch by a few mm at simultaneous full lock + full bump. That sweep used the wrong tyre position (the +25 mm table error), so **redo it** against the scanned envelope with the corrected tyre position (step 4 above).
 
-1. **Steering-lock stops.** Add adjustable hard stops on the rack (or on the knuckle) that pull a couple degrees off maximum lock. Loses some low-speed turning-circle, costs nothing in suspension geometry. Easy to dial in once the car is together.
-2. **Bump-stop progression.** A slightly stiffer bump stop limits how much travel is actually available at full lock — the car would have to be cornering *and* hit a bump big enough to use all of bump travel at the same time, which is a vanishingly rare load case for a street car.
-3. **Local inner-fender massage.** Roll or trim the few millimetres of inner fender at the contact point. Cheapest fix if the interference shows up worse than predicted at mock-up.
+Expected handling, in order of preference:
 
-Decision deferred until the front subframe is on the jig and a real steering knuckle + tire can be swept against the actual body. The expected outcome is option 1 (lock stops). Not changing the 1230 mm number over a few millimetres in the worst-case corner of the envelope.
+1. **Steering stops.** Mandatory anyway (see [steering](./steering)); set them where the tyre clears with margin.
+2. **Bump-stop progression** to limit usable travel at full lock.
+3. **Local inner-arch trimming** at the contact point.
+
+Decide on the jig with the real knuckle and tyre swept against the body. The 95 mm narrowing does not change over a few mm in the worst-case corner.

@@ -4,6 +4,33 @@ import { postSlug } from './postSlug';
 
 marked.use(markedKatex({ throwOnError: false, nonStandard: true }));
 
+const ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
+const decodeEntities = (s: string) => s.replace(/&(amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e]);
+
+/** Heading ids already used in the post being parsed (reset per post). */
+const usedHeadingIds = new Map<string, number>();
+
+/** GitHub-style heading slug, so `./post#some-heading` links resolve. */
+function headingId(html: string): string {
+  const base = decodeEntities(html.replace(/<[^>]+>/g, ''))
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s_-]/gu, '')
+    .replace(/\s/g, '-');
+  const n = usedHeadingIds.get(base) ?? 0;
+  usedHeadingIds.set(base, n + 1);
+  return n === 0 ? base : `${base}-${n}`;
+}
+
+marked.use({
+  renderer: {
+    heading({ tokens, depth }) {
+      const inner = this.parser.parseInline(tokens);
+      return `<h${depth} id="${headingId(inner)}">${inner}</h${depth}>\n`;
+    },
+  },
+});
+
 export type Status = 'planning' | 'in-progress' | 'complete' | 'decided';
 
 export type PostKind = 'log' | 'reference' | 'tutorial';
@@ -63,13 +90,9 @@ function parseTags(raw: string | undefined): string[] {
   return raw.replace(/^\[|\]$/g, '').split(',').map(t => t.trim()).filter(Boolean);
 }
 
-const ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
-
 /** First paragraph of rendered HTML as plain text, cut to about `max` characters. */
 function excerpt(html: string, max = 160): string {
-  const text = (html.match(/<p>([\s\S]*?)<\/p>/)?.[1] ?? '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&(amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e])
+  const text = decodeEntities((html.match(/<p>([\s\S]*?)<\/p>/)?.[1] ?? '').replace(/<[^>]+>/g, ''))
     .replace(/\s+/g, ' ')
     .trim();
   if (text.length <= max) return text;
@@ -82,6 +105,7 @@ export function parsePost(raw: string, slug: string): BlogPost {
   const rawKind = meta.kind as PostKind | undefined;
   const kind: PostKind | undefined =
     rawKind === 'log' || rawKind === 'reference' || rawKind === 'tutorial' ? rawKind : undefined;
+  usedHeadingIds.clear();
   // Lazy-load post images so long posts don't download every plot up front.
   const html = (marked.parse(body, { async: false }) as string)
     .replace(/<img /g, '<img loading="lazy" decoding="async" ');
