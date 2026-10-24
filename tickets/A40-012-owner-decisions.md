@@ -13,7 +13,7 @@ These can't be settled from the desk. Each answer goes into the constants file (
 ## Decisions
 - [ ] **Steering assist: manual or Prius Gen 4 EPAS.** Drive a manual-rack NA Miata on 205-width tyres and park it. If it's acceptable with a 14–15 in wheel, go manual. Decide before buying the column (roadmap `t-decide-steering-assist`).
 - [ ] **Brake split.** Front/rear + one adjustable rear valve (simplest), or diagonal + two valves set identically. Recommendation: front/rear.
-- [ ] **Final drive and LSD.** Read the ratio tag on the RX-8 diff (or count: turn the pinion and count turns per one wheel-flange turn with the other flange held, ×2... simpler: mark flange and pinion, rotate both outputs together one turn, count pinion turns). Check the LSD type (Torsen vs open) by turning one flange with the other free: an open diff turns the other flange backwards freely.
+- [ ] **Final drive and LSD.** Read the ratio tag on the RX-8 diff if present. Otherwise mark the pinion flange and both output flanges, turn both outputs together exactly one turn, and count pinion turns: that's the ratio (e.g. ~4.44). LSD check: turn one output flange with the other free. An open diff turns the free flange the opposite way with little effort; a Torsen resists and drags it.
 - [ ] **Transmission:** CD009 or Z32 (availability call).
 - [ ] **Battery location:** probably the boot. Confirms cable sizing.
 - [ ] **Default roadmap view:** Next up, Tree or Map.
