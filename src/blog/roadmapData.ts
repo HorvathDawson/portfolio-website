@@ -52,6 +52,7 @@
 
 import { postSlugs, roadmapCar, type Epic } from './cars';
 import type { Status } from './frontmatter';
+import { k, raw } from './a40Constants';
 
 const epics = roadmapCar.epics;
 
@@ -134,11 +135,11 @@ export const roadmap: Roadmap = {
       epic: 'research',
       kind: 'decision',
       status: 'decided',
-      decision: 'Rack: Miata NA (manual or depowered, 190 mm narrowed). Assist is now an open choice (see t-decide-steering-assist): manual steering, or a Toyota Prius Gen 4 (2016–2022) column-mount EPAS, driven by the dash Pi acting as a dual-bus CAN gateway (Haltech → Toyota frames) for speed-sensitive assist. The column has a hard-wired IG wake; what it does without frames (fixed assist, reduced assist or a DTC latched until key cycle) is to be bench-tested.',
+      decision: `Rack: Miata NA (manual or depowered, ${k('rack_narrowing')} narrowed). Assist is now an open choice (see t-decide-steering-assist): manual steering, or a Toyota Prius Gen 4 (2016–2022) column-mount EPAS, driven by the dash Pi acting as a dual-bus CAN gateway (Haltech → Toyota frames) for speed-sensitive assist. The column has a hard-wired IG wake; what it does without frames (fixed assist, reduced assist or a DTC latched until key cycle) is to be bench-tested.`,
       posts: ['steering', 'epas-can-gateway'],
       summary: 'Lock the rack donor and the EPAS column donor (if assist is used). Output: parts list, dual-bus gateway architecture, and a bench-tested loss-of-frames plan.',
       notes: [
-        'Rack: Miata NA, depowered (Flyin\' Miata method), narrowed by 190 mm total (95 mm per side) to match the front-track delta',
+        `Rack: Miata NA, depowered (Flyin' Miata method), narrowed by ${k('rack_narrowing')} total (${k('front_narrowing')} per side) to match the front-track delta`,
         'Column: Toyota Prius Gen 4 (2016–2022). openpilot supports all of these, and opendbc decodes their powertrain CAN in one DBC (toyota_nodsu_pt_generated), so the speed (0xB4) and rpm (0x1C4) frames, scaling and checksum are known. Which frames the column needs: confirm with a donor log and on the bench',
         'Control strategy: dash Pi rebroadcasts Haltech RPM + speed as Toyota 0x1C4 + 0xB4 frames — see t-decide-epas-control',
         'Loss of frames: column behaviour unknown (fixed assist / reduced / no assist / latched DTC) — bench-test; gateway policy on stale Haltech data is hold last speed then ramp toward low assist, never toward 0',
@@ -184,9 +185,9 @@ export const roadmap: Roadmap = {
       kind: 'decision',
       posts: ['rear-suspension'],
       summary: 'Rear suspension architecture and diff. Revised Oct 2026: the Ford 9″ / Welder Series four-link live axle is dropped for a narrowed Mazda NA Miata IRS with a Mazda RX-8 diff and custom half-shafts.',
-      decision: 'Narrowed Mazda NA Miata IRS (double wishbone, Miata rear geometry kept: every inboard pickup — toe links included — translated inboard by the same amount, like the front) + Mazda RX-8 rear diff on custom mounts + custom-length half-shafts. Rear track stays 1340 mm.',
+      decision: `Narrowed Mazda NA Miata IRS (double wishbone, Miata rear geometry kept: every inboard pickup — toe links included — translated inboard by the same amount, like the front) + Mazda RX-8 rear diff on custom mounts + custom-length half-shafts. Rear track stays ${k('rear_track')}.`,
       notes: [
-        'Narrowing per side = measured stock rear hub-face half-width − 708 mm (708 = 670 half-track + 38 ET): ≈42 mm if the donor 1420 mm rear track is at ET40, ≈47 mm at ET45 — measure the donor (t-measure-donor-rear)',
+        `Narrowing per side = measured stock rear hub-face half-width − ${k('rear_hub_face')} (${raw('rear_hub_face')} = ${raw('rear_half_track')} half-track + ${raw('wheel_et')} ET): ≈${k('rear_narrowing_lo')} if the donor ${k('rear_track_miata')} rear track is at ET${raw('rear_et_miata_lo')}, ≈${k('rear_narrowing_hi')} at ET${raw('rear_et_miata_hi')} — measure the donor (t-measure-donor-rear)`,
         'Diff: RX-8 unit — stronger than the NA Miata diff, which is not suited to a 300+ whp SR20DET. Not a bolt-in to the NA subframe: needs custom diff mounts',
         'Diff is chassis-mounted (sprung): driveshaft and pinion angles no longer change with suspension travel',
         'Half-shafts: custom length, RX-8 output flanges to Miata rear hubs',
@@ -244,7 +245,7 @@ export const roadmap: Roadmap = {
       status: 'planning',
       summary: 'Measure (or scan) the donor NA rear before the rear pickups are drawn: stock rear hub-face half-width (sets the narrowing amount), every inboard pickup incl. toe links, and the rear motion ratio.',
       notes: [
-        'Narrowing per side = stock hub-face half-width − 708 mm',
+        `Narrowing per side = stock hub-face half-width − ${k('rear_hub_face')}`,
         'Rear MR: spring/shock travel vs wheel travel on the donor (currently TBD)',
         'Rear RC: model the narrowed geometry; assume ~80–150 mm until then',
         'Also confirm the donor baseline rear track (1420 mm assumed) and its wheel offset',
@@ -276,11 +277,11 @@ export const roadmap: Roadmap = {
       epic: 'narrowing',
       kind: 'decision',
       status: 'decided',
-      decision: 'Front track locked at 1230 mm (95 mm narrowing per side, off a scanned 1420 mm donor track). Within 2 mm of stock A40 front track and the chosen 205/65R15 ET+38 wheel/tire fits inside the scanned fender envelope.',
-      summary: '1230 mm locked — drives the front pickup-point coordinates and the Miata rack narrowing. One open caveat: slight tire-to-body interference at simultaneous full steering lock + full bump; tracked as a mock-up check, not a track-width change.',
+      decision: `Front track locked at ${k('front_track_nominal')} (${k('front_narrowing')} narrowing per side, off a scanned ${k('front_track_miata')} donor track). Within 2 mm of stock A40 front track and the chosen ${k('tyre_size')} ET+${raw('wheel_et')} wheel/tire fits inside the scanned fender envelope.`,
+      summary: `${k('front_track_nominal')} locked — drives the front pickup-point coordinates and the Miata rack narrowing. One open caveat: slight tire-to-body interference at simultaneous full steering lock + full bump; tracked as a mock-up check, not a track-width change.`,
       posts: ['narrowing-analysis'],
       notes: [
-        '1230 mm front track locked for downstream design',
+        `${k('front_track_nominal')} front track locked for downstream design`,
         'Validated against scanned fender geometry (t-scan-front)',
         'Caveat: minor interference at full lock + full compression — to be confirmed at mock-up and likely absorbed by a steering-lock stop rather than re-narrowing the track',
       ],
@@ -291,14 +292,14 @@ export const roadmap: Roadmap = {
       epic: 'narrowing',
       kind: 'decision',
       status: 'decided',
-      decision: 'Rear track 1340 mm (tyre CL to tyre CL) on the on-hand ET38 15″ wheels and 205/65R15 tyres. With the narrowed Miata IRS this puts each rear hub face 708 mm from the car centreline (670 half-track + 38 ET).',
-      summary: 'Rear track locked at 1340 mm from the rear scan + ET38 wheels. Sets the rear hub-face position and therefore the IRS narrowing amount and half-shaft length.',
+      decision: `Rear track ${k('rear_track')} (tyre CL to tyre CL) on the on-hand ET${raw('wheel_et')} 15″ wheels and ${k('tyre_size')} tyres. With the narrowed Miata IRS this puts each rear hub face ${k('rear_hub_face')} from the car centreline (${raw('rear_half_track')} half-track + ${raw('wheel_et')} ET).`,
+      summary: `Rear track locked at ${k('rear_track')} from the rear scan + ET${raw('wheel_et')} wheels. Sets the rear hub-face position and therefore the IRS narrowing amount and half-shaft length.`,
       posts: ['rear-suspension'],
       notes: [
-        'Rear track (tyre CL–CL): 1340 mm (locked)',
-        'Hub face: 708 mm from CL',
-        'Narrowing per side = measured stock rear hub-face half-width − 708 mm (≈42 mm at ET40, ≈47 mm at ET45 donor baseline) — see t-measure-donor-rear',
-        'Wheel offset: ET38 (already purchased — see t-buy-wheels)',
+        `Rear track (tyre CL–CL): ${k('rear_track')} (locked)`,
+        `Hub face: ${k('rear_hub_face')} from CL`,
+        `Narrowing per side = measured stock rear hub-face half-width − ${k('rear_hub_face')} (≈${k('rear_narrowing_lo')} at ET${raw('rear_et_miata_lo')}, ≈${k('rear_narrowing_hi')} at ET${raw('rear_et_miata_hi')} donor baseline) — see t-measure-donor-rear`,
+        `Wheel offset: ET${raw('wheel_et')} (already purchased — see t-buy-wheels)`,
         'Confirmed against rear-scan body width with the widened rear fenders',
       ],
     },
@@ -308,7 +309,7 @@ export const roadmap: Roadmap = {
       epic: 'narrowing',
       status: 'in-progress',
       posts: ['narrowing-analysis', 'geometry-design-reference'],
-      summary: 'Front: track, tyre, 95 mm/side narrowing and 190 mm rack cut locked. Still open: verify the donor baseline track (1405 published vs 1420 used) by measuring hub-face width, and set the rear narrowing amount from t-measure-donor-rear. Suspension-geometry validation (RC, camber, Ackermann, MR sweeps) lives in t-sa-v2.',
+      summary: `Front: track, tyre, ${k('front_narrowing')}/side narrowing and ${k('rack_narrowing')} rack cut locked. Still open: verify the donor baseline track (1405 published vs ${raw('front_track_miata')} used) by measuring hub-face width, and set the rear narrowing amount from t-measure-donor-rear. Suspension-geometry validation (RC, camber, Ackermann, MR sweeps) lives in t-sa-v2.`,
     },
     {
       id: 't-sa-v2',
@@ -326,9 +327,9 @@ export const roadmap: Roadmap = {
         'Tuning-targets sub-output (was t-susp-tuning): ride frequency front/rear, motion ratio, wheel rate, damper stroke envelope, anti-dive, anti-squat — these are what coilover + ARB orders quote against',
         'Blocks frame finalization, coilover spec, and ARB sizing',
         'Done: SUSP constants in scripts/plot_geometry_reference.py carry the scanned UCA pickups + lca_from_cl',
-        'Front MR ≈ 0.68 (wheel moves about the front-view instant centre; the old 0.621/0.63 treated the contact patch as fixed to the LCA) — verify by perturbing the script four-bar',
+        `Front MR ≈ ${k('front_mr', '2')} (wheel moves about the front-view instant centre; the old 0.621/0.63 treated the contact patch as fixed to the LCA) — verify by perturbing the script four-bar`,
         'Rear: model the narrowed Miata rear for RC (assume 80–150 mm until then); rear MR from t-measure-donor-rear',
-        'Spring targets as wheel rates: front 17.9 N/mm (1.4 Hz), rear 16.1 N/mm (1.5 Hz); spring = wheel rate ÷ MR²',
+        `Spring targets as wheel rates: front ${k('kw_front')} (${k('ride_freq_front')}), rear ${k('kw_rear')} (${k('ride_freq_rear')}); spring = wheel rate ÷ MR²`,
       ],
     },
     {
@@ -341,8 +342,8 @@ export const roadmap: Roadmap = {
       notes: [
         'Frame CAD currently uses placeholder shock dims — must reconcile before frame finalization',
         'Working idea: Bilstein Miata-fit coilover front (~5" stroke target)',
-        'Stroke = wheel travel × MR: ~105–112 mm total at MR ≈ 0.68 (155–165 mm wheel travel)',
-        'Spring ≈ 39 N/mm (~220 lb/in) for 17.9 N/mm wheel rate at MR 0.68',
+        `Stroke = wheel travel × MR: ~${raw('stroke_for_stock_travel_lo')}–${k('stroke_for_stock_travel_hi')} total at MR ≈ ${k('front_mr', '2')} (${raw('miata_wheel_travel_lo')}–${k('miata_wheel_travel_hi')} wheel travel)`,
+        `Spring ≈ ${k('spring_front', '0')} (~${k('spring_front_lbin', 'r10')}) for ${k('kw_front')} wheel rate at MR ${k('front_mr', '2')}`,
         'Constraint: front clearance with UCA horseshoe',
         'Front + rear dynamics should match (ideally double-eyelet ends both ends)',
         'Vendors: Bilstein / Ridetech / Fox — monotube preferred, steel body OK',
@@ -359,7 +360,7 @@ export const roadmap: Roadmap = {
       summary: 'Pick rear shocks. Output: vendor + part numbers, ordered length + stroke, mount-end specs.',
       notes: [
         'Rear is the narrowed Miata IRS: coilover from the Miata rear corner (stock lower mount) to a frame-side tower (Miata-fit coilover is a candidate)',
-        'Rear MR: TBD — measure on the donor (t-measure-donor-rear); spring = 16.1 N/mm wheel rate ÷ MR²',
+        `Rear MR: TBD — measure on the donor (t-measure-donor-rear); spring = ${k('kw_rear')} wheel rate ÷ MR²`,
         'Critical damping at the wheel ≈ 3.4 kN·s/m rear (4.1 front); ride ζ 0.3–0.4, roll ζ 0.4–0.5 — adjustable dampers',
         'Unsprung ~33 kg per rear corner (diff, subframe and inner half-shaft are sprung)',
         'Match front damping character so F/R dynamics align',
@@ -550,7 +551,7 @@ export const roadmap: Roadmap = {
       deferrable: 'Manual-brake decision is locked. The bore + pedal-ratio + split + bias calc only needs to be done before t-buy-brake-master and t-pedal-box-design, both of which are well downstream of frame welding.',
       summary: 'Output: master bore + pedal ratio (calc), circuit split, proportioning-valve count + PN, F/R bias target. Manual brakes already locked. Open decision: the brake split.',
       notes: [
-        'Sized to ~950 kg operating mass, ~55/45 F/R (estimate)',
+        `Sized to ~${k('operating_mass')} operating mass, ~${raw('front_weight_fraction')}/${raw('rear_weight_fraction')} F/R (estimate)`,
         'F=PA worksheet: caliper piston area F+R, line pressure target, driver foot force → pedal ratio + master bore + pedal travel at peak braking',
         'Master bore: leaning ~7/8" (small) — needs the F=PA + line-pressure calc to confirm',
         'Pedal ratio: starting from 5.5:1 (typical for manual brake) — pedal box should allow adjustability (multi-hole pivot)',
@@ -764,7 +765,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Custom one-piece driveshaft cut/balanced to final length. The shop needs the trans output yoke spec and the RX-8 pinion flange spec. Design angles: shaft 5.4° (3.5″ drop over 37″), both U-joints 2.4°, constant through travel (sprung diff).',
+      summary: `Custom one-piece driveshaft cut/balanced to final length. The shop needs the trans output yoke spec and the RX-8 pinion flange spec. Design angles: shaft ${k('shaft_angle')} (${raw('shaft_drop')}″ drop over ${raw('shaft_length')}″), both U-joints ${k('ujoint_front')}, constant through travel (sprung diff).`,
     },
     {
       id: 't-buy-miata-rear',
@@ -780,7 +781,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'RX-8 rear diff — stronger than the NA unit, which is not suited to a 300+ whp SR20DET. Stock final drive ~4.44 on 6-speed cars; verify the ratio and LSD type on the unit bought. Weigh it for the CG table (~30 kg class).',
+      summary: `RX-8 rear diff — stronger than the NA unit, which is not suited to a 300+ whp SR20DET. Stock final drive ~${k('final_drive')} on 6-speed cars; verify the ratio and LSD type on the unit bought. Weigh it for the CG table (~30 kg class).`,
     },
     {
       id: 't-buy-half-shafts',
@@ -795,7 +796,7 @@ export const roadmap: Roadmap = {
       title: 'Fab Narrowed Rear Pickups + RX-8 Diff Mounts',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Build the rear IRS mounting on the frame: every Miata rear inboard pickup (toe links included) translated inboard by the measured narrowing (~42–47 mm/side) to land the 1340 mm track, plus custom RX-8 diff mounts with the pinion set parallel to the trans.',
+      summary: `Build the rear IRS mounting on the frame: every Miata rear inboard pickup (toe links included) translated inboard by the measured narrowing (~${raw('rear_narrowing_lo')}–${k('rear_narrowing_hi')}/side) to land the ${k('rear_track')} track, plus custom RX-8 diff mounts with the pinion set parallel to the trans.`,
       notes: [
         'Open in CAD: pickups built into the frame (like the front) vs a cut-and-narrowed Miata rear subframe bolted to it',
         'Fit with the real arms, uprights and diff in place on the jig; check left-right symmetry before welding',
@@ -1508,7 +1509,7 @@ export const roadmap: Roadmap = {
       status: 'planning',
       summary: 'Size the bars to the roll-stiffness target, then pick arm length and end-link attachment. Weld mount provisions front and rear; the rear bar is final-sized at the rolling-chassis roll-balance test.',
       notes: [
-        'Springs-only roll at 0.8 g ≈ 6.5–7° (rear RC 150–80 mm); spring roll stiffness ≈ 28 kN·m/rad total (13.5 front / 14.4 rear)',
+        `Springs-only roll at ${k('lateral_accel')} ≈ ${raw('roll_springs_rc_hi')}–${k('roll_springs_rc_lo', '0')} (rear RC ${raw('rear_rc_hi')}–${k('rear_rc_lo')}); spring roll stiffness ≈ ${k('roll_stiffness_total', '0')} total (${raw('roll_stiffness_front')} front / ${raw('roll_stiffness_rear')} rear)`,
         'For 3–4° the bars must add ~15.5–33 kN·m/rad (≈24 kN·m/rad for 3.5° at rear RC 100 mm)',
         'Bar diameter: TBD from that target; solid bar; stiffness scales with D⁴',
         'LLTD: start ~3–5% above the front static weight fraction',
@@ -1588,10 +1589,10 @@ export const roadmap: Roadmap = {
       epic: 'research',
       kind: 'decision',
       status: 'planning',
-      summary: 'RX-8 diff: stock final drive ~4.44 on the 6-speed car (verify on the unit bought). Ratio swaps exist; NC MX-5 ratios reportedly share the case (verify). Pick the ratio for the chosen trans gearing and the ~300 whp target, and confirm the LSD.',
+      summary: `RX-8 diff: stock final drive ~${k('final_drive')} on the 6-speed car (verify on the unit bought). Ratio swaps exist; NC MX-5 ratios reportedly share the case (verify). Pick the ratio for the chosen trans gearing and the ~300 whp target, and confirm the LSD.`,
       deferrable: 'A ratio change is a diff rebuild on the bench; it does not block the diff mounts or half-shafts (verify any swap keeps the same output flanges).',
       notes: [
-        'Start point: stock RX-8 ~4.44 (verify)',
+        `Start point: stock RX-8 ~${k('final_drive')} (verify)`,
         'Candidates: RX-8 / NC MX-5 ratios that fit the case — verify fitment',
         'Revisit if inside-rear wheelspin is observed at shakedown',
       ],
@@ -1601,7 +1602,7 @@ export const roadmap: Roadmap = {
       title: 'Pinion Angle Setup on Jig',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'On the jig, set the engine/trans 3° tail-down and the RX-8 pinion parallel to it (3° nose-up): shaft 5.4° (3.5″ over 37″), both U-joints 2.4°. The diff is sprung, so these angles hold through suspension travel. Done before the driveshaft is measured.',
+      summary: `On the jig, set the engine/trans ${k('engine_angle')} tail-down and the RX-8 pinion parallel to it (${k('pinion_angle')} nose-up): shaft ${k('shaft_angle')} (${raw('shaft_drop')}″ over ${raw('shaft_length')}″), both U-joints ${k('ujoint_front')}. The diff is sprung, so these angles hold through suspension travel. Done before the driveshaft is measured.`,
     },
     {
       id: 't-bump-steer-check',
@@ -1879,7 +1880,7 @@ export const roadmap: Roadmap = {
       kind: 'decision',
       status: 'planning',
       posts: ['steering'],
-      summary: 'The car is light: about 520 kg on the front axle (950 kg at 55/45), about the same as an NA Miata, which was sold with a manual rack. Manual steering drops the EPAS column, the CAN gateway, its bench tests and a safety-critical failure mode. EPAS stays an add-on if parking effort is too high.',
+      summary: `The car is light: about ${k('axle_load_front', 'r10')} on the front axle (${k('operating_mass')} at ${raw('front_weight_fraction')}/${raw('rear_weight_fraction')}), about the same as an NA Miata, which was sold with a manual rack. Manual steering drops the EPAS column, the CAN gateway, its bench tests and a safety-critical failure mode. EPAS stays an add-on if parking effort is too high.`,
       notes: [
         'Manual: Miata NA manual rack (or depowered), any collapsible column; nothing electrical in the steering',
         'Heavier than a stock Miata at parking speed: wider 205/65R15 tyres and more caster (target 4–5.5°). Estimate by feel before deciding: drive or push a manual-rack NA Miata on 205-width tyres',
@@ -1962,7 +1963,7 @@ export const roadmap: Roadmap = {
     { from: 't-buy-wheels',         to: 't-frame-build',           kind: 'hard', label: 'Wheels needed for chassis mockup at ride height.' },
     { from: 't-buy-tires',          to: 't-frame-build',           kind: 'hard', label: 'Tires needed for chassis mockup at ride height.' },
     { from: 't-frame-build',        to: 't-rear-irs-fab',          kind: 'hard', label: 'Brackets go on after the crossmembers.' },
-    { from: 't-measure-donor-rear', to: 't-rear-irs-fab',          kind: 'hard', label: 'Narrowing amount = hub-face half-width − 708 mm.' },
+    { from: 't-measure-donor-rear', to: 't-rear-irs-fab',          kind: 'hard', label: `Narrowing amount = hub-face half-width − ${k('rear_hub_face')}.` },
     { from: 't-buy-miata-rear',     to: 't-rear-irs-fab',          kind: 'hard', label: 'Real arms + uprights fitted on the jig.' },
     { from: 't-buy-rx8-diff',       to: 't-rear-irs-fab',          kind: 'hard', label: 'Diff mounts fitted to the real case.' },
     { from: 't-rear-irs-fab',       to: 't-buy-half-shafts',       kind: 'hard', label: 'Half-shaft length measured on the jig.' },

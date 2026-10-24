@@ -14,11 +14,11 @@ The integration view: one line per system, then the clearance problems I have to
 | System | Plan | Detail |
 |---|---|---|
 | Frame | Custom ladder: two main rails plus crossmembers, built around the suspension and drivetrain pickups. Body mount positions measured off the original A40 frame. | [frame design](./frame-design) · [finalization](./design-finalization) · [jig](./frame-jig) |
-| Front suspension | Narrowed Miata NA double wishbone, inboard pickups moved 95 mm per side (LCA 234.5 mm, UCA 273 mm from centreline). | [narrowing](./narrowing-analysis) · [geometry](./geometry-design-reference) · [tuning](./suspension-tuning) |
-| Rear suspension | Narrowed Miata NA IRS, every inboard pickup moved ~42–47 mm per side (measure the donor) for the locked 1340 mm track. RX-8 diff on custom chassis mounts, custom half-shafts. | [rear suspension](./rear-suspension) |
-| Engine + gearbox | SR20DET on a CD009 or Z32 (OEM 5-speed rejected). Tunnel sized to the CD009. Engine/gearbox 3° down at the rear (tail-down), RX-8 pinion parallel. | [motor selection](./motor-selection) |
-| Driveshaft | One-piece, 3.5" drop over 37": shaft 5.4°, both U-joints 2.4°. The diff is sprung, so the angles don't change with travel. | [rear suspension](./rear-suspension#driveshaft-and-u-joint-angles) |
-| Steering | Narrowed Miata NA rack (190 mm total), manual steering or a Prius Gen 4 (2016–2022) EPAS column on a Pi CAN gateway (open). | [steering](./steering) |
+| Front suspension | Narrowed Miata NA double wishbone, inboard pickups moved {{front_narrowing}} per side (LCA {{lca_pivot}}, UCA {{uca_pivot:0}} from centreline). | [narrowing](./narrowing-analysis) · [geometry](./geometry-design-reference) · [tuning](./suspension-tuning) |
+| Rear suspension | Narrowed Miata NA IRS, every inboard pickup moved ~{{rear_narrowing_lo:raw}}–{{rear_narrowing_hi}} per side (measure the donor) for the locked {{rear_track}} track. RX-8 diff on custom chassis mounts, custom half-shafts. | [rear suspension](./rear-suspension) |
+| Engine + gearbox | SR20DET on a CD009 or Z32 (OEM 5-speed rejected). Tunnel sized to the CD009. Engine/gearbox {{engine_angle}} down at the rear (tail-down), RX-8 pinion parallel. | [motor selection](./motor-selection) |
+| Driveshaft | One-piece, {{shaft_drop}} drop over {{shaft_length}}: shaft {{shaft_angle}}, both U-joints {{ujoint_front}}. The diff is sprung, so the angles don't change with travel. | [rear suspension](./rear-suspension#driveshaft-and-u-joint-angles) |
+| Steering | Narrowed Miata NA rack ({{rack_narrowing}} total), manual steering or a Prius Gen 4 (2016–2022) EPAS column on a Pi CAN gateway (open). | [steering](./steering) |
 | Body | Original A40 shell, laser-scanned (done). Mount style (welded / rubber / hybrid) still open. | this post |
 | Electronics | Haltech Nexus S2; Godot digital dash on a Pi behind the original bezel. | [wiring](./wiring-overview) · [dash](./digital-dash) |
 
@@ -34,7 +34,7 @@ The integration view: one line per system, then the clearance problems I have to
 
 | Issue | Constraint | Approach |
 |---|---|---|
-| Engine + gearbox length | Long package for a 2350 mm wheelbase. The biggest packaging constraint. | Firewall, tunnel and floor drawn around the bellhousing. Remote shifter. |
+| Engine + gearbox length | Long package for a {{wheelbase}} wheelbase. The biggest packaging constraint. | Firewall, tunnel and floor drawn around the bellhousing. Remote shifter. |
 | Oil pan vs steering rack | Sump hangs below the block near the rack and tie rods. | Overlay engine + rack in CAD at mounting height; baffled or modified sump if needed. |
 | Pedal box | Firewall close to the front axle. Manual brakes (locked). | Three candidates: engine-bay side, underfloor, or bulkhead-recessed. The SR20DET is cable throttle stock; I'm planning a DBW conversion, so only a wiring path is needed. |
 | Shock selection | No single kit covers both ends; the front tower geometry locks early. | Options: a Miata coilover kit at both ends (possible now the rear is Miata too), monotubes in custom sleeves, or full custom (QA1, Viking). Decide before the frame is final. |
@@ -43,8 +43,8 @@ The integration view: one line per system, then the clearance problems I have to
 | Radiator airflow | Small grille, FMIC ahead of the radiator. | Largest core the opening allows, shrouded electric fan. |
 | Driveshaft | Runs in the tunnel; angles fixed because the diff is sprung. | Tunnel sized for the shaft plus engine movement and vibration margin. Safety loop at a crossmember. |
 | Half-shafts + diff | New with the IRS: the diff and inner half-shafts sit between the rear rails. | Check half-shaft sweep through full bump/droop against rails, crossmembers, exhaust, fuel tank and brake/parking-brake lines. |
-| Steering lock | Expect 12–18° less steering lock (tyre-to-body clearance with the wider tyres in narrower wells, and the steeper tie-rod angle); turning circle grows from ~9.4 m (Miata) to roughly 16–25 m. | Steering stops are mandatory. Check tie rods against rail, LCA and brackets at full lock. |
-| Tyre fitment | Front tyres sit ~35 mm/side further out than stock, and the inner edge further inboard. Main fitment risk. | Check full lock + full bump against the scanned body and the shock bodies. |
+| Steering lock | Expect {{lock_loss_lo:raw}}–{{lock_loss_hi}} less steering lock (tyre-to-body clearance with the wider tyres in narrower wells, and the steeper tie-rod angle); turning circle grows from ~{{turning_circle_miata}} (Miata) to roughly {{turning_circle_lo:raw:0}}–{{turning_circle_hi:0}}. | Steering stops are mandatory. Check tie rods against rail, LCA and brackets at full lock. |
+| Tyre fitment | Front tyres sit ~{{tyre_poke}}/side further out than stock, and the inner edge further inboard. Main fitment risk. | Check full lock + full bump against the scanned body and the shock bodies. |
 | Body-to-frame | Mount style still open. Panels must clear tyres, arms and shocks at full travel and roll. | Check against the body scan. |
 | Brake lines | Four discs, braided flex at each corner, hard lines on the rails. | Rear flex runs frame → upright; it must take full droop without tension and full bump without kinking. |
 | Wiring | Nexus S2 standalone; engine harness through a bulkhead connector, body harness along the rails. | Away from exhaust and moving parts; dedicated frame ground bus. |

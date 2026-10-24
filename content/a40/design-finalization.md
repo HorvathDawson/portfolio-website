@@ -24,7 +24,7 @@ A signed-off cut list I can order from. The cut list **is** the BOM. Each line h
 |---|---|
 | SA V2 outputs: front roll centre, camber curve, motion ratio at the chosen shock angle, anti-dive/squat, ARB stiffness split | in progress, see the [geometry reference](./geometry-design-reference) |
 | Front donor pickups confirmed against the actual donor, not only the scan (everything marked "verify") | in progress |
-| Rear donor measured: hub-face half-width (sets the ~42–47 mm/side narrowing), every inboard pickup incl. toe links, rear motion ratio | to do, see [rear suspension](./rear-suspension) |
+| Rear donor measured: hub-face half-width (sets the ~{{rear_narrowing_lo:raw}}–{{rear_narrowing_hi}}/side narrowing), every inboard pickup incl. toe links, rear motion ratio | to do, see [rear suspension](./rear-suspension) |
 | Rear pickups built into the frame vs a narrowed Miata rear subframe | open |
 | RX-8 diff on hand, for the mount design | to buy |
 | Gearbox: CD009 or Z32. The tunnel fits either; only the crossmember position moves with case length. | decided: either, whichever turns up first |
@@ -45,7 +45,7 @@ A signed-off cut list I can order from. The cut list **is** the BOM. Each line h
 
 - Frame pads for the **stock SR20 engine mounts**; no custom engine mounts.
 - Gearbox crossmember bolt-in, sized for the CD009 envelope.
-- Engine/gearbox **3° down at the rear (tail-down)**; RX-8 pinion set parallel (3° nose-up). Shaft angle 5.4°, both joints 2.4°. Detail in [rear suspension](./rear-suspension#driveshaft-and-u-joint-angles).
+- Engine/gearbox **{{engine_angle}} down at the rear (tail-down)**; RX-8 pinion set parallel ({{pinion_angle}} nose-up). Shaft angle {{shaft_angle}}, both joints {{ujoint_front}}. Detail in [rear suspension](./rear-suspension#driveshaft-and-u-joint-angles).
 
 ## Build sequence
 

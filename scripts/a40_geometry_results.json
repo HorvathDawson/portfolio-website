@@ -38,7 +38,7 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "camber_per_roll_ratio": {
-   "value": 0.869014,
+   "value": 0.866197,
    "unit": "",
    "decimals": 3,
    "status": "working",
@@ -80,7 +80,7 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "rc_front": {
-   "value": 139.03031,
+   "value": 139.163068,
    "unit": "mm",
    "decimals": 1,
    "status": "working",
@@ -94,7 +94,7 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "ic_height": {
-   "value": 314.174454,
+   "value": 314.474454,
    "unit": "mm",
    "decimals": 0,
    "status": "working",
@@ -108,7 +108,7 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "jacking_pct": {
-   "value": 22.533276,
+   "value": 22.554792,
    "unit": "%",
    "decimals": 1,
    "status": "working",
@@ -130,7 +130,7 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "rc_delta_tyre": {
-   "value": 15.689884,
+   "value": 15.822642,
    "unit": "mm",
    "decimals": 1,
    "status": "working",
@@ -138,7 +138,7 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "jacking_force_front": {
-   "value": 923.994989,
+   "value": 924.877297,
    "unit": "N",
    "decimals": 0,
    "status": "working",
@@ -292,147 +292,147 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "roll_axis_rc_hi": {
-   "value": 143.96667,
+   "value": 144.039687,
    "unit": "mm",
    "decimals": 0,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "roll_springs_rc_hi": {
-   "value": 6.527676,
+   "value": 6.544711,
    "unit": "deg",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_hi_lo": {
-   "value": 28.769249,
+   "value": 28.863034,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_hi_nom": {
-   "value": 21.164228,
+   "value": 21.250073,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_hi_hi": {
-   "value": 15.460463,
+   "value": 15.540353,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "roll_axis_rc_nom": {
-   "value": 121.46667,
+   "value": 121.539687,
    "unit": "mm",
    "decimals": 0,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "roll_springs_rc_nom": {
-   "value": 6.919863,
+   "value": 6.938125,
    "unit": "deg",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_nom_lo": {
-   "value": 31.730008,
+   "value": 31.827386,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_nom_nom": {
-   "value": 23.728005,
+   "value": 23.816961,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_nom_hi": {
-   "value": 17.726502,
+   "value": 17.809142,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "roll_axis_rc_lo": {
-   "value": 112.46667,
+   "value": 112.539687,
    "unit": "mm",
    "decimals": 0,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "roll_springs_rc_lo": {
-   "value": 7.078388,
+   "value": 7.09715,
    "unit": "deg",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_lo_lo": {
-   "value": 32.914312,
+   "value": 33.013127,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_lo_nom": {
-   "value": 24.753515,
+   "value": 24.843716,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_rc_lo_hi": {
-   "value": 18.632917,
+   "value": 18.716658,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_min": {
-   "value": 15.460463,
+   "value": 15.540353,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_max": {
-   "value": 32.914312,
+   "value": 33.013127,
    "unit": "kN·m/rad",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "roll_springs_cg_low": {
-   "value": 6.056183,
+   "value": 6.071766,
    "unit": "deg",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_cg_low": {
-   "value": 18.030724,
+   "value": 18.112766,
    "unit": "kN·m/rad",
    "decimals": 0,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "roll_springs_cg_high": {
-   "value": 7.812779,
+   "value": 7.833894,
    "unit": "deg",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "arb_add_cg_high": {
-   "value": 29.425285,
+   "value": 29.521156,
    "unit": "kN·m/rad",
    "decimals": 0,
    "status": "working",
@@ -496,7 +496,7 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "scrub": {
-   "value": 0.591397,
+   "value": 0.527374,
    "unit": "mm",
    "decimals": 1,
    "status": "working",
@@ -504,7 +504,7 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "scrub_delta": {
-   "value": -5.458603,
+   "value": -5.522626,
    "unit": "mm",
    "decimals": 1,
    "status": "working",
@@ -519,14 +519,14 @@
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "trail": {
-   "value": 9.780246,
+   "value": 9.799218,
    "unit": "mm",
    "decimals": 1,
    "status": "working",
    "note": "Computed by scripts/plot_geometry_reference.py."
   },
   "trail_delta": {
-   "value": 2.210246,
+   "value": 2.229218,
    "unit": "mm",
    "decimals": 1,
    "status": "working",

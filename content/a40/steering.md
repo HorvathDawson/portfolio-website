@@ -16,7 +16,7 @@ The stock A40 steering is unassisted, and the column is a solid shaft pointed at
 | Assist | Open: manual (Miata NA manual/depowered rack) or Toyota Prius Gen 4 (2016–2022) EPAS | open |
 | Assist control | Only with EPAS: Pi CAN gateway (see [EPAS CAN gateway](./epas-can-gateway)) | only with EPAS |
 | Column | Collapsible (the Prius column if EPAS), adapted to the A40 dash | required |
-| Rack | Miata NA manual (or depowered) rack, **narrowed 190 mm total (7.5", 95 mm per side)** | locked with the 95 mm/side suspension narrowing |
+| Rack | Miata NA manual (or depowered) rack, **narrowed {{rack_narrowing}} total ({{rack_narrowing_in}}, {{front_narrowing}} per side)** | locked with the {{front_narrowing}}/side suspension narrowing |
 | Steering arms | Stock Miata knuckle arms | keep, pending linkage solve |
 | Steering stops | Adjustable hard stops | **mandatory** |
 
@@ -26,8 +26,8 @@ The stock A40 steering is unassisted, and the column is a solid shaft pointed at
 
 Manual is a realistic option:
 
-- **Load.** Front axle load is ≈ 520 kg (950 kg × 0.55), about the same as an NA Miata, which was sold with a manual rack.
-- **Effort.** Heavier than a stock Miata at parking speed: wider 205/65R15 tyres and more caster (target 4–5.5°). The 9.8 mm trail adds a little on-centre weight at speed. Judge it by feel: drive a manual-rack NA Miata on 205-width tyres.
+- **Load.** Front axle load is ≈ {{axle_load_front:r10}} ({{operating_mass}} × {{front_weight_ratio}}), about the same as an NA Miata, which was sold with a manual rack.
+- **Effort.** Heavier than a stock Miata at parking speed: wider {{tyre_size}} tyres and more caster (target {{caster_target_lo:raw}}–{{caster_target_hi}}). The {{trail}} trail adds a little on-centre weight at speed. Judge it by feel: drive a manual-rack NA Miata on 205-width tyres.
 - **Main knob:** steering wheel diameter (14–15 in / 350–380 mm).
 - **What manual removes:** the column motor, the CAN gateway, its bench tests, and a safety-critical failure mode.
 - **Keep EPAS possible.** It can be added later if parking effort is too much. Keep space and mounting for the Prius column.
@@ -67,9 +67,9 @@ If assist is chosen, this is the cheapest and simplest EPAS path. The motor and 
 
 ## Rack narrowing
 
-The rack is narrowed by exactly the suspension narrowing (95 mm per side, **190 mm / 7.5" total**) so the tie-rod inner joints stay on the same line as the control-arm pivots and bump steer is preserved. (The old 175 mm figure came from the 1405 mm donor-track baseline.) Stock NA housing length is ~578 mm (verify on the rack).
+The rack is narrowed by exactly the suspension narrowing ({{front_narrowing}} per side, **{{rack_narrowing}} / {{rack_narrowing_in}} total**) so the tie-rod inner joints stay on the same line as the control-arm pivots and bump steer is preserved. (The old 175 mm figure came from the 1405 mm donor-track baseline.) Stock NA housing length is ~578 mm (verify on the rack).
 
-190 mm sits in the "moderate" zone of builder data from [LocostUSA](https://www.locostusa.com/forums/viewtopic.php?t=2773): routine < 6" (152 mm), moderate 6-8", practical limit ~10-11".
+{{rack_narrowing}} sits in the "moderate" zone of builder data from [LocostUSA](https://www.locostusa.com/forums/viewtopic.php?t=2773): routine < 6" (152 mm), moderate 6-8", practical limit ~10-11".
 
 ### Procedure
 
@@ -77,7 +77,7 @@ The usual route keeps the toothed section of the bar untouched:
 
 1. Measure and record the stock rack: housing length, bar length, travel lock-to-lock, inner tie-rod thread.
 2. Mark the pinion centre and keep the toothed section and its full travel intact.
-3. Decide where the 190 mm comes from. 95 mm off each end keeps the pinion where it was relative to the car centreline; 190 mm off one end moves the pinion 95 mm sideways (check column routing first).
+3. Decide where the {{rack_narrowing}} comes from. {{front_narrowing}} off each end keeps the pinion where it was relative to the car centreline; {{rack_narrowing}} off one end moves the pinion {{front_narrowing}} sideways (check column routing first).
 4. Shorten the **non-toothed end(s)** of the bar and re-cut the tie-rod thread (drill and tap, or turn and thread) to match the inner tie-rod joint.
 5. Shorten the housing by the same amount at the same end(s). Weld or sleeve it in a V-block fixture so it stays straight.
 6. If any welding is near the bar, clamp a copper heat sink along it. A warped bar binds.
@@ -87,22 +87,22 @@ Machining a new bar from billet is the fallback if the stock bar cannot be short
 
 <figure>
   <img src="/assets/projects/a40-austin/blog/plots/rack_narrowing.png" alt="Rack narrowing required vs front track width with difficulty zones" />
-  <figcaption>Rack narrowing vs front track (1420 mm donor baseline), with difficulty zones from LocostUSA builder data. The build (~1230 mm track, tyres 1435 mm outer-to-outer, +35 mm/side) needs 190 mm (7.5"), in the moderate zone. Pulling the tyres in to 1400 mm would need 225 mm; matching the stock A40's 1365 mm would need 260 mm, past the practical limit.</figcaption>
+  <figcaption>Rack narrowing vs front track ({{front_track_miata}} donor baseline), with difficulty zones from LocostUSA builder data. The build (~{{front_track_nominal}} track, tyres {{tyre_outer_front}} outer-to-outer, +{{tyre_poke}}/side) needs {{rack_narrowing}} ({{rack_narrowing_in}}), in the moderate zone. Pulling the tyres in to 1400 mm would need 225 mm; matching the stock A40's {{a40_stock_outer}} would need 260 mm, past the practical limit.</figcaption>
 </figure>
 
 ---
 
 ## Ackermann
 
-The stock Miata steering arms point at the Miata rear axle: knuckle angle atan(710 / 2265) = **17.40°**. On the A40 (half-track 617 mm, wheelbase 2350 mm) the same arms converge ahead of the rear axle, so the car has slightly more Ackermann than ideal.
+The stock Miata steering arms point at the Miata rear axle: knuckle angle atan({{half_track_miata:raw}} / {{wheelbase_miata:raw}}) = **{{ackermann_knuckle}}**. On the A40 (half-track {{front_half_track}}, wheelbase {{wheelbase}}) the same arms converge ahead of the rear axle, so the car has slightly more Ackermann than ideal.
 
-In the approximate model the excess is about 0.5° at 15° of lock and **about 1° at 20°** (autocross slalom, ~6.5 m radius). That is marginal: comparable to compliance steer, still well below tyre slip angles (4°+). I am keeping the stock arms for now.
+In the approximate model the excess is about {{ackermann_excess_15:1}} at 15° of lock and **about {{ackermann_excess_20:0}} at 20°** (autocross slalom, ~6.5 m radius). That is marginal: comparable to compliance steer, still well below tyre slip angles (4°+). I am keeping the stock arms for now.
 
 The plot uses a **virtual-wheelbase approximation**, not a real linkage solve. Once the steering arm is scanned (it is still an estimate in [donor geometry dimensions](./donor-geometry-dimensions)), solve the actual rack/tie-rod/arm linkage in SA V2 at the chosen rack position and re-check this before committing to the rack mount.
 
 <figure class="wide">
   <img src="/assets/projects/a40-austin/blog/plots/ackermann.png" alt="Ackermann error vs steering angle with driving scenarios and turn radii" />
-  <figcaption>Stock Miata knuckle arms (17.40°) on the A40 (track ~1230 mm, wheelbase 2350 mm), approximate virtual-wheelbase model. Top: excess Ackermann vs steering lock, with driving scenarios and turn radii. Excess is 0.54° at 15°, 1.04° at 20° and 1.71° at 25° (parking-speed lock). Bottom: the 15° and 20° values against tyre pressure, bushing compliance, driver input and the ~4° tyre slip angle at 0.8 g. A linkage solve with the scanned steering arm is still needed.</figcaption>
+  <figcaption>Stock Miata knuckle arms ({{ackermann_knuckle}}) on the A40 (track ~{{front_track_nominal}}, wheelbase {{wheelbase}}), approximate virtual-wheelbase model. Top: excess Ackermann vs steering lock, with driving scenarios and turn radii. Excess is {{ackermann_excess_15}} at 15°, {{ackermann_excess_20}} at 20° and {{ackermann_excess_25}} at 25° (parking-speed lock). Bottom: the 15° and 20° values against tyre pressure, bushing compliance, driver input and the ~4° tyre slip angle at {{lateral_accel}}. A linkage solve with the scanned steering arm is still needed.</figcaption>
 </figure>
 
 ### Rack position
@@ -115,12 +115,12 @@ The plot uses a **virtual-wheelbase approximation**, not a real linkage solve. O
 
 ## Lock and turning circle
 
-Body clearance, not the rack, limits lock. Expect to lose **12-18° of lock** compared with the Miata (the tyre sits further out and further in than the stock A40 tyre; see [narrowing analysis](./narrowing-analysis)).
+Body clearance, not the rack, limits lock. Expect to lose **{{lock_loss_lo:raw}}-{{lock_loss_hi}} of lock** compared with the Miata (the tyre sits further out and further in than the stock A40 tyre; see [narrowing analysis](./narrowing-analysis)).
 
 | | Turning circle (diameter) |
 |---|---|
-| Miata NA | ~9.4 m |
-| A40 build, estimate | **~16-25 m** (16.3 m at 12° lost, 25.1 m at 18°) |
+| Miata NA | ~{{turning_circle_miata}} |
+| A40 build, estimate | **~{{turning_circle_lo:raw:0}}-{{turning_circle_hi:0}}** ({{turning_circle_lo}} at {{lock_loss_lo}} lost, {{turning_circle_hi}} at {{lock_loss_hi}}) |
 
 That is a real drivability cost (three-point turns, parking). Steering stops are **mandatory**: set them on the jig where the tyre clears the scanned body at full lock and full bump, with margin. Then measure the actual turning circle.
 

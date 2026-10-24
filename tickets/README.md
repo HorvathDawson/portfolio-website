@@ -76,6 +76,6 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [GAR-005](./GAR-005-blog-usability.md) | Blog usability cleanup | todo (audit done) |
 | [GAR-006](./GAR-006-roadmap-views.md) | Roadmap views for deciding what to work on | review (owner to pick default) |
 | [GAR-007](./GAR-007-autozam-art-redo.md) | Redo the Autozam AZ-1 line art | todo |
-| [GAR-008](./GAR-008-garage-animation.md) | Animated garage on the /garage page | todo |
+| [GAR-008](./GAR-008-garage-animation.md) | Animated garage on the /garage page | review (component built; integration pending, see GAR-008-integration) |
 | [FUT-001](./FUT-001-stl-art-pipeline.md) | Future: 3D scans → stylised spinning art and printable models | idea |
 | [GAR-009](./GAR-009-visual-design-pass.md) | Visual design pass for the whole garage blog | todo |

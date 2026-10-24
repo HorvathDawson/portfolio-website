@@ -144,6 +144,10 @@
   animation: gs-sign-on 2.4s step-end 0.5s both;
 }
 
+/* Coming back from a log: the sign is already on. */
+.gs--back .gs-sign::after,
+.gs--back .gs-sign-text--on { animation: none; }
+
 /* A fluorescent tube catching: a few stutters, then on for good. */
 @keyframes gs-sign-on {
   0% { opacity: 0; }
@@ -178,7 +182,6 @@
   min-width: 0;
   box-sizing: border-box;
   padding-bottom: 30px;
-  transition: opacity 0.4s ease;
 }
 .gs-bays--1 .gs-bay { flex-basis: min(100%, 560px); }
 
@@ -455,6 +458,7 @@
   100% { opacity: 1; }
 }
 
+.gs-bay-link:focus-visible { outline: none; }
 .gs-bay-link:focus-visible .gs-frame {
   outline: 2px solid var(--gold, #f3de40);
   outline-offset: 6px;
@@ -464,7 +468,8 @@
 /* ── Drive out ──────────────────────────────────── */
 
 .gs-bay.is-leaving { z-index: 5; }
-.gs-bay.is-dim { opacity: 0.35; }
+.gs-bay.is-dim :is(.gs-car, .gs-reflect, .gs-bay-name, .gs-bay-sub, .gs-bay-desc) { opacity: 0.3; }
+.gs-bay.is-dim .gs-car { transition: opacity 0.4s ease; }
 .is-leaving :is(.gs-bay-name, .gs-bay-sub, .gs-bay-desc) { opacity: 0; }
 .is-leaving .gs-reflect { opacity: 0; }
 .is-leaving .gs-car { animation: gs-roll-out var(--gs-out) cubic-bezier(0.5, 0, 0.2, 1) both; }
@@ -493,7 +498,7 @@
 
 /* ── Drive in (returning) ───────────────────────── */
 
-.is-returning .gs-light { animation: none; }
+.is-returning .gs-light { animation: none; transition: none; }
 .is-returning .gs-art--colored,
 .is-returning .gs-art--outline,
 .is-returning .gs-lamp,

@@ -24,7 +24,7 @@ interface CarRig {
 }
 
 const RIGS: Record<string, CarRig> = {
-  a40: { lamps: [[0.598, 0.43], [0.917, 0.35]], drive: 1 },
+  a40: { lamps: [[0.622, 0.545], [0.926, 0.43]], drive: 1 },
   autozam: { lamps: [[0.065, 0.69], [0.27, 0.72]], drive: -1 },
 };
 const DEFAULT_RIG: CarRig = { lamps: [[0.3, 0.68], [0.7, 0.68]], drive: 0 };
@@ -238,7 +238,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
     leaving === id ? 'leaving' : leaving ? 'dim' : parking === id ? 'returning' : 'rest';
 
   return (
-    <div ref={rootRef} className={['gs', leaving && 'gs--leaving', className].filter(Boolean).join(' ')}>
+    <div ref={rootRef} className={['gs', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
       <div className="gs-building">
         <div className="gs-top" aria-hidden="true">
           <div className="gs-sign">

@@ -2320,7 +2320,7 @@ def plot_rack_narrowing():
     # Stock A40 OO is 1365 mm.
     scenarios = [
         (C.a40_stock_outer - TIRE_W_A40, f"OO = stock A40 ({C.a40_stock_outer:.0f})", PINK, (75, 20)),
-        (1400 - TIRE_W_A40, f"OO 1400 (+{(1400 - C.a40_stock_outer) / 2:.0f}/side)", PURPLE, (-70, 40)),
+        (1400 - TIRE_W_A40, f"OO 1400 (+{(1400 - C.a40_stock_outer) // 2:.0f}/side)", PURPLE, (-70, 40)),
         (T_A40, f"build: OO {C.tyre_outer_front:.0f} (+{C.tyre_poke:.0f}/side)", GREEN, (40, 45)),
     ]
     for t, lbl, c, (dx, dy) in scenarios:
@@ -3848,7 +3848,7 @@ def plot_driveshaft_angles():
     ax.text(
         dim_x + 0.8,
         (y_trans + ds_y1) / 2,
-        f'{DS_DROP_IN}" drop',
+        f'{DS_DROP_IN:.1f}" drop',
         color=TEXT,
         fontsize=8,
         ha="left",
@@ -3865,7 +3865,7 @@ def plot_driveshaft_angles():
     ax.text(
         (x_trans + ds_x1) / 2,
         dim_y - 0.6,
-        f'{DS_LENGTH_IN}" center-to-center',
+        f'{DS_LENGTH_IN:.1f}" center-to-center',
         color=TEXT,
         fontsize=8,
         ha="center",
@@ -4034,7 +4034,7 @@ def compute_results():
     put("roll_stiffness_drop_pct", (1 - r**2) * 100, "%", 0)
     put("wt_ratio", 1 / r, "", 3)
     put("wt_increase_track_pct", (1 / r - 1) * 100, "%", 1)
-    put("camber_per_roll_ratio", T_A40_EXACT / T_MIATA, "", 3)
+    put("camber_per_roll_ratio", r, "", 3)  # nominal track, like the other vehicle-level ratios
 
     for tag, p in (("_miata", pm), ("", pa)):
         put("rc_miata" if tag else "rc_front", p["rc"][1], "mm", 1)

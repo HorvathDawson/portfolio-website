@@ -15,7 +15,7 @@ This is my working log for the A40 build: a 1950 Austin A40 Devon body on a cust
 
 | Date | Change | Detail |
 |---|---|---|
-| Oct 2026 | Rear: Ford 9" four-link live axle → narrowed Miata NA IRS + RX-8 diff + custom half-shafts. Rear track stays 1340 mm. | [rear suspension](./rear-suspension) |
+| Oct 2026 | Rear: Ford 9" four-link live axle → narrowed Miata NA IRS + RX-8 diff + custom half-shafts. Rear track stays {{rear_track}}. | [rear suspension](./rear-suspension) |
 | Earlier | Gearbox: OEM SR20 5-speed rejected (weak 3rd gear); CD009 or Z32, whichever clean unit turns up first. | roadmap: Decide Transmission |
 
 ## Reading order

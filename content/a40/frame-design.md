@@ -13,13 +13,13 @@ The frame is a ladder (two main rails plus crossmembers) designed from scratch i
 
 | Input | Value | Source |
 |---|---|---|
-| Wheelbase | 2350 mm (locked, stock A40) | [constants](./build-constants) |
-| Front track | ~1230 mm: hub face 655 mm from CL (95 mm/side narrowing) | [narrowing](./narrowing-analysis) |
-| Rear track | 1340 mm: hub face 708 mm from CL | [rear suspension](./rear-suspension) |
-| Front inner pivots | LCA 234.5 mm, UCA 273 mm from CL; fore/aft spacing and heights kept from the donor | [donor dimensions](./donor-geometry-dimensions) |
-| Rear inner pivots | Every Miata rear inboard pickup (toe links included) moved inboard by ~42–47 mm/side (measure the donor) | [rear suspension](./rear-suspension) |
+| Wheelbase | {{wheelbase}} (locked, stock A40) | [constants](./build-constants) |
+| Front track | ~{{front_track_nominal}}: hub face {{front_hub_face}} from CL ({{front_narrowing}}/side narrowing) | [narrowing](./narrowing-analysis) |
+| Rear track | {{rear_track}}: hub face {{rear_hub_face}} from CL | [rear suspension](./rear-suspension) |
+| Front inner pivots | LCA {{lca_pivot}}, UCA {{uca_pivot:0}} from CL; fore/aft spacing and heights kept from the donor | [donor dimensions](./donor-geometry-dimensions) |
+| Rear inner pivots | Every Miata rear inboard pickup (toe links included) moved inboard by ~{{rear_narrowing_lo:raw}}–{{rear_narrowing_hi}}/side (measure the donor) | [rear suspension](./rear-suspension) |
 | Diff | RX-8, on custom frame mounts, pinion parallel to the gearbox | [rear suspension](./rear-suspension) |
-| Engine + gearbox | SR20DET, CD009 or Z32; tunnel sized to the CD009; 3° tail-down | [motor selection](./motor-selection) |
+| Engine + gearbox | SR20DET, CD009 or Z32; tunnel sized to the CD009; {{engine_angle}} tail-down | [motor selection](./motor-selection) |
 | Steering rack | Narrowed Miata rack, mount with at least ±15 mm vertical adjustment (bump steer) | [steering](./steering) |
 | Body mounts | Measured off the original A40 frame. Welded / rubber / hybrid still open, so the rails must accept either. | [teardown](./teardown) |
 
@@ -41,7 +41,7 @@ Shock towers are part of the frame, not bolted plates. The front towers tie into
 
 ## Loads
 
-From the [geometry reference](./geometry-design-reference): peak weight transfer at 0.8 g is ~44% higher than the donor Miata, mostly because the CG is higher (~575 mm vs ~460 mm). That loads the UCA mount, the shock tower tops and the rear pickups hardest. Rail and crossmember sizes go in the cut list in [design finalization](./design-finalization).
+From the [geometry reference](./geometry-design-reference): peak weight transfer at {{lateral_accel}} is ~{{wt_increase_pct}} higher than the donor Miata, mostly because the CG is higher (~{{cg_height}} vs ~{{cg_height_miata}}). That loads the UCA mount, the shock tower tops and the rear pickups hardest. Rail and crossmember sizes go in the cut list in [design finalization](./design-finalization).
 
 ## Still open
 
@@ -49,7 +49,7 @@ From the [geometry reference](./geometry-design-reference): peak weight transfer
 |---|---|
 | Body mounting (welded / rubber / hybrid) | Weld tabs vs bushing pockets at each body mount. |
 | Rear pickups: built into the frame vs narrowed Miata subframe | Rear crossmember layout. Needs the donor rear measured first. |
-| Front shock tower position | Shock angle. Front motion ratio is ≈0.68 (see the [geometry reference](./geometry-design-reference)); confirm once the shock and stroke are chosen. |
+| Front shock tower position | Shock angle. Front motion ratio is ≈{{front_mr:2}} (see the [geometry reference](./geometry-design-reference)); confirm once the shock and stroke are chosen. |
 | Rear shock towers | Rear motion ratio, to be measured on the donor. |
 | Gearbox (CD009 vs Z32) | Only the crossmember position and shifter hole; the tunnel fits either. |
 

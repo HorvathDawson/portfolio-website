@@ -131,7 +131,7 @@ Diff, half-shafts, driveshaft and brakes are in [rear suspension](./rear-suspens
 
 **MR = {{front_mr:2}} at an {{shock_angle}} shock angle ({{front_mr_vertical:2}} vertical).** The old 0.62-0.63 treated the wheel as if it were bolted to the LCA. It isn't: the knuckle rotates about the front-view instant centre, so the wheel moves less per degree of LCA rotation than the LCA tip would. Perturbing the script's four-bar gives an effective wheel-side lever of {{mr_lever}} (not {{mr_lever_old:raw}}):
 
-$$MR = \frac{ {{lca_coilover_lever:raw}} \cdot \sin\alpha}{ {{mr_lever:raw}} }, \qquad \text{spring} = \frac{K_w}{MR^2}$$
+$$MR = \frac{{{lca_coilover_lever:raw}} \cdot \sin\alpha}{{{mr_lever:raw}}}, \qquad \text{spring} = \frac{K_w}{MR^2}$$
 
 | Shock angle α | 65° | 75° | 80° | 85° | 90° |
 |---|---:|---:|---:|---:|---:|
