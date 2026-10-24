@@ -67,7 +67,7 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [A40-008](./A40-008-use-constants.md) | Replace hard-coded numbers with constants | done |
 | [A40-009](./A40-009-consistency-review.md) | Independent cross-post consistency review | done |
 | [A40-010](./A40-010-build-and-visual-check.md) | Build, lint, links and visual check | done |
-| [A40-011](./A40-011-ship.md) | PR, preview check, merge, live check | todo |
+| [A40-011](./A40-011-ship.md) | PR, preview check, merge, live check | blocked (owner reviews preview first) |
 | [A40-012](./A40-012-owner-decisions.md) | Owner measurements and decisions | blocked |
 | [GAR-001](./GAR-001-garage-structure.md) | Turn /a40 into a multi-car garage | done |
 | [GAR-002](./GAR-002-car-selector.md) | Car selector with outline art | done (pending owner: Lighthouse) |
