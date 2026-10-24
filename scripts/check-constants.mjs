@@ -66,8 +66,12 @@ try {
     }
     used += placeholdersIn(body).length;
     posts++;
-    const left = substituteConstants(body, file).match(/\{\{[^}]*\}\}/g);
-    if (left) errors.push(`${file}: malformed placeholder ${left[0]}`);
+    try {
+      const left = substituteConstants(body, file).match(/\{\{[^}]*\}\}/g);
+      if (left) errors.push(`${file}: malformed placeholder ${left[0]}`);
+    } catch {
+      // already reported above, name by name
+    }
   }
   try {
     await server.ssrLoadModule('/src/blog/roadmapData.ts');
