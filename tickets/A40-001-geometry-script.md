@@ -1,7 +1,7 @@
 ---
 id: A40-001
 title: Geometry script, plots and reference post
-status: in-progress
+status: done
 owner: geometry agent
 reviewer: review agent (Oct 24)
 blocked_by:
@@ -23,7 +23,7 @@ The motion ratio treated the contact patch as fixed to the LCA (0.62 instead of 
 - [x] Ackermann error at 20° checked: plot (~1.0°) vs hand calc (0.48°) reconciled, and the post states the right one
 - [x] Every plot regenerates from `python scripts/plot_geometry_reference.py` with no errors
 - [x] Every figure caption in the post matches what the plot shows
-- [ ] Post is shorter than before and links to build-constants instead of repeating tables
+- [x] Post is shorter than before and links to build-constants instead of repeating tables
 
 ## Verification
 Reviewer, 2026-10-24. Against A40-000 + owner notes.
@@ -40,6 +40,13 @@ Reviewer, 2026-10-24. Against A40-000 + owner notes.
 ### Failed checks
 - content/a40/geometry-design-reference.md:10 (or :28): add a link to [build constants](./build-constants) as the source of the headline numbers.
 - content/a40/geometry-design-reference.md:21,25,26: drop the rows that only repeat build-constants (Rear track, CG height, Sprung mass / corners), or replace them with "see build constants"; keep the Miata-vs-A40 comparison rows the script actually uses.
+
+### Re-check, 2026-10-24 (independent reviewer, after d47183b and later commits)
+- **Failed check 1 (fixed).** geometry-design-reference.md:10 ends "Vehicle numbers (mass, CG, tracks) come from [build constants](./build-constants)"; content/a40/build-constants.md exists. Rendered through `parsePost` (vite `ssrLoadModule`): 2 `build-constants` links, 0 unresolved `{{…}}`, no NaN/undefined.
+- **Failed check 2 (fixed).** Inputs table (l.16-23) now holds only the Miata-vs-A40 rows the script uses (hub face, wheel/tyre, front track, hub height, pivots, wheelbase); rear track, CG and masses replaced by "see [build constants](./build-constants)" (l.25). Post is 219 lines (was 552 → 440 → 222).
+- **Non-blocking OD note (fixed).** Rendered Miata tyre OD reads 577.6 mm.
+- **Full list re-run.** Copied scripts/, constants.yaml and the generated JSON to a scratch tree and ran `python3 scripts/plot_geometry_reference.py`: exit 0, 23 PNGs, `diff -rq` against public/.../plots empty (byte-identical), a40_geometry_results.json and a40-constants.generated.json identical. Rendered captions (rc_combined 1420/1234 mm, rc_migration_a40, roll_vs_cg ~24 kN·m/rad at 3.5°, MR vs angle 65-85° band, MR through travel 127 mm stroke) and the Ackermann line (17.40°, ~0.5° at 15°, 1° at 20°) match the earlier verified values. Every `<img>` in the post exists in public/. `npm run build` passes.
+- Result: all criteria pass. **Done.**
 
 Non-blocking (for A40-009): Miata 185/60R14 OD is 577 (script, this post l.19), 577.6 (donor-geometry-dimensions:49) and 578 (narrowing-analysis:34); 355.6 + 2·185·0.6 = 577.6. Pick one.
 

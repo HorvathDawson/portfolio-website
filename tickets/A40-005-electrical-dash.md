@@ -1,7 +1,7 @@
 ---
 id: A40-005
 title: Electrical, CAN gateway and dash
-status: in-progress
+status: done (pending owner: bench checks)
 owner: electrical agent
 reviewer: review agent (Oct 24)
 blocked_by:
@@ -20,8 +20,8 @@ The dash wiring diagram fed +12 V straight to the Pi's 5 V rail, among other iss
 ## Acceptance criteria
 - [x] Pi is powered through a 12→5 V buck converter (≥5 A) with an ignition-switched supply and safe shutdown; no 12 V on any 5 V/3.3 V pin
 - [x] CAN: correct termination (120 Ω at the two ends only), transceiver logic levels match the MCU
-- [ ] EPAS failure mode documented (fails to manual steering)
-- [ ] Diagram regenerates from its script and matches the post
+- [x] EPAS failure mode documented (fails to manual steering)
+- [x] Diagram regenerates from its script and matches the post
 - [x] Roadmap fix list handed to A40-006 (or applied there)
 
 ## Verification
@@ -37,6 +37,13 @@ Reviewer, 2026-10-24. Read digital-dash.md, epas-can-gateway.md, wiring-overview
 1. content/a40/epas-can-gateway.md, Safety requirements (after l.94): add an explicit item, e.g. "**Fails to manual.** The column keeps its mechanical shaft. Loss of 12 V, of `can1`, of the gateway or a latched column fault leaves unassisted manual steering (heavy at parking speed, see [steering](./steering#manual-or-epas)). Bench-check that the unpowered column turns freely with no motor drag." Mirror one line in steering.md:52 ("If the gateway stops").
 2. scripts/a40-dash-wiring.py:29 and :122: "Prius Gen 3" → "Prius Gen 4 (2016–2022)"; rerun `python3 scripts/a40-dash-wiring.py` and commit the regenerated public/assets/projects/a40-austin/blog/dash/dash-wiring.{svg,png}.
 3. Owner decision "assist is open": content/a40/epas-can-gateway.md:10 states "The steering is a Gen 4 Prius ... EPAS column" as decided, and digital-dash.md:10 says the Pi "also runs the EPAS CAN gateway" unconditionally. Make both conditional ("If EPAS is chosen (see [steering](./steering#manual-or-epas)), the column is a Gen 4 Prius ..."; "... and, if EPAS is fitted, the EPAS CAN gateway"), as overview.md:36 and wiring-overview.md:57 already do.
+
+### Re-check, 2026-10-24 (independent reviewer, after d47183b and later commits)
+- **Failed check 1 (fixed).** epas-can-gateway.md:94 Safety item 4 "**Every fault fails to manual steering.** The column keeps its mechanical shaft ... Losing 12 V, CAN, the gateway or the column ECU leaves unassisted steering ... Bench check: with the column unpowered, turn the input shaft by hand". Mirrored in steering.md:52 ("Any fault fails to manual") and roadmapData.ts l.138, 145, 1898.
+- **Failed check 2 (fixed).** a40-dash-wiring.py:29 and :122 read "Prius Gen 4 (2016-2022) ... (if fitted)". grep "Gen 3" over scripts/a40-dash-wiring.py, public/.../dash/, content/, roadmapData.ts: 0 hits. Regenerated with a copy whose OUT_DIR points at the scratchpad (WireViz 0.4.1): `diff` against public/assets/projects/a40-austin/blog/dash/dash-wiring.svg is empty. The PNG was dropped in the A40-010 asset cleanup; the post (digital-dash.md:64) uses the SVG only, and the script writes SVG only.
+- **Failed check 3 (fixed).** epas-can-gateway.md:10 "If power assist is chosen (manual steering is the other option), the column is a Gen 4 Prius"; digital-dash.md:10 "If EPAS is fitted, the same Pi also runs the EPAS CAN gateway"; can1 rows say "(if EPAS)" (digital-dash:44, wiring-overview:59); steering.md:16 lists assist as open.
+- **Full list re-run.** Power: in the diagram YAML, +12 V CONSTANT (5 A fuse) and IGN go only to DCDC_IN; DCDC_OUT V(out) 5 V goes to Pi USB-C VBUS and display 5 V; the HAT takes only the 40-pin header; no 12 V reaches any 5 V/3.3 V pin. The post matches the owner decision (V(out) jumpered to 5 V, ~33 W under the 40 W forced-air point, meter check before the Pi; buck only as the undervoltage fallback, digital-dash:61). CAN: can0 HAT terminator off (Haltech bus has two, ~60 Ω), can1 120 Ω at HAT and column, isolated MCP2518FD with 3.3 V logic from the Pi header. Roadmap: DCDC-USB 5 V feed + buck fallback (roadmapData l.618), IG wake + bench-tested loss behaviour, Gen 4 frames, EPAS deferrable if manual. Battery: wiring-overview:24/53 "probably the boot (not final)", cable sizing assumes the boot. Gauge regeneration with bundled fonts already ticked. Rendered all four posts via `parsePost`: 0 unresolved placeholders, no NaN/undefined, every `<img>` exists. `npm run build` passes.
+- Result: all criteria pass. **Done (pending owner)**: bench checks of the unpowered column turning freely, frames the column needs, key-on pulse timing, 5 V at the Pi under load, and the unverified items under "Open for the owner"; battery location not final.
 
 ## Implementer notes (electrical agent, round 1)
 - Dash wiring redrawn: constant 12 V → DCDC-USB (automotive mode, 1 min/1 min) → 12→5.1 V/5 A buck → Pi 5 USB-C + display 5 V (single feed). PSW → Pi 5 J2. PiCAN FD Duo Isolated, no 12 V into the HAT. can0 HAT terminator off; can1 120 Ω both ends.
