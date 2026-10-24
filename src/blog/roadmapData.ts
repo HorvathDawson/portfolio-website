@@ -15,13 +15,17 @@
                  depth is computed from the dependency graph).
 
    Glossary (acronyms & shorthand used in titles / notes):
-     A40            Austin A40 Farina Mk1 — the donor body
+     A40            1950 Austin A40 Devon — the donor body (separate chassis)
      SR20DET        Nissan 2.0 L turbo I4 — the swap engine
      CD009          Nissan 350Z 6-speed manual transmission
+     Z32            Nissan 300ZX TT 5-speed manual transmission
      S13/S14/S15    Nissan Silvia chassis generations
      NA / Mk1 NA    First-gen Mazda Miata (NA6/NA8)
+     IRS            Independent rear suspension (narrowed NA Miata rear)
+     RX-8 diff      Mazda RX-8 rear differential (chassis-mounted)
      EPAS           Electric Power-Assist Steering
-     DBW            Drive-by-wire (electronic throttle)
+     DBW            Drive-by-wire (electronic throttle; planned
+                    conversion — the SR20DET is cable throttle stock)
      ECU            Engine Control Unit
      CAN            Controller-Area-Network bus
      LSD            Limited-slip differential
@@ -34,11 +38,16 @@
      H-point        Driver hip joint reference point
      bump-steer     Toe change with suspension travel
      pinion angle   Diff pinion shaft angle vs driveshaft
+     half-shaft     Drive axle from diff output flange to rear hub
      coilover       Combined coil spring + damper unit
-     narrowing      Shortening a rear axle housing
+     narrowing      Moving every inboard pickup inboard by the same
+                    amount to reduce track (front 95 mm/side,
+                    rear ~42–47 mm/side)
      tubbing        Enlarging wheel-wells for wider tyres
      T3 / T4        Garrett turbo flange sizes
-     AHP            Anti-dive / Anti-squat percentage
+     AHP            Accelerator Heel Point (driver-packaging datum)
+     anti-dive /    Side-view geometry percentages (no acronym;
+     anti-squat     unchanged by lateral narrowing)
    ============================================================ */
 
 import { allPosts, epics, type Epic, type Status } from './blogData';
@@ -113,8 +122,8 @@ export const roadmap: Roadmap = {
       title: 'Suspension Research',
       epic: 'research',
       status: 'complete',
-      posts: ['suspension-options', 'four-link-rear'],
-      summary: 'Survey of front and rear suspension architectures; donor selection (Miata).',
+      posts: ['suspension-options'],
+      summary: 'Survey of front and rear suspension architectures; donor selection (Miata NA front). The rear plan was revised in Oct 2026 — see t-decide-rear-suspension.',
     },
     {
       id: 't-steering-research',
@@ -148,15 +157,16 @@ export const roadmap: Roadmap = {
       epic: 'research',
       kind: 'decision',
       status: 'decided',
-      decision: 'Either CD009 (350Z/G35 6-spd) or Z32 (300ZX TT 5-spd) — final pick comes down to whichever clean unit shows up first at the right price. Both sidestep the weak SR20 3rd gear, both have forward shifter access, both fit the existing tunnel.',
+      decision: 'Either CD009 (350Z/G35 6-spd) or Z32 (300ZX TT 5-spd) — final pick comes down to whichever clean unit shows up first at the right price. Both sidestep the weak SR20 3rd gear and both fit the existing tunnel. The OEM SR20 5-spd is rejected.',
       deferrable: 'Final CD009-vs-Z32 pick is a purchase-availability call. Tunnel + crossmember accept either, so the choice doesn’t gate frame welding.',
-      summary: 'Picking between two finalists: CD009 (350Z/G35 6-spd) or Z32 (300ZX TT 5-spd). Both are similar overall size, both have a forward shifter-access plate that lets the lever sit ~6–10″ ahead of stock, and both sidestep the well-known weak 3rd gear of the SR20 OEM 5-spd. The trans tunnel is already sized for the larger of the two and the crossmember is bolt-in, so the choice does not gate frame welding — only the shifter location, floor pan cutout, and adapter spec.',
+      summary: 'Picking between two finalists: CD009 (350Z/G35 6-spd) or Z32 (300ZX TT 5-spd). Both are similar overall size, both have a forward shifter-access plate that moves the lever ~6–10″ ahead of stock, and both sidestep the well-known weak 3rd gear of the SR20 OEM 5-spd. The trans tunnel is already sized for the larger of the two and the crossmember is bolt-in, so the choice does not gate frame welding — only the shifter location, floor pan cutout, and adapter spec.',
       notes: [
         'Why not the SR20 OEM 5-spd: its 3rd gear is famously weak behind any meaningful boost — the whole reason for going to a stronger box.',
         'Finalists (similar physical size, both with forward shifter access):',
         '  • CD009 (350Z/G35 6-spd) — 6 gears, strongest of the realistic options. Requires SR20 → CD009 adapter (Driftworks Superfly S15 flywheel plan).',
         '  • Z32 (300ZX TT) 5-spd — 5 gears, ~330 lb-ft rating. Needs an SR-to-Z32 adapter plate. Cheaper than CD009.',
-        'Decision driver: cost + availability of a clean unit vs. value of the 6th gear. Both fit the existing tunnel; both land the shifter in the right place.',
+        'Decision driver: cost + availability of a clean unit vs. value of the 6th gear. Both fit the existing tunnel.',
+        'Shifter: in the design-overview CAD the native CD009 lever lands behind the driver\'s hip, so plan on a remote shifter; confirm at trans mock-up (t-decide-shifter)',
         'Parked options: RB25 5-spd (similar size, but adapter ecosystem is weaker than the two finalists), S15 6-spd OEM (rare/expensive in NA), R154 (no good forward shifter option), T56 Magnum (overkill).',
         'Tunnel is sized for CD009; Z32 fits with extra clearance — no rework either way',
         'Trans crossmember is bolt-in / removable: not a frame-weld dependency',
@@ -164,23 +174,23 @@ export const roadmap: Roadmap = {
       ],
     },
     {
-      id: 't-axle-research',
-      title: 'Decide: Rear Axle Build Spec',
+      id: 't-decide-rear-suspension',
+      title: 'Decide: Rear Suspension + Diff',
       epic: 'research',
       status: 'decided',
       kind: 'decision',
-      deferrable: 'Track + housing are locked. Moser is speccing the custom axles + flanges against those; remaining U-joint series is a driveshaft-shop call later.',
-      posts: ['rear-axle'],
-      summary: 'Rear track is locked at 1.340 m, so the remaining axle spec (exact flange-to-flange, U-joint series, axle length) is a conversation with Moser using the existing housing as the starting point. Contacted Moser to size custom axles to the locked track + the current housing on hand.',
-      decision: 'Moser to spec custom 31-spline axles + flanges (4×100) to land outside-disc-face-to-outside-disc-face at 1.415 m with the +38 mm wheel offset. Housing narrowing ~136–140 mm off the current ~60.5″ stock width. U-joint series deferred to the driveshaft shop.',
+      posts: ['rear-suspension'],
+      summary: 'Rear suspension architecture and diff. Revised Oct 2026: the Ford 9″ / Welder Series four-link live axle is dropped for a narrowed Mazda NA Miata IRS with a Mazda RX-8 diff and custom half-shafts.',
+      decision: 'Narrowed Mazda NA Miata IRS (double wishbone, Miata rear geometry kept: every inboard pickup — toe links included — translated inboard by the same amount, like the front) + Mazda RX-8 rear diff on custom mounts + custom-length half-shafts. Rear track stays 1340 mm.',
       notes: [
-        'Target rear track: 1.340 m (locked — see t-decide-track-rear)',
-        'Outside-disc-face to outside-disc-face: 1.415 m → axle flange-to-flange ~1.397–1.401 m (lock exact rotor + caliper-bracket stack before axle order)',
-        'Wheel offset: +38 mm (matches purchased wheels)',
-        'Current housing measured ~60.5″ flange-to-flange (~1537 mm) — needs ~136–140 mm narrowing',
-        'Spline: 31-spline locked; bolt pattern 4×100; custom axles + custom flanges',
-        'U-joint: 1310 vs 1330 — defer to driveshaft shop',
-        'Moser contacted to spec axles against the locked track + current housing',
+        'Narrowing per side = measured stock rear hub-face half-width − 708 mm (708 = 670 half-track + 38 ET): ≈42 mm if the donor 1420 mm rear track is at ET40, ≈47 mm at ET45 — measure the donor (t-measure-donor-rear)',
+        'Diff: RX-8 unit — stronger than the NA Miata diff, which is not suited to a 300+ whp SR20DET. Not a bolt-in to the NA subframe: needs custom diff mounts',
+        'Diff is chassis-mounted (sprung): driveshaft and pinion angles no longer change with suspension travel',
+        'Half-shafts: custom length, RX-8 output flanges to Miata rear hubs',
+        'Rear brakes: Miata rear calipers/rotors on the Miata uprights — no custom caliper brackets; NA rear caliper has an integrated cable parking brake',
+        'Open (CAD): rear pickups built into the frame like the front, or a cut-and-narrowed Miata rear subframe bolted to it',
+        'Rear ARB is now a normal tuning part (independent at both ends)',
+        'Ford 9″ housing on hand is surplus',
       ],
     },
     {
@@ -214,13 +224,27 @@ export const roadmap: Roadmap = {
       title: '3D Scan: Donor Miata Front Subframe',
       epic: 'research',
       status: 'complete',
-      summary: 'Einstar 2 scan of the donor front subframe in the shop. The forum-published pickup-point CAD we had been driving SA V2 on yielded an absurd 11.5° static caster — clearly wrong, triggered the scan as a sanity check. Scan invalidated the forum CAD: UCA inner-pivot positions were off, and the LCA inner-pivot width (lca_from_cl) was wrong. LCA arm geometry (fa span, BJ offset) is unchanged. Downstream: SUSP constants in plot_geometry_reference.py, narrowing-analysis, and geometry-design-reference all need to be updated with the scanned numbers.',
+      summary: 'Einstar 2 scan of the donor front subframe in the shop. The forum-published pickup-point CAD we had been driving SA V2 on yielded an absurd 11.5° static caster — clearly wrong, triggered the scan as a sanity check. Scan invalidated the forum CAD: UCA inner-pivot positions were off, and the LCA inner-pivot width (lca_from_cl) was wrong. LCA arm geometry (fa span, BJ offset) is unchanged. Downstream: SUSP constants in scripts/plot_geometry_reference.py are updated with the scanned numbers (lca_from_cl 329.5 mm, scanned UCA pickups).',
       notes: [
         'Trigger: forum-CAD pickup points produced 11.5° static caster — implausible for a street-car Miata (~5° expected)',
         'Tool: Einstar 2',
         'Findings: UCA pickups wrong, LCA inner-pivot width wrong',
         'Unchanged: LCA arm geometry (lca_fa_span, lca_bj_fa, lca_z_rise)',
-        'Follow-up: update SUSP constants and re-generate pickup/RC/caster plots',
+        'Done: SUSP constants updated in scripts/plot_geometry_reference.py',
+        'Narrowed front pivots: LCA 234.5 mm, UCA 273 mm from CL (UCA inner pivot 38.5 mm outboard of the LCA pivot)',
+      ],
+    },
+    {
+      id: 't-measure-donor-rear',
+      title: 'Measure Donor Miata Rear',
+      epic: 'research',
+      status: 'planning',
+      summary: 'Measure (or scan) the donor NA rear before the rear pickups are drawn: stock rear hub-face half-width (sets the narrowing amount), every inboard pickup incl. toe links, and the rear motion ratio.',
+      notes: [
+        'Narrowing per side = stock hub-face half-width − 708 mm',
+        'Rear MR: spring/shock travel vs wheel travel on the donor (currently TBD)',
+        'Rear RC: model the narrowed geometry; assume ~80–150 mm until then',
+        'Also confirm the donor baseline rear track (1420 mm assumed) and its wheel offset',
       ],
     },
 
@@ -264,23 +288,24 @@ export const roadmap: Roadmap = {
       epic: 'narrowing',
       kind: 'decision',
       status: 'decided',
-      decision: 'Rear track 1.340 m (centerline-to-centerline of the tires) with the on-hand +38 mm offset 15″ wheels and 205/65R15 tires. Outside-disc-face to outside-disc-face works out to 1.415 m, which is what sets the axle housing flange-to-flange and the rotor mounting plane for the rear disc conversion.',
-      summary: 'Rear track locked at 1.340 m using the rear scan + +38 mm offset wheels. Drives axle housing width and rear disc bracketry.',
+      decision: 'Rear track 1340 mm (tyre CL to tyre CL) on the on-hand ET38 15″ wheels and 205/65R15 tyres. With the narrowed Miata IRS this puts each rear hub face 708 mm from the car centreline (670 half-track + 38 ET).',
+      summary: 'Rear track locked at 1340 mm from the rear scan + ET38 wheels. Sets the rear hub-face position and therefore the IRS narrowing amount and half-shaft length.',
+      posts: ['rear-suspension'],
       notes: [
-        'Rear track (tire CL–CL): 1.340 m',
-        'Outside-disc to outside-disc: 1.415 m → sets axle flange-to-flange after subtracting rotor face thickness',
-        'Wheel offset assumption: +38 mm (already purchased — see t-buy-wheels)',
-        'Disc/rotor face stack thickness: 7–9 mm (final number from chosen Miata-style rear rotor + caliper bracket)',
-        'Confirmed against rear-scan body width — fits inside the (now widened) rear fenders with margin',
+        'Rear track (tyre CL–CL): 1340 mm (locked)',
+        'Hub face: 708 mm from CL',
+        'Narrowing per side = measured stock rear hub-face half-width − 708 mm (≈42 mm at ET40, ≈47 mm at ET45 donor baseline) — see t-measure-donor-rear',
+        'Wheel offset: ET38 (already purchased — see t-buy-wheels)',
+        'Confirmed against rear-scan body width with the widened rear fenders',
       ],
     },
     {
       id: 't-narrowing-analysis',
       title: 'Narrowing & Geometry Analysis',
       epic: 'narrowing',
-      status: 'complete',
+      status: 'in-progress',
       posts: ['narrowing-analysis', 'geometry-design-reference'],
-      summary: 'Track width, tire choice, and rack-width / subframe-narrowing all locked in the blog post and reflected in CAD. The remaining suspension-geometry validation (RC, camber, Ackermann, MR sweeps) moves to t-sa-v2 in Suspension Analyzer.',
+      summary: 'Front: track, tyre, 95 mm/side narrowing and 190 mm rack cut locked. Still open: verify the donor baseline track (1405 published vs 1420 used) by measuring hub-face width, and set the rear narrowing amount from t-measure-donor-rear. Suspension-geometry validation (RC, camber, Ackermann, MR sweeps) lives in t-sa-v2.',
     },
     {
       id: 't-sa-v2',
@@ -288,7 +313,7 @@ export const roadmap: Roadmap = {
       epic: 'narrowing',
       status: 'in-progress',
       posts: ['geometry-design-reference', 'suspension-tuning'],
-      summary: 'Run SA V2 with donor-verified pickup coords. Done = numbers in hand for: front RC height + migration cloud, camber curve, anti-dive/squat, Ackermann error vs lock, motion ratio, ARB stiffness split, plus the on-paper tuning targets (ride frequency, wheel rate, damper-stroke envelope) that feed coilover + ARB purchasing. NOT track tuning — corner weights / damper clicks / ride height live post-build under t-suspension-tune.',
+      summary: 'Run SA V2 with donor-verified pickup coords. Done = numbers in hand for: front RC height + migration cloud, camber curve, anti-dive/squat, Ackermann error vs lock, motion ratio, ARB stiffness split, plus the on-paper tuning targets (ride frequency, wheel rate, damper-stroke envelope) that feed coilover + ARB purchasing. Covers the narrowed Miata rear too. NOT track tuning — corner weights / damper clicks / ride height live post-build under t-alignment.',
       notes: [
         'Tool runs but inputs are mix of real + placeholder estimates',
         'Main blocker: time',
@@ -297,7 +322,10 @@ export const roadmap: Roadmap = {
         'Done = each row of the SA V2 expected-outputs table in the geometry design reference has a number',
         'Tuning-targets sub-output (was t-susp-tuning): ride frequency front/rear, motion ratio, wheel rate, damper stroke envelope, anti-dive, anti-squat — these are what coilover + ARB orders quote against',
         'Blocks frame finalization, coilover spec, and ARB sizing',
-        'Action item: update SUSP constants in scripts/plot_geometry_reference.py with scanned UCA pickups + corrected lca_from_cl, then regenerate pickup/RC/caster plots',
+        'Done: SUSP constants in scripts/plot_geometry_reference.py carry the scanned UCA pickups + lca_from_cl',
+        'Front MR ≈ 0.68 (wheel moves about the front-view instant centre; the old 0.621/0.63 treated the contact patch as fixed to the LCA) — verify by perturbing the script four-bar',
+        'Rear: model the narrowed Miata rear for RC (assume 80–150 mm until then); rear MR from t-measure-donor-rear',
+        'Spring targets as wheel rates: front 17.9 N/mm (1.4 Hz), rear 16.1 N/mm (1.5 Hz); spring = wheel rate ÷ MR²',
       ],
     },
     {
@@ -310,7 +338,8 @@ export const roadmap: Roadmap = {
       notes: [
         'Frame CAD currently uses placeholder shock dims — must reconcile before frame finalization',
         'Working idea: Bilstein Miata-fit coilover front (~5" stroke target)',
-        'Stroke ≥ 98–104 mm at MR ≈ 0.63',
+        'Stroke = wheel travel × MR: ~105–112 mm total at MR ≈ 0.68 (155–165 mm wheel travel)',
+        'Spring ≈ 39 N/mm (~220 lb/in) for 17.9 N/mm wheel rate at MR 0.68',
         'Constraint: front clearance with UCA horseshoe',
         'Front + rear dynamics should match (ideally double-eyelet ends both ends)',
         'Vendors: Bilstein / Ridetech / Fox — monotube preferred, steel body OK',
@@ -326,10 +355,10 @@ export const roadmap: Roadmap = {
       status: 'planning',
       summary: 'Pick rear shocks. Output: vendor + part numbers, ordered length + stroke, mount-end specs.',
       notes: [
-        'Live-axle rear is a Ford 9" — valving must suit unsprung mass + leaf-free four-link',
-        'Working idea: universal coilover, e.g. Bilstein SNS-2 — 5″ or 7″ stroke',
-        'Bilstein 5/3 valving target (compression / rebound) for Ford 9" unsprung',
-        'Double-eyelet ends both ends (axle + frame)',
+        'Rear is the narrowed Miata IRS: coilover between the Miata rear lower arm and a frame tower (Miata-fit coilover is a candidate)',
+        'Rear MR: TBD — measure on the donor (t-measure-donor-rear); spring = 16.1 N/mm wheel rate ÷ MR²',
+        'Critical damping at the wheel ≈ 3.4 kN·s/m rear (4.1 front); ride ζ 0.3–0.4, roll ζ 0.4–0.5 — adjustable dampers',
+        'Unsprung ~33 kg per rear corner (diff, subframe and inner half-shaft are sprung)',
         'Match front damping character so F/R dynamics align',
         'Vendors: Bilstein / Ridetech / Fox — monotube preferred',
         'Single-adjustable (rebound)',
