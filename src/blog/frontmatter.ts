@@ -18,6 +18,8 @@ export interface PostMeta {
   slug: string;
   title: string;
   date: string;
+  /** Last substantial revision (`updated:` frontmatter), if any. */
+  updated?: string;
   status: Status;
   tags: string[];
   /** Build cars: the epic this post belongs to. */
@@ -65,6 +67,7 @@ export function toPostMeta(meta: Record<string, string>, car: string, slug: stri
     slug,
     title: meta.title || slug,
     date: meta.date ?? '',
+    updated: meta.updated || undefined,
     status: STATUSES.includes(meta.status as Status) ? (meta.status as Status) : 'planning',
     tags: parseList(meta.tags),
     epic: meta.epic || undefined,

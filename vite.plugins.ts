@@ -2,6 +2,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import type { Plugin } from 'vite'
+import { Marked, type Token } from 'marked'
+import markedKatex from 'marked-katex-extension'
 import { HEADER_SIZES, HEADER_TILE, headerSrcSet, parallaxLayers } from './src/data/content'
 import {
   GITHUB_URL, HOME_DESCRIPTION, LINKEDIN_URL, RESUME_GENERATOR_PATH, HOME_TITLE, OG_IMAGE, SHARE_DESCRIPTION, SHARE_TITLE, SITE_NAME, SITE_URL, absoluteUrl,
@@ -100,6 +102,93 @@ export function garageMeta(): Plugin {
   }
 }
 
+/* ── Search index ─────────────────────────────────── */
+
+const SEARCH_ID = 'virtual:garage-search'
+const ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" }
+const decodeEntities = (s: string) => s.replace(/&(amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e])
+const plainText = (html: string) => decodeEntities(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim()
+
+/** Same rule as headingId() in src/blog/blogData.ts, so #ids from the index match the rendered post. */
+function headingSlugger() {
+  const used = new Map<string, number>()
+  return (innerHtml: string) => {
+    const base = decodeEntities(innerHtml.replace(/<[^>]+>/g, ''))
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s_-]/gu, '')
+      .replace(/\s/g, '-')
+    const n = used.get(base) ?? 0
+    used.set(base, n + 1)
+    return n === 0 ? base : `${base}-${n}`
+  }
+}
+
+export interface SearchSection { id: string; heading: string; text: string }
+export interface SearchDoc { car: string; slug: string; title: string; sections: SearchSection[] }
+
+/** One post → its sections (intro + one per heading), as plain text. */
+function searchDoc(file: string, raw: string): SearchDoc {
+  const { car, slug } = carAndSlug(file)
+  const { meta, body } = parseFrontmatter(raw)
+  // Headings use the same KaTeX rendering as the post, so their ids match;
+  // section text keeps $maths$ as written (readable and searchable).
+  const withMath = new Marked().use(markedKatex({ throwOnError: false, nonStandard: true }))
+  const plain = new Marked()
+  const slugger = headingSlugger()
+  const sections: SearchSection[] = []
+  let current: SearchSection = { id: '', heading: '', text: '' }
+  let pending: Token[] = []
+  const flush = () => {
+    current.text = plainText(plain.parser(pending))
+    if (current.heading || current.text) sections.push(current)
+    pending = []
+  }
+  for (const token of plain.lexer(body)) {
+    if (token.type === 'heading') {
+      flush()
+      const inner = withMath.parseInline(token.text, { async: false }) as string
+      current = { id: slugger(inner), heading: plainText(plain.parseInline(token.text, { async: false }) as string), text: '' }
+    } else {
+      pending.push(token)
+    }
+  }
+  flush()
+  return { car, slug, title: toPostMeta(meta, car, slug).title, sections }
+}
+
+/**
+ * `virtual:garage-search` → every post's title, headings and plain text, for
+ * the sidebar search. Imported lazily (on first search), so it is its own
+ * chunk and never part of the initial bundle.
+ */
+export function garageSearch(contentDir: string): Plugin {
+  const resolved = '\0' + SEARCH_ID
+  return {
+    name: 'garage-search',
+    resolveId: (id) => (id === SEARCH_ID ? resolved : undefined),
+    load(id) {
+      if (id !== resolved) return
+      const docs: SearchDoc[] = []
+      for (const car of fs.readdirSync(contentDir).sort()) {
+        const dir = path.join(contentDir, car)
+        if (!fs.existsSync(path.join(dir, 'car.json'))) continue
+        for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
+          const full = path.resolve(dir, file)
+          this.addWatchFile(full)
+          docs.push(searchDoc(`/content/${car}/${file}`, fs.readFileSync(full, 'utf8')))
+        }
+      }
+      return `export default ${JSON.stringify(docs)}`
+    },
+    handleHotUpdate({ file, server }) {
+      if (!file.endsWith('.md')) return
+      const mod = server.moduleGraph.getModuleById(resolved)
+      if (mod) server.moduleGraph.invalidateModule(mod)
+    },
+  }
+}
+
 /** Emit sitemap.xml: the home page, the resume generator, the garage, and every car's log, roadmap and posts. */
 export function sitemap(contentDir: string): Plugin {
   return {
@@ -115,7 +204,7 @@ export function sitemap(contentDir: string): Plugin {
         if (config.roadmap) urls.push({ path: `/garage/${car}/roadmap` })
         for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
           const meta = toPostMeta(parseFrontmatter(fs.readFileSync(path.join(dir, file), 'utf8')).meta, car, file)
-          urls.push({ path: `/garage/${car}/${carAndSlug(`${car}/${file}`).slug}`, lastmod: meta.date || undefined })
+          urls.push({ path: `/garage/${car}/${carAndSlug(`${car}/${file}`).slug}`, lastmod: meta.updated || meta.date || undefined })
         }
       }
       const body = urls
