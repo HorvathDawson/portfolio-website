@@ -1,6 +1,8 @@
 # GAR-008: integrating GarageScene into /garage
 
-The scene is built and previewable on its own; it is not wired into the site yet.
+> **Status (review, 2026-10-24):** integrated. GarageSelector.tsx renders `<GarageScene>` (returning/onEnter/TileMeta as in the snippet below), CarSwitcher.tsx names the current thumbnail with `carTransitionName`, and the three preview files are deleted. Verified in GAR-008.
+
+The scene was built and previewable on its own before integration.
 
 ## Files
 - `src/blog/GarageScene.tsx`: the component (one bay per car, any number of cars, 2 per row, one per row at ≤600 px)

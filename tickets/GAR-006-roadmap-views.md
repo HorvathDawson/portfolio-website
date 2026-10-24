@@ -3,7 +3,7 @@ id: GAR-006
 title: Roadmap views for deciding what to work on
 status: review
 owner: roadmap-views agent
-reviewer:
+reviewer: independent review agent
 blocked_by:
 ---
 
@@ -17,15 +17,30 @@ The swim-lane map shows all 174 tasks and 388 edges at once. It's hard to see wh
 - View and focused task in the URL.
 
 ## Acceptance criteria
-- [ ] Every "ready" task has all hard dependencies complete/decided (checked by a script against the real data)
-- [ ] Critical path is a valid chain of unfinished tasks along hard edges
+- [x] Every "ready" task has all hard dependencies complete/decided (checked by a script against the real data)
+- [x] Critical path is a valid chain of unfinished tasks along hard edges
 - [ ] Works at 390 px wide with no page-level horizontal scroll; keyboard-usable
-- [ ] Map view unchanged
-- [ ] `npm run build` and `npm run lint` pass
+- [x] Map view unchanged
+- [x] `npm run build` and `npm run lint` pass
 - [ ] Owner has tried it and picked the default view
 
 ## Verification
-_Filled by the reviewer._
+Reviewer: independent review agent (did not implement), 2026-10-24.
+
+Common runs: `npm run build` exit 0; `npm run lint` exit 0; `node scripts/check-roadmap-plan.mjs` 11 ok / 0 FAIL. `npx vite preview --port 5195` on the build; Playwright (chromium.launch(), no options) at 1440x900 and 390x844 (isMobile, hasTouch), collecting console errors, page errors and failed requests on every page: none (Google Fonts requests aborted by navigation ignored). axe-core is not in node_modules (skipped); Lighthouse not installed (not run). Screenshots/PDFs: `/tmp/claude-0/-home-user/c87f3b61-444e-51a8-bee1-fcced4861d9c/scratchpad/review2/`.
+
+GAR-006 checks:
+- Ready tasks: `check-roadmap-plan.mjs` "every ready task is unfinished with all hard deps done" and "ready set is exactly the unfinished tasks with no unfinished hard deps": ok against the real roadmapData (40 ready).
+- Critical path: "critical path is a hard-edge chain of unfinished tasks", "starts at a ready task", "ends at t-registration": ok; the page shows the same 14-step chain.
+- Next up (default, `/garage/a40/roadmap`, switcher shows "Next up"): Decide 8 / Buy 15 / Do 17 groups (8 cards shown each), 14-item critical path, 12 almost-ready, progress panel. Deep links: `?view=next&task=t-frame-design` opens the drawer on "Ladder Frame Design"; `?view=tree&task=t-frame-design` focuses that task; `?view=bogus&task=nope` falls back to Next up. Switching views keeps state in the URL (`?view=tree`, tree node click → `&info=…`, Back restores `?view=tree`; Map gets `&task=` of the tree focus and isolates it). Drawer post link → `/garage/a40/frame-design`.
+- 390x844: scrollWidth 390 on Next up, Tree and Map. Screenshots `phone-roadmap-next.png`, `phone-roadmap-tree.png`, `phone-roadmap-map.png`.
+- Map: `?view=map` renders all 175 cards and 391 SVG paths; layout matches the audit screenshot (`scratchpad/shots/desk_a40_roadmap.png`) except the new view switcher in the top bar, which pushes the zoom control onto a second row at 1440 (`desk-roadmap-map-full.png`). Ticked as unchanged.
+- Keyboard: cards are buttons; Enter opens the drawer and Escape closes it. **But focus stays on the card when the drawer (role="dialog") opens: reaching the drawer took 96 Tab presses at both widths** (see Failed checks).
+
+### Failed checks
+1. Task drawer is not keyboard-usable: opening it does not move focus into it, and closing it does not return focus. Fix in src/blog/A40Roadmap.tsx: in `TaskDrawer` (line 312) add `const closeRef = useRef<HTMLButtonElement>(null); useEffect(() => { closeRef.current?.focus(); }, [task.id]);` and put `ref={closeRef}` on the `.rm-drawer-close` button (line 334). In src/blog/A40RoadmapViews.tsx `openInfo` (line 91) remember `document.activeElement` in a ref and focus it again in `closeInfo` (line 95) / on Escape. Re-check: Enter on a Next up card → `document.activeElement` is inside `.rm-drawer`; Escape → focus back on the card.
+
+Owner box ("tried it and picked the default view") stays open.
 
 ## Implementer notes
 - New: src/blog/roadmapPlan.ts (logic), A40RoadmapViews.tsx (switcher, now the /a40/roadmap route), RoadmapNextUp.tsx, RoadmapTree.tsx, roadmapViews.css, scripts/check-roadmap-plan.mjs (11 invariant checks against the real data: `node scripts/check-roadmap-plan.mjs`).
@@ -34,3 +49,6 @@ _Filled by the reviewer._
 - Tree omits links implied by a longer chain (count shown).
 - Removed two duplicate brake-system edges from roadmapData.ts (kept the originals).
 - Critical path today (14): narrowing analysis → SA v2 → front shocks → frame design → design finalization → buy metal → frame build → engine mockup → trans crossmember → engine install → wiring → engine startup → alignment → registration.
+
+## Fix after review (Oct 2026)
+- TaskDrawer focuses its close button on open; closing returns focus to the card that opened it. Checked in Playwright: Enter on a Next up card → focus on .rm-drawer-close; Enter → focus back on .rv-card-main. Needs reviewer re-tick.

@@ -1,9 +1,9 @@
 ---
 id: GAR-008
 title: Animated garage on the /garage page
-status: review
+status: done (pending owner)
 owner: Claude
-reviewer: Dawson
+reviewer: independent review agent (owner: Dawson)
 blocked_by: GAR-005 (same files: GarageSelector.tsx, garage.css)
 ---
 
@@ -28,10 +28,10 @@ The garage page should feel like a garage: click a car and it drives out to its 
 
 ## Acceptance criteria
 - [ ] Owner likes it (prototype reviewed on the preview site)
-- [ ] Click → car rolls out → log opens; Back → car reverses in
+- [x] Click → car rolls out → log opens; Back → car reverses in
 - [ ] 60 fps on a mid-range phone (transforms/opacity only, no layout thrash)
-- [ ] Reduced motion and keyboard paths work
-- [ ] Works at 390 px with no horizontal scroll
+- [x] Reduced motion and keyboard paths work
+- [x] Works at 390 px with no horizontal scroll
 
 ## Implementer notes
 Built as a standalone component, not yet wired into /garage (GarageSelector.tsx was being edited in parallel). Integration steps, props and the thumbnail's view-transition name: [GAR-008-integration.md](./GAR-008-integration.md).
@@ -49,4 +49,19 @@ Built as a standalone component, not yet wired into /garage (GarageSelector.tsx 
 Checked (implementer, not verification): `npm run lint` and `npm run build` pass; `dist/` has no preview files. Playwright screenshots of rest, hover per bay, mid roll-out, return, keyboard focus, reduced motion, 390×844 and 3 bays; video of hover → click → back (frames even through the roll-out; headless Chromium doesn't record the view-transition morph itself). Not yet checked: real phone frame rate, Safari/Firefox (no View Transitions in Firefox: plain swap), the morph against the real sidebar thumbnail.
 
 ## Verification
-_Filled by the reviewer._
+Reviewer: independent review agent (did not implement), 2026-10-24.
+
+Common runs: `npm run build` exit 0; `npm run lint` exit 0; `node scripts/check-roadmap-plan.mjs` 11 ok / 0 FAIL. `npx vite preview --port 5195` on the build; Playwright (chromium.launch(), no options) at 1440x900 and 390x844 (isMobile, hasTouch), collecting console errors, page errors and failed requests on every page: none (Google Fonts requests aborted by navigation ignored). axe-core is not in node_modules (skipped); Lighthouse not installed (not run). Screenshots/PDFs: `/tmp/claude-0/-home-user/c87f3b61-444e-51a8-bee1-fcced4861d9c/scratchpad/review2/`.
+
+GAR-008 checks (scene is integrated: src/blog/GarageSelector.tsx renders `<GarageScene>` with `returning={back}`, `onEnter={(id) => navigate(carPath(id))}`, `TileMeta`; src/blog/CarSwitcher.tsx gives the current car's thumbnail `view-transition-name: garage-car-<id>` + class `garage-car`; the preview files `scene-preview.html`, `src/scenePreview.tsx`, `src/blog/GarageScenePreview.tsx` are gone):
+- Hover (1440): A40 bay light 0 → 1, door translateY −140 → −251 px, coloured layer 0 → 1; the other bay unchanged (`desk-garage-hover-a40.png`).
+- Keyboard: focus = hover state plus gold outline on the door frame; Arrow/Home/End move between bays (wraps). Enter on the AZ-1 bay: 400 ms in, bay `is-leaving`, car transform `matrix(1.29,…,−14,83)` (rolling out, other bay dimmed; `desk-garage-rollout-mid.png`), URL changes to `/garage/autozam` after ~940 ms; sessionStorage `garage-scene:out=autozam`; the switcher thumbnail carries `garage-car-autozam`.
+- Back: `/garage` mounts with `gs--back`, AZ-1 `is-returning` starting at the rolled-out pose (scale 1.35), after 2.5 s `is-rest`, transform none, door back at −140 px, sessionStorage cleared (`desk-garage-back-mid.png`). Mouse click on the A40 bay: A40 `is-leaving`, AZ-1 `is-dim`, then `/garage/a40`. Ctrl+click opens a new tab and leaves the page on /garage.
+- Phone 390: bays stacked, scrollWidth 390; the bay in view opens (`is-inview`); tap rolls out to `/garage/autozam`; Back returns with scrollWidth 390.
+- Reduced motion (both widths): no running animations, transitions 0s, click → navigation in ~100–120 ms, Back leaves the bay at rest with sessionStorage cleared.
+- Performance proxy (not a real phone): 390x844, CDP CPU throttle ×4, rAF intervals during the roll-out: median 16.7 ms, p95 16.8 ms, one 50 ms frame at the tap; CSS keyframes animate only transform/opacity (and `scale` on the lamps). Layout runs about once per frame even at idle (48 layouts / 800 ms, 0.8 ms each) because the visually hidden `<h1 class="garage-title sr-only">` still runs the infinite `gc-glow-pulse` text-shadow animation. Non-blocking: add `.garage-title.sr-only { animation: none; }` to src/blog/garage.css.
+- No console errors on /garage, during roll-out, or on Back.
+- Non-blocking: headlight positions are per-car code (`RIGS` in src/blog/GarageScene.tsx:26-29); consider moving them to car.json (`lamps`, `drive`) when GAR-007 redraws the AZ-1.
+- Not checked: Safari/Firefox, a real mid-range phone, and the view-transition morph itself (headless Chromium does not record it).
+
+Open boxes: "Owner likes it" (owner) and "60 fps on a mid-range phone" (needs a real device; the throttled numbers above are the reviewer's evidence). Result: done (pending owner).

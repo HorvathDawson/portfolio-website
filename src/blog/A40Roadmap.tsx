@@ -325,13 +325,16 @@ export const TaskDrawer: React.FC<{
     .map((slug) => postBySlug.get(slug))
     .filter((p): p is NonNullable<typeof p> => Boolean(p));
   const kind = effectiveKind(task);
+  // Move keyboard focus into the drawer when it opens or shows another task.
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { closeRef.current?.focus(); }, [task.id]);
 
   return (
     <div className={`rm-drawer${isMobile ? ' rm-drawer--mobile' : ''}`} role="dialog" aria-label={`Task: ${task.title}`}>
       <div className="rm-drawer-header">
         <span className={`sb-status-dot sb-dot--${task.status}`} aria-hidden="true" />
         <h2 className="rm-drawer-title">{task.title}</h2>
-        <button type="button" className="rm-drawer-close" onClick={onClose} aria-label="Close">✕</button>
+        <button type="button" className="rm-drawer-close" ref={closeRef} onClick={onClose} aria-label="Close">✕</button>
       </div>
 
       <div className="rm-drawer-meta">

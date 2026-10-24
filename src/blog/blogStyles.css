@@ -671,6 +671,10 @@
   display: none; /* don't double-up divider on mobile */
 }
 
+h1.blog-topbar-title {
+  margin: 0;
+}
+
 .blog-topbar-title {
   font-family: 'Playfair Display', serif;
   font-size: 16px;

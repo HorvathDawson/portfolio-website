@@ -512,7 +512,10 @@ const CarLog: React.FC<{ car: Car }> = ({ car }) => {
       <div className="blog-page blog-page--mobile" style={accent}>
         <nav className="blog-topbar" aria-label="Blog navigation">
           <Link to="/" className="blog-back-link">&larr; Portfolio</Link>
-          <span className="blog-topbar-title">{car.logTitle}</span>
+          {/* The post-not-found view brings its own h1. */}
+          {missing && slug
+            ? <span className="blog-topbar-title">{car.logTitle}</span>
+            : <h1 className="blog-topbar-title">{car.logTitle}</h1>}
           {roadmapLink}
         </nav>
         <MobileList>

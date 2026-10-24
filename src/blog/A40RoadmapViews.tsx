@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { NotFound } from '../components/NotFound';
 import { carPath, roadmapCar, roadmapPath } from './cars';
@@ -88,13 +88,19 @@ export const A40Roadmap: React.FC = () => {
     [setParams],
   );
 
+  // The card that opened the drawer gets focus back when it closes.
+  const opener = useRef<HTMLElement | null>(null);
   const openInfo = useCallback((id: TaskId) => {
+    opener.current = document.activeElement as HTMLElement | null;
     if (view === 'next') go({ task: id });
     else go({ info: id });
   }, [go, view]);
   const closeInfo = useCallback(() => {
     if (view === 'next') go({ task: null }, true);
     else go({ info: null }, true);
+    const el = opener.current;
+    opener.current = null;
+    requestAnimationFrame(() => el?.isConnected && el.focus());
   }, [go, view]);
   const showTree = useCallback((id: TaskId) => go({ view: 'tree', task: id, info: null }), [go]);
 

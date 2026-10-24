@@ -369,3 +369,8 @@
   .garage-tile.is-inview { transform: none; }
   .garage-title { animation: none; }
 }
+
+/* Hidden heading: no glow animation running for nothing. */
+.garage-title.sr-only {
+  animation: none;
+}

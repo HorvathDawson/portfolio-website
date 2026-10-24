@@ -3,7 +3,7 @@ id: GAR-005
 title: Blog usability cleanup
 status: review
 owner:
-reviewer:
+reviewer: independent review agent
 blocked_by:
 ---
 
@@ -37,7 +37,7 @@ Audit P2 items:
 - [x] 9 /garage/a40 opens on the overview post; prev/next follow sidebar (epic) order.
 - [x] 10 Unknown slug shows "Post not found" (noindex) inside the log layout, with search and a link back.
 - [x] 12 Route-level error boundary (src/components/RouteErrorBoundary.tsx): a throwing roadmapData shows "This page failed to load" instead of a blank page (full error shown in dev). `npm run build` now runs `scripts/check-roadmap-plan.mjs`, which imports roadmapData, so a validation error fails the build.
-- [x] 16 (part) One h1 per page (sidebar title is now a `<p>`); `role="listitem"` on buttons replaced by `ul/li` + links; reduced motion stops the blink/star/glow (App.css already had a global rule; blogStyles adds an explicit one); small text contrast raised (sidebar dates 0.45→0.75 opacity ≈10:1, post date 0.5→0.75, counter 9→10 px full opacity, subtitle/lede #6cb4f5 ≈8.7:1); Page Down works.
+- [ ] 16 (part) One h1 per page (reviewer: fails on the mobile car index, see Verification) (sidebar title is now a `<p>`); `role="listitem"` on buttons replaced by `ul/li` + links; reduced motion stops the blink/star/glow (App.css already had a global rule; blogStyles adds an explicit one); small text contrast raised (sidebar dates 0.45→0.75 opacity ≈10:1, post date 0.5→0.75, counter 9→10 px full opacity, subtitle/lede #6cb4f5 ≈8.7:1); Page Down works.
 - [x] 17 Mobile post view: sticky bar with ← Posts, log title and ‹ › prev/next; prev/next and the car switcher at the end of the post; search at the top of the mobile list.
 
 Not done (and why):
@@ -52,4 +52,27 @@ Not done (and why):
 Checks run: `npm run lint`, `npm run build`, `node scripts/check-roadmap-plan.mjs` pass. Playwright against `vite --port 5187` at 1440×900 and 390×844: screenshots of /garage, /garage/a40, geometry-design-reference, narrowing-analysis, roadmap, autozam/car-facts, unknown slug, search, TOC, print emulation and PDF (scratchpad `usability/`). Also verified: keyboard search → `#heading` landing, Back restores scroll (5000 → ~5114 after image layout), in-post link keeps the JS window state, heading copy puts the URL on the clipboard, one h1 on each garage page, reduced-motion → no animation, simulated roadmapData failure → boundary message and posts still render. No console errors.
 
 ## Verification
-_Filled by the reviewer._
+Reviewer: independent review agent (did not implement), 2026-10-24.
+
+Common runs: `npm run build` exit 0; `npm run lint` exit 0; `node scripts/check-roadmap-plan.mjs` 11 ok / 0 FAIL. `npx vite preview --port 5195` on the build; Playwright (chromium.launch(), no options) at 1440x900 and 390x844 (isMobile, hasTouch), collecting console errors, page errors and failed requests on every page: none (Google Fonts requests aborted by navigation ignored). axe-core is not in node_modules (skipped); Lighthouse not installed (not run). Screenshots/PDFs: `/tmp/claude-0/-home-user/c87f3b61-444e-51a8-bee1-fcced4861d9c/scratchpad/review2/`.
+
+GAR-005 checks (all 18 a40 posts + 2 autozam posts, both widths):
+- No page-level horizontal scroll at 390: for every post documentElement and body scrollWidth = 390, and no element inside `.blog-article` extends past the viewport outside a scrolling/clipping box. The only inner scrollers are tables/maths (`.scroll-x`, `.katex-display`) and `<pre>` code blocks (10 in digital-dash, 2 in epas-can-gateway), which scroll inside their own box. Screenshots `phone-geometry-design-reference.png`, `phone-narrowing-analysis.png`, `phone-digital-dash.png`, `phone-car-facts.png`.
+- P1 #1 links: post-text links computed `rgb(124,192,255)` + underline vs body text `rgb(252,247,240)` on every post.
+- P1 #2 print: `page.pdf` (A4, print media) gives geometry-design-reference 9 pages (8 at 390), digital-dash 13, steering 5, car-facts 2; sidebar hidden, dark on white, roadmap-task box and body only (`desk-a40_geometry-design-reference.pdf`, `gdr-1.png`).
+- P1 #3 TOC + anchors: every post with ≥4 h2/h3 shows a TOC (aside at 1440, collapsible "Contents" at 390); every h2–h4 has a `.heading-anchor` (counts equal on all 20 posts). Clicking the 4th TOC entry on geometry-design-reference lands "Front roll centre" at top 16 px (64 px on phone, below the 49 px bar) and marks it current. Clicking the `#` on "Results at a glance" set the URL hash and put `http://localhost:5195/garage/a40/geometry-design-reference#results-at-a-glance` on the clipboard, with the "copied" message.
+- P1 #4 search: `/` focuses the sidebar search; "rack" → 28 results announced in the live region; ArrowDown moves into results, Enter on `build-constants#track-wheels-tyres` opens that post with the heading at top 16 px (64 px phone). Escape clears. "All cars" toggle: "oil" 14 → 19 hits incl. autozam. No raw `{...}` in results for 9 queries (rack, mm, kg, track, ratio, deg, nm, width, spring); the built search chunk contains no `{`.
+- P1 #5: in-post link click (overview → build-constants) navigates without reload (window marker kept); 37 in-post `/garage/...` links on overview.
+- P1 #7 sidebar: no sidebar title, epic title, car title or subtitle is clipped (scrollWidth/scrollHeight ≤ client size) at 1440 (9 visible) or 390 (23 visible).
+- P1 #8: roadmap-task boxes on 16/18 a40 posts (build-constants and donor-geometry-dimensions have none); first box link on steering `/garage/a40/roadmap?view=tree&task=t-steering-research` opens the tree focused on "Decide: Steering Donors". No box shows the load-error message.
+- Not-found: `/garage/a40/no-such-post` shows "Post not found" in the log layout, `noindex`, search present, one h1. Unknown car / `/garage/autozam/roadmap` → site 404.
+- Focus visible: 59 Tab stops on the steering post, every one with an outline or box-shadow.
+- One h1 per page: 1 on every post, the roadmap, not-found, /garage and the desktop car pages; **0 on `/garage/a40` and `/garage/autozam` at 390** (see Failed checks).
+
+### Failed checks
+1. Mobile car index has no h1 (audit item 16, "one h1 per page", claimed done). At 390x844 `/garage/a40` and `/garage/autozam` render the mobile list, whose only title is `<span className="blog-topbar-title">{car.logTitle}</span>` at src/blog/GarageBlog.tsx:515. Fix: render `<h1 className="blog-topbar-title">{car.logTitle}</h1>` there when `!missing` (keep the span when `missing`, because PostNotFound already renders an h1), and add `h1.blog-topbar-title { margin: 0; font: inherit; }` next to `.blog-topbar-title` in src/blog/blogStyles.css:674 so it looks the same. Re-check: one h1 on both pages at 390, and still one on `/garage/a40/no-such` at 390.
+
+The four acceptance boxes themselves pass and stay ticked; the ticket goes back to in-progress only for the item above.
+
+## Fix after review (Oct 2026)
+- Phone car pages: the top-bar title is an h1 (span only on the post-not-found view, which has its own h1). Checked: /garage/a40, /garage/autozam, /garage/a40/steering at 390 px each have exactly one h1. Needs reviewer re-tick.

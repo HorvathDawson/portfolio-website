@@ -1,9 +1,9 @@
 ---
 id: GAR-004
 title: Autozam AZ-1 garage log
-status: review
+status: done (pending owner)
 owner: Claude (garage agent)
-reviewer:
+reviewer: independent review agent
 blocked_by: GAR-001
 ---
 
@@ -31,4 +31,17 @@ The AZ-1 gets work done but isn't a from-scratch build. It needs a lighter log: 
 - Not done: owner review of the two posts.
 
 ## Verification
-_Filled by the reviewer._
+Reviewer: independent review agent (did not implement), 2026-10-24.
+
+Common runs (apply to every GAR ticket below):
+- `npm run build`: exit 0 (check-constants, `tsc -b`, check-roadmap-plan, vite build). `npm run lint`: exit 0 (only a baseline-browser-mapping staleness notice). `node scripts/check-roadmap-plan.mjs`: 11 `ok`, 0 FAIL (175 tasks, 389 edges, 40 ready, critical path 14).
+- `npx vite preview --port 5195` on the build; Playwright (chromium.launch(), no options) at 1440x900 and 390x844 (isMobile, hasTouch). Console errors, page errors and failed requests were collected on every page visited: none (only Google Fonts requests aborted by navigation, ignored).
+- axe-core is not in node_modules: axe check skipped. Lighthouse is not installed: not run.
+- Screenshots and PDFs: `/tmp/claude-0/-home-user/c87f3b61-444e-51a8-bee1-fcced4861d9c/scratchpad/review2/`.
+
+GAR-004 checks:
+- `/garage/autozam` (1440): h1 "AZ-1 Garage Log", sidebar Reference (Car facts) then Log (Bought it); category chips All / Maintenance / Repair / Mod / Inspection, chips with no posts are disabled; clicking Inspection sets `?category=inspection` and keeps Bought it; `?category=repair` presses Repair and the log shows "No repair entries yet.". Newest first: the AZ-1 has only one log post, so order was checked in code: postsFor() sorts by date ascending (src/blog/postIndex.ts:18) and DatedList reverses it (src/blog/GarageBlog.tsx:189-192); the owner will see it on the second post. Screenshots `desk-autozam-home.png`, `phone-autozam-list.png`.
+- `content/autozam/car-facts.md`: chassis code, engine, layout marked done (owner); every other value (production years, VIN location, curb weight, tyre sizes/pressures, wheel torque, all fluids/capacities, torque specs, part numbers) is blank or marked **verify** with where to check. Renders with tables in scroll boxes, no page overflow at 390, prints to 2 A4 pages.
+- Service table: with no `service:` items it reads "No services logged yet."; with the throw-away third car (post with `service: [oil and filter]`, mileage 81234) it showed one row "oil and filter · Oct 20, 2026 · 81,234 km" linking to the post. Derived from posts as specified.
+- Both posts: one h1, no console errors, no horizontal scroll at 390.
+Result: done (pending owner): only "Owner has reviewed the first two posts" is open.

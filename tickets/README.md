@@ -69,13 +69,13 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [A40-010](./A40-010-build-and-visual-check.md) | Build, lint, links and visual check | todo |
 | [A40-011](./A40-011-ship.md) | PR, preview check, merge, live check | todo |
 | [A40-012](./A40-012-owner-decisions.md) | Owner measurements and decisions | blocked |
-| [GAR-001](./GAR-001-garage-structure.md) | Turn /a40 into a multi-car garage | todo |
-| [GAR-002](./GAR-002-car-selector.md) | Car selector with outline art | todo |
+| [GAR-001](./GAR-001-garage-structure.md) | Turn /a40 into a multi-car garage | done |
+| [GAR-002](./GAR-002-car-selector.md) | Car selector with outline art | done (pending owner: Lighthouse) |
 | [GAR-003](./GAR-003-autozam-art.md) | Autozam AZ-1 line art, gullwing doors up | done (placeholder, see GAR-007) |
-| [GAR-004](./GAR-004-autozam-log.md) | Autozam AZ-1 garage log | todo |
-| [GAR-005](./GAR-005-blog-usability.md) | Blog usability cleanup | todo (audit done) |
-| [GAR-006](./GAR-006-roadmap-views.md) | Roadmap views for deciding what to work on | review (owner to pick default) |
+| [GAR-004](./GAR-004-autozam-log.md) | Autozam AZ-1 garage log | done (pending owner review of posts) |
+| [GAR-005](./GAR-005-blog-usability.md) | Blog usability cleanup | review (fix applied) |
+| [GAR-006](./GAR-006-roadmap-views.md) | Roadmap views for deciding what to work on | review (fix applied) |
 | [GAR-007](./GAR-007-autozam-art-redo.md) | Redo the Autozam AZ-1 line art | todo |
-| [GAR-008](./GAR-008-garage-animation.md) | Animated garage on the /garage page | review (component built; integration pending, see GAR-008-integration) |
+| [GAR-008](./GAR-008-garage-animation.md) | Animated garage on the /garage page | done (pending owner: sign-off, real-phone fps) |
 | [FUT-001](./FUT-001-stl-art-pipeline.md) | Future: 3D scans → stylised spinning art and printable models | idea |
 | [GAR-009](./GAR-009-visual-design-pass.md) | Visual design pass for the whole garage blog | blocked (owner picks A/B/C) |
