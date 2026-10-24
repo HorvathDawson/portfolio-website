@@ -1,0 +1,544 @@
+/* ==========================================================
+   GarageScene — night-time garage, one bay per car.
+   White line art (2 px, same weight as the car outlines at
+   bay size) over the dark page; the site gradient
+   #f65e79 → #8a3ab9 → #4978f4 for lit things.
+   Animated properties: transform and opacity only.
+   ========================================================== */
+
+.gs {
+  --gs-line: rgba(252, 247, 240, 0.82);
+  --gs-line-soft: rgba(252, 247, 240, 0.16);
+  --gs-wall: #111831;
+  --gs-roof-h: clamp(52px, 8.5vw, 88px);
+  --gs-out: 820ms;   /* ROLL_OUT_MS in GarageScene.tsx */
+  --gs-in: 850ms;    /* car part of ROLL_IN_MS */
+  --gs-ease-door: cubic-bezier(0.6, 0.05, 0.25, 1);
+
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 4px 0 8px;
+  overflow-x: clip;
+  color: var(--warm-white, #fcf7f0);
+}
+
+/* Night haze behind the building (base #361c7d). */
+.gs::before {
+  content: '';
+  position: absolute;
+  inset: 0 -20% 30%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 30%, rgba(54, 28, 125, 0.55), transparent 70%),
+    radial-gradient(ellipse 30% 18% at 50% 6%, rgba(246, 94, 121, 0.08), transparent 70%);
+}
+
+.gs-building {
+  position: relative;
+  padding: 0 clamp(10px, 3vw, 30px);
+}
+
+/* ── Roof and sign ──────────────────────────────── */
+
+.gs-top {
+  position: relative;
+  height: calc(var(--gs-roof-h) + clamp(52px, 7vw, 70px));
+}
+
+.gs-roof {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: var(--gs-roof-h);
+  overflow: visible;
+}
+.gs-roof-gable { fill: var(--gs-wall); }
+.gs-roof-board {
+  fill: #0c1124;
+  stroke: var(--gs-line);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.gs-vent {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--gs-roof-h) * 0.12);
+  z-index: 2;
+  width: calc(var(--gs-roof-h) * 0.34);
+  height: calc(var(--gs-roof-h) * 0.34);
+  transform: translateX(-50%);
+  fill: none;
+  stroke: rgba(252, 247, 240, 0.5);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.gs-vent path, .gs-vent circle { vector-effect: non-scaling-stroke; }
+
+.gs-sign {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--gs-roof-h) + 8px);
+  z-index: 0;
+  display: grid;
+  padding: 0.45em 1.1em 0.5em;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: clamp(14px, 2.2vw, 22px);
+  line-height: 1.2;
+  border: 2px solid var(--gs-line);
+  border-radius: 8px;
+  background: #0a0f22;
+  transform: translateX(-50%);
+}
+/* Posts down to the ridge (hidden behind the roof below it). */
+.gs-sign::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 18%;
+  right: 18%;
+  height: 60px;
+  z-index: -1;
+  border-left: 2px solid var(--gs-line);
+  border-right: 2px solid var(--gs-line);
+}
+/* Halo on the night sky once lit. */
+.gs-sign::after {
+  content: '';
+  position: absolute;
+  inset: -60% -25%;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(ellipse closest-side, rgba(246, 94, 121, 0.22), rgba(138, 58, 185, 0.1) 55%, transparent);
+  animation: gs-sign-on 2.4s step-end 0.5s both;
+}
+.gs-sign-text {
+  grid-area: 1 / 1;
+  padding-left: 0.24em; /* balance the letter-spacing */
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.gs-sign-text--off {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(246, 94, 121, 0.4);
+}
+.gs-sign-text--on {
+  color: #ffeef3;
+  text-shadow:
+    0 0 1px #fff,
+    0 0 5px #f65e79,
+    0 0 12px #f65e79,
+    0 0 24px #8a3ab9,
+    0 0 42px rgba(73, 120, 244, 0.55);
+  animation: gs-sign-on 2.4s step-end 0.5s both;
+}
+
+/* A fluorescent tube catching: a few stutters, then on for good. */
+@keyframes gs-sign-on {
+  0% { opacity: 0; }
+  6% { opacity: 0.9; }
+  9% { opacity: 0; }
+  24% { opacity: 0.7; }
+  26% { opacity: 0.1; }
+  29% { opacity: 1; }
+  31% { opacity: 0; }
+  46% { opacity: 1; }
+  49% { opacity: 0.35; }
+  52% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* ── Bays ───────────────────────────────────────── */
+
+.gs-bays {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gs-bay {
+  position: relative;
+  flex: 0 0 50%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding-bottom: 30px;
+  transition: opacity 0.4s ease;
+}
+.gs-bays--1 .gs-bay { flex-basis: min(100%, 560px); }
+
+.gs-bay-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-stage {
+  position: relative;
+  aspect-ratio: 10 / 8;
+}
+
+/* Wall: board siding, walls drawn on the outer edges only. */
+.gs-facade {
+  position: absolute;
+  inset: 0 0 22%;
+  box-sizing: border-box;
+  border-left: 2px solid var(--gs-line);
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 13px, rgba(252, 247, 240, 0.035) 13px 14px),
+    var(--gs-wall);
+}
+.gs-bay:nth-child(2n) .gs-facade,
+.gs-bay:last-child .gs-facade { border-right: 2px solid var(--gs-line); }
+.gs-bay:nth-child(n + 3) .gs-facade { border-top: 2px solid var(--gs-line); }
+
+/* Door trim (outer line); the opening draws the inner line. */
+.gs-frame {
+  position: absolute;
+  inset: 10% 6.5% 22%;
+  border: 2px solid var(--gs-line);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  pointer-events: none;
+}
+
+.gs-opening {
+  position: absolute;
+  inset: 13.5% 9% 22%;
+  z-index: 2;
+  container-type: size;
+  box-sizing: border-box;
+  border: 2px solid var(--gs-line);
+  border-bottom: 0;
+  background: linear-gradient(to bottom, #05081a, #0a0f24 70%, #0d1330);
+}
+
+.gs-interior {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--gs-line-soft);
+  stroke-width: 1;
+}
+.gs-interior path { vector-effect: non-scaling-stroke; }
+.gs-interior-shelf { stroke: rgba(252, 247, 240, 0.1); }
+
+/* Strip light: the tube is always drawn; .gs-light is what switches on. */
+.gs-tube,
+.gs-tube-glow {
+  position: absolute;
+  top: 7cqh;
+  left: 31%;
+  right: 31%;
+  height: 4px;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+.gs-tube { border: 1.5px solid rgba(252, 247, 240, 0.4); }
+.gs-tube-glow {
+  background: #fffaf0;
+  box-shadow:
+    0 0 4px 1px #fff,
+    0 0 16px 4px color-mix(in srgb, var(--car-accent) 55%, #fff);
+}
+
+.gs-light {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  /* Lights linger while the door comes down. */
+  transition: opacity 0.2s ease 0.55s;
+}
+.gs-wash {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 75% 95% at 50% 6%, color-mix(in srgb, var(--car-accent) 22%, rgba(255, 248, 236, 0.34)), transparent 72%),
+    radial-gradient(ellipse 55% 16% at 50% 100%, rgba(255, 248, 236, 0.12), transparent 75%);
+}
+
+/* Car: sized to the opening, parked on its floor. */
+.gs-car,
+.gs-reflect {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(84cqw, calc(80cqh * var(--ar)));
+  aspect-ratio: var(--ar);
+  transform-origin: 50% 100%;
+}
+.gs-car {
+  bottom: 3cqh;
+  z-index: 2;
+  view-transition-class: garage-car;
+}
+.gs-car-body {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+}
+
+.gs-art { isolation: isolate; }
+.gs-art img { opacity: 1 !important; transition: none !important; }
+.gs-art--outline { opacity: 1; transition: opacity 0.45s ease 0.1s; }
+.gs-art--colored { opacity: 0; transition: opacity 0.45s ease; }
+
+.gs-art-missing {
+  position: absolute;
+  inset: 10% 15%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(252, 247, 240, 0.4);
+  font-size: 13px;
+}
+.gs-art-missing small { opacity: 0.6; }
+
+.gs-lamp {
+  position: absolute;
+  width: 26%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: radial-gradient(circle closest-side,
+    rgba(255, 252, 235, 0.95) 0,
+    rgba(255, 238, 200, 0.6) 14%,
+    color-mix(in srgb, var(--car-accent) 30%, transparent) 38%,
+    transparent 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Mirror image on the polished floor. */
+.gs-reflect {
+  top: 97cqh;
+  z-index: 1;
+  transform: scaleY(-1);
+  transform-origin: 50% 50%;
+  opacity: 0.2;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 42%);
+  mask-image: linear-gradient(to top, #000, transparent 42%);
+  transition: opacity 0.3s ease;
+}
+
+/* Roll-up door, clipped by the opening. Rest: half up. */
+.gs-door-clip {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+.gs-door {
+  --slat: 8.4cqh;
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-bottom: 2px solid var(--gs-line);
+  background:
+    repeating-linear-gradient(to bottom,
+      rgba(252, 247, 240, 0.5) 0 1.5px,
+      rgba(252, 247, 240, 0.07) 1.5px 5px,
+      transparent 5px var(--slat)),
+    linear-gradient(to bottom, #182042, #111834);
+  background-position: 0 100%;
+  transform: translateY(-56%);
+  transition: transform 0.95s var(--gs-ease-door) 0.15s;
+}
+.gs-door-handle {
+  position: absolute;
+  left: 50%;
+  bottom: 4cqh;
+  width: 10cqw;
+  height: 2.6cqh;
+  box-sizing: border-box;
+  border: 1.5px solid rgba(252, 247, 240, 0.7);
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.gs-floor {
+  position: absolute;
+  inset: 78% 0 0;
+  z-index: 1;
+  border-top: 2px solid var(--gs-line);
+  background: linear-gradient(to bottom, rgba(73, 120, 244, 0.06), transparent 75%);
+}
+.gs-spill {
+  position: absolute;
+  inset: 0 6%;
+  opacity: 0;
+  background: radial-gradient(ellipse 48% 75% at 50% 0%,
+    color-mix(in srgb, var(--car-accent) 20%, rgba(255, 248, 236, 0.16)), transparent 75%);
+  transition: opacity 0.3s ease 0.5s;
+}
+
+/* Labels under the bay. */
+.gs-bay-name {
+  display: block;
+  margin-top: 8px;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  line-height: 1.3;
+  text-align: center;
+}
+.gs-bay-sub {
+  margin: 4px 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #3898ec;
+  text-align: center;
+}
+.gs-bay-desc {
+  max-width: 40ch;
+  margin: 0 auto;
+  padding: 0 12px;
+  font-family: 'Lora', serif;
+  font-size: 14.5px;
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0.85;
+}
+.gs-bay-name,
+.gs-bay-sub,
+.gs-bay-desc { transition: opacity 0.3s ease, color 0.2s ease; }
+
+/* ── Open state: hover, keyboard focus, in view (touch), driving ── */
+
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-light {
+  opacity: 1;
+  transition-delay: 0s;
+  animation: gs-flicker 0.75s step-end both;
+}
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-door { transform: translateY(-100%); transition-delay: 0.1s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-art--colored { opacity: 1; transition-delay: 0.3s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-art--outline { opacity: 0; transition-delay: 0.45s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-lamp { opacity: 0.9; transition-delay: 0.6s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-spill { opacity: 1; transition-delay: 0.15s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-bay-name { color: var(--gold, #f3de40); }
+
+@keyframes gs-flicker {
+  0% { opacity: 0; }
+  7% { opacity: 0.85; }
+  11% { opacity: 0.05; }
+  20% { opacity: 0.6; }
+  24% { opacity: 0.1; }
+  34% { opacity: 1; }
+  40% { opacity: 0.5; }
+  44% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.gs-bay-link:focus-visible .gs-frame {
+  outline: 2px solid var(--gold, #f3de40);
+  outline-offset: 6px;
+}
+.gs-bay-link:focus-visible .gs-bay-name { text-decoration: underline; text-underline-offset: 4px; }
+
+/* ── Drive out ──────────────────────────────────── */
+
+.gs-bay.is-leaving { z-index: 5; }
+.gs-bay.is-dim { opacity: 0.35; }
+.is-leaving :is(.gs-bay-name, .gs-bay-sub, .gs-bay-desc) { opacity: 0; }
+.is-leaving .gs-reflect { opacity: 0; }
+.is-leaving .gs-car { animation: gs-roll-out var(--gs-out) cubic-bezier(0.5, 0, 0.2, 1) both; }
+.is-leaving .gs-car-body { animation: gs-pull-away var(--gs-out) linear both; }
+.is-leaving .gs-lamp { animation: gs-beam var(--gs-out) ease-out both; }
+
+@keyframes gs-roll-out {
+  from { transform: none; }
+  to { transform: translate(calc(var(--drive) * 7%), 60%) scale(1.42); }
+}
+/* Squat as it pulls away, dive as it stops, settle. --drive flips it for left-facing cars. */
+@keyframes gs-pull-away {
+  0% { transform: none; }
+  14% { transform: rotate(calc(var(--drive) * -0.9deg)); }
+  34% { transform: none; }
+  74% { transform: none; }
+  86% { transform: translateY(1.4%) rotate(calc(var(--drive) * 1deg)); }
+  95% { transform: translateY(-0.5%) rotate(calc(var(--drive) * -0.25deg)); }
+  100% { transform: none; }
+}
+@keyframes gs-beam {
+  0% { opacity: 0.9; scale: 1; }
+  60% { opacity: 1; scale: 1.5; }
+  100% { opacity: 1; scale: 1.25; }
+}
+
+/* ── Drive in (returning) ───────────────────────── */
+
+.is-returning .gs-light { animation: none; }
+.is-returning .gs-art--colored,
+.is-returning .gs-art--outline,
+.is-returning .gs-lamp,
+.is-returning .gs-door { transition-delay: 0s; transition-duration: 0s; }
+.is-returning .gs-reflect { opacity: 0; transition-delay: 0.6s; }
+.is-returning .gs-car { animation: gs-roll-in var(--gs-in) cubic-bezier(0.35, 0.1, 0.25, 1) both; }
+.is-returning .gs-car-body { animation: gs-back-in var(--gs-in) linear both; }
+
+@keyframes gs-roll-in {
+  from { transform: translate(calc(var(--drive) * 7%), 60%) scale(1.42); }
+  to { transform: none; }
+}
+@keyframes gs-back-in {
+  0%, 70% { transform: none; }
+  82% { transform: translateY(1%) rotate(calc(var(--drive) * -0.8deg)); }
+  92% { transform: translateY(-0.4%) rotate(calc(var(--drive) * 0.2deg)); }
+  100% { transform: none; }
+}
+
+/* The car art morphing into / out of the log's sidebar thumbnail. */
+::view-transition-group(*.garage-car) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+/* ── Phone: one bay per row, full width ─────────── */
+
+@media (max-width: 600px) {
+  .gs-bay { flex-basis: 100%; }
+  .gs-bay .gs-facade { border-right: 2px solid var(--gs-line); }
+  .gs-bay + .gs-bay .gs-facade { border-top: 2px solid var(--gs-line); }
+  .gs-bay-name { font-size: 20px; }
+}
+
+/* ── Reduced motion: no driving, rolling or flicker; states fade. ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .gs *,
+  .gs *::before,
+  .gs *::after { animation: none !important; }
+  .gs-door { transition: none !important; }
+  .gs-light,
+  .gs-lamp,
+  .gs-spill,
+  .gs-art--outline,
+  .gs-art--colored { transition-duration: 0.2s !important; transition-delay: 0s !important; }
+  ::view-transition-group(*) { animation-duration: 0.2s; }
+}
