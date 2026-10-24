@@ -134,12 +134,12 @@ The front-view four-bar is set by four points: LCA pivot, UCA pivot, LBJ and UBJ
 
 <figure class="wide" style="margin:1rem 0">
   <img src="/assets/projects/a40-austin/blog/plots/knuckle_3view.png" alt="Knuckle 3-view schematic - front, side, and plan views" style="width:100%" />
-  <figcaption>Knuckle 3-view (scanned). Front: kingpin axis, LBJ at -86 mm below hub, UBJ at +137.75 mm above hub, KPI ~= 12.05 deg. Side: UBJ is 14.15 mm rearward of LBJ -> caster ~= 3.62 deg. Plan: lateral KPI spread (UBJ 47.75 mm more inboard than LBJ).</figcaption>
+  <figcaption>Knuckle 3-view (scanned). Front: kingpin axis, LBJ at -86 mm below hub, UBJ at +137.75 mm above hub, KPI ~= 12.05 deg. Side: UBJ is 14.15 mm rearward of LBJ -> caster ~= 3.62 deg. Plan: lateral KPI spread (UBJ 47.75 mm more inboard than LBJ). The green steering-arm point is the forum-CAD estimate, not scanned.</figcaption>
 </figure>
 
 <figure class="wide" style="margin:1rem 0">
   <img src="/assets/projects/a40-austin/blog/plots/pickups_3view.png" alt="Pickup point 3-view schematic - front, plan, and side views stacked vertically" style="width:100%" />
-  <figcaption>Inner pivot pickup positions - front, plan, and side views. Gold squares = LCA inner pivots, blue triangles = UCA inner pivots. Lateral from car CL / fore-aft from LCA front pivot / height from LCA pivot.</figcaption>
+  <figcaption>Donor (stock) inner pivot positions - front, plan, and side views. Gold squares = LCA inner pivots, blue triangles = UCA inner pivots. Lateral from car CL / fore-aft from LCA front pivot / height from LCA pivot. The A40 build moves every lateral value 95 mm inboard (LCA 234.5, UCA 273 mm); heights and fore-aft are unchanged. The plan view draws the UCA axis parallel to the CL; the real axis is canted (see the narrowing analysis).</figcaption>
 </figure>
 
 ## Donor engineering drawings

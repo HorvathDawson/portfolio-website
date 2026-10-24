@@ -41,3 +41,8 @@ _Filled by the reviewer._
 - Column is a Gen 4 Prius (2016–2022), chosen for its opendbc decoding (openpilot supports all of them; one DBC, `toyota_nodsu_pt_generated`).
 - Gateway post now quotes the real DBC lines: 0xB4 SPEED bytes 5–6 at 0.01 km/h + `toyota_checksum`; 0x1C4 ENGINE_RPM bytes 0–1 signed at 0.78125 rpm/bit + ENGINE_RUNNING, no checksum. Checksum code copied from opendbc.
 - Still verify: send rates and the full set of frames the column needs (donor log + bench), and the undocumented `ENCODER` byte.
+
+## Owner decisions (Oct 2026): dash power and battery
+- Pi 5 + display fed directly by the DCDC-USB with V(out) jumpered to 5 V (~33 W, under the manual's 40 W forced-air point; ~3 A from 12 V, 5 A source fuse kept). Buck removed; it is the fallback if the Pi reports undervoltage.
+- Bring-up: set jumper, power-cycle, measure 5 V with a meter before connecting the Pi; ≥5.0 V at the Pi under load; `vcgencmd get_throttled` = 0x0.
+- Battery: probably the boot (not final); cable sizing assumes the boot.
