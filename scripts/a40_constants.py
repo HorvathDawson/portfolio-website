@@ -182,6 +182,14 @@ def derive(i):
     put("a40_stock_outer_edge", (i["a40_stock_track"] + i["a40_stock_tyre_width"]) / 2, "mm", "locked", decimals=1)
     put("tyre_inner_edge", ht - i["tyre_width"] / 2, "mm", "working", decimals=1)
     put("a40_stock_inner_edge", (i["a40_stock_track"] - i["a40_stock_tyre_width"]) / 2, "mm", "locked", decimals=1)
+    put("tyre_outer_gain", oo - a40_out, "mm", "working", "Nominal outer-to-outer minus stock A40.",
+        decimals=0, signed=True)
+    put("tyre_outer_gain_exact", t + i["tyre_width"] - a40_out, "mm", "working",
+        "Exact-track outer-to-outer minus stock A40.", decimals=0, signed=True)
+    put("tyre_poke_rounding", abs(t - tn) / 2, "mm", "working",
+        "Per-side poke difference between the exact and nominal track.", decimals=0)
+    put("tyre_inner_shift", (i["a40_stock_track"] - i["a40_stock_tyre_width"]) / 2 - (ht - i["tyre_width"] / 2),
+        "mm", "working", "How much further inboard the inner tyre edge sits than stock.", decimals=0)
 
     # Rear
     rht = put("rear_half_track", i["rear_track"] / 2, "mm", "locked")
@@ -268,6 +276,13 @@ def derive_geometry(i, g):
         note="Roll travel at the nominal roll target + amplified road input.")
     put("travel_budget_hi", g["roll_travel_wheel"]["value"] + amp_hi, "mm", decimals=0,
         note="Roll travel at the nominal roll target + amplified road input.")
+    half = g["uca_cant_offset"]["value"] / 2
+    put("uca_cant_half", half, "mm", decimals=1,
+        note="Half the plan-cant offset: each UCA pivot sits this far either side of the pivot-line midpoint.")
+    put("uca_pivot_front", g["uca_pivot"]["value"] + half, "mm", decimals=0,
+        note="Front UCA pivot from CL (midpoint + half the cant offset).")
+    put("uca_pivot_rear", g["uca_pivot"]["value"] - half, "mm", decimals=0,
+        note="Rear UCA pivot from CL (midpoint − half the cant offset).")
     put("roll_arm_lo", i["cg_height"] - g["roll_axis_rc_hi"]["value"], "mm", decimals=0,
         note="CG height − roll-axis height (rear RC high end).")
     put("roll_arm_hi", i["cg_height"] - g["roll_axis_rc_lo"]["value"], "mm", decimals=0,
@@ -482,6 +497,9 @@ def run_self_tests():
         ("shaft 5.4, joints 2.4", d["shaft_angle"].raw() == "5.4" and d["ujoint_front"].raw() == "2.4"),
         ("Ackermann 17.40", d["ackermann_knuckle"].raw() == "17.40"),
         ("poke 35 (37 exact)", v("tyre_poke") == 35 and v("tyre_poke_exact") == 37),
+        ("outer +70 (+74 exact), rounding 2, inner shift 35",
+         d["tyre_outer_gain"].raw() == "+70" and d["tyre_outer_gain_exact"].raw() == "+74"
+         and v("tyre_poke_rounding") == 2 and v("tyre_inner_shift") == 35),
         ("format: half-up, minus sign", format_number(0.125, 2) == "0.13" and format_number(-19.1, 1) == "−19.1"
          and format_number(15.8, 1, signed=True) == "+15.8" and format_number(2886, round_to=10) == "2890"),
     ]

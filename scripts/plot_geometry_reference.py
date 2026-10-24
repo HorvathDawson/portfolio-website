@@ -2412,10 +2412,10 @@ def _draw_arm_core(
 
     # Inner pivot markers — rectangles representing bushing extents
     pw = SUSP["pivot_width"]  # visual lateral width for all pivots
-    for ip, tag, y_off, bush_len in zip(
+    for ip, tag, sgn, bush_len in zip(
         (inner_f, inner_r),
         ("Front pivot", "Rear pivot"),
-        (20, -28),
+        (1, -1),
         (bushing_lengths or (0, 0)),
     ):
         if bush_len > 0:
@@ -2434,14 +2434,17 @@ def _draw_arm_core(
             )
             ax.add_patch(rect)
         ax.plot(*ip, "s", color=color, markersize=7, zorder=5)
+        # Label just beyond the bushing end (front above, rear below), so it
+        # never sits on the bushing rectangle.
         ax.text(
             ip[0],
-            ip[1] + y_off,
+            ip[1] + sgn * (max(bush_len, 20) / 2 + 5),
             tag,
             fontsize=6.5,
             color=color,
             alpha=0.85,
             ha="center",
+            va="bottom" if sgn > 0 else "top",
         )
 
     # BJ marker
@@ -2598,7 +2601,7 @@ def plot_lca_plan():
     # ── dimension callouts ──────────────────────────────────────────
     lca_lat = abs(lca_f[0])  # 336.25 mm
     # Lateral: both pivots → BJ  (both at same inboard distance)
-    y_bot = lca_r[1] - 30  # below rear pivot
+    y_bot = lca_r[1] - SUSP["lca_r_bushing"] / 2 - 32  # below the rear pivot label
     ax.annotate(
         "",
         xy=(bj[0], y_bot),
@@ -2615,61 +2618,35 @@ def plot_lca_plan():
         alpha=0.85,
     )
 
-    # Fore-aft: front pivot rearward of BJ (−25 mm)
-    ax.annotate(
-        "",
-        xy=(lca_f[0] - 15, bj[1]),
-        xytext=(lca_f[0] - 15, lca_f[1]),
-        arrowprops=dict(arrowstyle="<->", color=TEXT, lw=0.8, alpha=0.6),
-    )
-    ax.text(
-        lca_f[0] - 28,
-        lca_f[1] / 2,
-        f"−{SUSP['lca_bj_fa']:.0f} mm\nrear",
-        fontsize=6.5,
-        color=TEXT,
-        ha="right",
-        va="center",
-        alpha=0.8,
-    )
-
-    # Fore-aft: rear pivot rearward of BJ (−348.5 mm)
+    # Fore-aft dimensions: one column each (arrow x), label placed left of
+    # its own arrow with a fixed gap in points, at a height where no other
+    # arrow passes, so no label sits on an arrow.
     rear_fa_total = SUSP["lca_bj_fa"] + SUSP["lca_fa_span"]
-    ax.annotate(
-        "",
-        xy=(lca_r[0] - 40, bj[1]),
-        xytext=(lca_r[0] - 40, lca_r[1]),
-        arrowprops=dict(arrowstyle="<->", color=TEXT, lw=0.8, alpha=0.6),
-    )
-    ax.text(
-        lca_r[0] - 53,
-        lca_r[1] / 2,
-        f"−{rear_fa_total:.0f} mm\nrear",
-        fontsize=6.5,
-        color=TEXT,
-        ha="right",
-        va="center",
-        alpha=0.8,
-    )
-
-    # Fore-aft span between pivots (= lca_fa_span = 322.5 mm)
-    mid_x = lca_r[0] - 70
-    ax.annotate(
-        "",
-        xy=(mid_x, lca_f[1]),
-        xytext=(mid_x, lca_r[1]),
-        arrowprops=dict(arrowstyle="<->", color=GOLD, lw=0.9, alpha=0.55),
-    )
-    ax.text(
-        mid_x - 8,
-        (lca_f[1] + lca_r[1]) / 2,
-        f"{SUSP['lca_fa_span']:.0f} mm\nspan",
-        fontsize=6.5,
-        color=GOLD,
-        ha="right",
-        va="center",
-        alpha=0.8,
-    )
+    x_front = lca_f[0] - 22   # −25 mm: front pivot rearward of BJ
+    x_rear = lca_r[0] - 95    # −348 mm: rear pivot rearward of BJ
+    x_span = lca_r[0] - 155   # 322 mm: span between pivots
+    for x_arr, y0, y1, y_lab, text, col, alpha in [
+        (x_front, bj[1], lca_f[1], lca_f[1] / 2, f"−{SUSP['lca_bj_fa']:.0f} mm\nrear", TEXT, 0.6),
+        (x_rear, bj[1], lca_r[1], lca_r[1] * 0.62, f"−{rear_fa_total:.0f} mm\nrear", TEXT, 0.6),
+        (x_span, lca_f[1], lca_r[1], (lca_f[1] + lca_r[1]) / 2, f"{SUSP['lca_fa_span']:.0f} mm\nspan", GOLD, 0.55),
+    ]:
+        ax.annotate(
+            "",
+            xy=(x_arr, y0),
+            xytext=(x_arr, y1),
+            arrowprops=dict(arrowstyle="<->", color=col, lw=0.8, alpha=alpha),
+        )
+        ax.annotate(
+            text,
+            xy=(x_arr, y_lab),
+            xytext=(-5, 0),
+            textcoords="offset points",
+            fontsize=6.5,
+            color=col,
+            ha="right",
+            va="center",
+            alpha=0.85,
+        )
 
     # BJ reference lines
     ax.axhline(bj[1], color=GRID2, lw=0.9, alpha=0.55, linestyle=":")
@@ -2682,7 +2659,7 @@ def plot_lca_plan():
     ax.set_ylabel("← Rear    +y forward →  (mm)")
     ax.set_aspect("equal")
     pad = 40
-    left_pad = 110  # extra room for inboard-side fa-offset labels
+    left_pad = 215  # extra room for inboard-side fa-offset labels
     all_x = [bj[0], lca_f[0], lca_r[0], cov_pt[0], arb_pt[0]]
     all_y = [bj[1] + 20, lca_f[1], lca_r[1], y_bot - 28, max(cov_pt[1], arb_pt[1]) + 45]
     ax.set_xlim(min(all_x) - left_pad, max(all_x) + pad)
@@ -2716,7 +2693,7 @@ def plot_uca_plan():
 
     uca_lat = abs(mid_lat)  # 250 mm, UBJ -> pivot-line midpoint
     span = np.linalg.norm(uca_f - uca_r)  # 220 mm along the axis
-    y_bot = uca_r[1] - 25
+    y_bot = uca_r[1] - SUSP["uca_bushing"] / 2 - 30  # below the rear pivot label
 
     # Lateral: pivot-line midpoint -> BJ
     ax.annotate(
@@ -2783,7 +2760,7 @@ def plot_uca_plan():
     ax.plot([mid_lat, mid_lat], [uca_r[1] - 10, uca_f[1] + 10], color=TEXT, lw=0.8,
             ls=":", alpha=0.5, zorder=2)
     ax.text(
-        mid_lat + 30,
+        mid_lat + 45,
         uca_f[1] + 36,
         f"Bushing axis canted {cant_deg:.1f}° in plan\n"
         f"(front pivot {2 * dlat:.1f} mm outboard of rear; dotted = parallel to CL)",

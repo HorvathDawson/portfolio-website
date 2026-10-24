@@ -16,7 +16,7 @@ The frame is a ladder (two main rails plus crossmembers) designed from scratch i
 | Wheelbase | {{wheelbase}} (locked, stock A40) | [constants](./build-constants) |
 | Front track | ~{{front_track_nominal}}: hub face {{front_hub_face}} from CL ({{front_narrowing}}/side narrowing) | [narrowing](./narrowing-analysis) |
 | Rear track | {{rear_track}}: hub face {{rear_hub_face}} from CL | [rear suspension](./rear-suspension) |
-| Front inner pivots | LCA {{lca_pivot}}, UCA {{uca_pivot:0}} from CL; fore/aft spacing and heights kept from the donor | [donor dimensions](./donor-geometry-dimensions) |
+| Front inner pivots | LCA {{lca_pivot}}, UCA {{uca_pivot:0}} from CL (UCA to the pivot-line midpoint; with the {{uca_plan_cant}} plan cant the front/rear pivots sit ±{{uca_cant_half}} either side, {{uca_pivot_front:raw}}/{{uca_pivot_rear}}); fore/aft spacing and heights kept from the donor | [donor dimensions](./donor-geometry-dimensions) |
 | Rear inner pivots | Every Miata rear inboard pickup (toe links included) moved inboard by ~{{rear_narrowing_lo:raw}}–{{rear_narrowing_hi}}/side (measure the donor) | [rear suspension](./rear-suspension) |
 | Diff | RX-8, on custom frame mounts, pinion parallel to the gearbox | [rear suspension](./rear-suspension) |
 | Engine + gearbox | SR20DET, CD009 or Z32; tunnel sized to the CD009; {{engine_angle}} tail-down | [motor selection](./motor-selection) |

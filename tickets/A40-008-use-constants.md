@@ -1,7 +1,7 @@
 ---
 id: A40-008
 title: Replace hard-coded numbers with constants
-status: in-progress
+status: review
 owner: constants agent
 reviewer: independent reviewer agent (2026-10-24, did not implement)
 blocked_by: A40-007
@@ -11,7 +11,7 @@ blocked_by: A40-007
 All of content/a40/*.md, scripts/plot_geometry_reference.py, scripts/a40-*.py, src/blog/roadmapData.ts
 
 ## Acceptance criteria
-- [ ] Every number listed in constants.yaml is a placeholder in the posts (grep for the literal values returns only the YAML, generated JSON, and historical log entries where the old value is the point)
+- [x] Every number listed in constants.yaml is a placeholder in the posts (grep for the literal values returns only the YAML, generated JSON, and historical log entries where the old value is the point)
 - [x] Rendered posts read the same as before apart from intended corrections (diff the rendered text)
 - [x] Plots regenerate identically or with intended changes only
 
@@ -39,3 +39,15 @@ Independent reviewer, 2026-10-24 (working tree 6d0da56, clean).
    then write `stock: {{tyre_outer_gain}}, {{tyre_poke}}/side`, `the table gives {{tyre_outer_gain_exact:raw}}`, `the {{tyre_poke_rounding}} difference`, `reaches ~{{tyre_inner_shift}} further *inboard*`. Run `npm run constants`, `npm run check-constants`, and re-run the ET 38→40 test in a scratch copy (should read +70 / 35 / 0 mm / 37 at ET40).
 2. content/a40/narrowing-analysis.md:80 "higher ET (ET45 = −7 mm/side …), narrower tyre (195 = −5 mm/side)" is relative to ET38/205. Fix: make it independent of the inputs, e.g. "higher ET (each extra mm of ET moves the tyre 1 mm inboard; check caliper clearance), narrower tyre (each 10 mm narrower brings the outer edge in 5 mm/side)".
 3. (minor) content/a40/geometry-design-reference.md:109 img alt "Body roll at 0.8 g" → "Body roll at {{lateral_accel}}".
+
+## Fixes after review (constants agent, 2026-10-24)
+Working tree, not committed.
+
+1. **narrowing-analysis:72 dependent literals** → new derived values in `derive()` (scripts/a40_constants.py, after `tyre_inner_edge`): `tyre_outer_gain` (oo − stock outer, signed), `tyre_outer_gain_exact` (exact track, signed), `tyre_poke_rounding` (|t − tn| / 2), `tyre_inner_shift` (stock inner edge − new inner edge). The post now reads `stock: {{tyre_outer_gain}}, {{tyre_poke}}/side`, `the table gives {{tyre_outer_gain_exact:raw}}`, `the {{tyre_poke_rounding}}/side difference`, `~{{tyre_inner_shift}} further *inboard*`. New self-test: "+70 (+74 exact), rounding 2, inner shift 35" (18 self-tests now).
+2. **narrowing-analysis:80** → input-independent wording: "higher ET (each extra mm of ET moves the tyre 1 mm inboard per side; check caliper clearance), narrower tyre (each 10 mm narrower brings the outer edge in 5 mm per side)".
+3. **geometry-design-reference:109** img alt → "Body roll at {{lateral_accel}} vs CG height…" (renders "0.8 g").
+4. (from A40-009 optional note) UCA bracket position: new derived `uca_cant_half` (6.2 mm), `uca_pivot_front` (279 mm), `uca_pivot_rear` (267 mm) in `derive_geometry()` from `uca_pivot` and `uca_cant_offset`. narrowing-analysis step 3 now says 273 mm is the pivot-line midpoint, front pivot 279 / rear 267, "do not build both brackets at 273"; frame-design "Front inner pivots" row and design-overview front-suspension row say "pivot-line midpoint, front/rear ±6.2 mm with the plan cant".
+
+**ET 38→40 sensitivity re-run** (scratch copy, node_modules symlinked, `wheel_et: 40`, full plot run exit 0, rendered through `parsePost()`): narrowing-analysis reads "+70 mm, 35 mm/side … exact 1230 mm track the table gives +70 (35 mm/side: outer edge 717.5 vs 682.5) … the 0 mm/side difference … ~37 mm further inboard (inner edge 512.5 vs 549.5)". Self-consistent (717.5 − 682.5 = 35, 549.5 − 512.5 = 37). The real repo still has ET 38 (+70 / +74 / 2 / 35, as before).
+
+**Commands (real repo, all exit 0):** `npm run constants`; `python3 scripts/plot_geometry_reference.py` (only lca_plan.png and uca_plan.png changed, from the A40-009 label fixes); `npm run check-constants` (752 placeholders, 18 posts); `python3 scripts/a40_constants.py --test` (18 ok); `node scripts/check-roadmap-plan.mjs` (0 FAIL); `npm run lint`; `npm run build`. Rendered-post link check: 156 links, 0 broken; no `{{` left in rendered text.

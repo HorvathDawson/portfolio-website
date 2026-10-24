@@ -69,7 +69,7 @@ Outer-to-outer minus stock A40 ({{a40_stock_outer}}). Per-side figure is half th
 | 195 mm | +90 | +80 | +64 | +50 |
 | **205 mm (chosen)** | +100 | +90 | **+74** | +60 |
 
-**Tyre poke: ~{{tyre_poke:raw}} mm per side outside the stock A40 tyres.** Outer-to-outer is {{front_track_nominal:raw}} + {{tyre_width:raw}} = **{{tyre_outer_front}}** vs {{a40_stock_track:raw}} + {{a40_stock_tyre_width:raw}} = {{a40_stock_outer}} stock: +70 mm, {{tyre_poke}}/side. This is the figure used across the build posts. At the exact {{front_track}} track the table gives +74 ({{tyre_poke_exact}}/side: outer edge {{tyre_outer_edge}} from CL vs {{a40_stock_outer_edge}} stock); the 2 mm difference is inside the ET and donor-track uncertainty. The tyre also reaches ~35 mm further *inboard* than the stock tyre (inner edge {{tyre_inner_edge:raw}} vs {{a40_stock_inner_edge}}). The earlier version of this table showed ~10 mm/side; every cell carried a +25 mm error. Nothing in the {{front_narrowing}} narrowing gets the outer edge back to stock: no ET in the table brings a 205 under +60.
+**Tyre poke: ~{{tyre_poke:raw}} mm per side outside the stock A40 tyres.** Outer-to-outer is {{front_track_nominal:raw}} + {{tyre_width:raw}} = **{{tyre_outer_front}}** vs {{a40_stock_track:raw}} + {{a40_stock_tyre_width:raw}} = {{a40_stock_outer}} stock: {{tyre_outer_gain}}, {{tyre_poke}}/side. This is the figure used across the build posts. At the exact {{front_track}} track the table gives {{tyre_outer_gain_exact:raw}} ({{tyre_poke_exact}}/side: outer edge {{tyre_outer_edge}} from CL vs {{a40_stock_outer_edge}} stock); the {{tyre_poke_rounding}}/side difference is inside the ET and donor-track uncertainty. The tyre also reaches ~{{tyre_inner_shift}} further *inboard* than the stock tyre (inner edge {{tyre_inner_edge:raw}} vs {{a40_stock_inner_edge}}). The earlier version of this table showed ~10 mm/side; every cell carried a +25 mm error. Nothing in the {{front_narrowing}} narrowing gets the outer edge back to stock: no ET in the table brings a 205 under +60.
 
 This is the main fitment risk. Check against the scanned body envelope:
 
@@ -77,7 +77,7 @@ This is the main fitment risk. Check against the scanned body envelope:
 2. Sweep full bump with wheels straight. Watch the outer shoulder against the fender lip.
 3. Sweep full lock at ride height. Watch the inner shoulder against the inner arch and frame rail (the tyre now reaches further inboard).
 4. Combine full lock + full bump (see caveat below).
-5. If it does not fit, in order of preference: higher ET (ET45 = −7 mm/side, check caliper clearance), narrower tyre (195 = −5 mm/side), small fender flare or lip roll. More narrowing would move the rack, pickups and RC and is the last resort.
+5. If it does not fit, in order of preference: higher ET (each extra mm of ET moves the tyre 1 mm inboard per side; check caliper clearance), narrower tyre (each 10 mm narrower brings the outer edge in 5 mm per side), small fender flare or lip roll. More narrowing would move the rack, pickups and RC and is the last resort.
 
 ---
 
@@ -106,7 +106,7 @@ Near-zero scrub means less kickback and less self-centring under braking; the ex
 
 1. Build to the hub face ({{front_hub_face}} from CL), not to "track". The scanned LBJ/UBJ offsets are measured from the hub-face plane and do not change with narrowing.
 2. LCA brackets: both pivots at {{lca_pivot}} from CL, 322.5 mm apart fore-aft.
-3. UCA brackets: {{uca_pivot:0}} from CL ({{uca_lca_offset}} outboard of the LCA pivots). Check clearance to the SR20 valve cover, exhaust manifold side and inner fender before committing.
+3. UCA brackets: {{uca_pivot:0}} from CL to the pivot-line midpoint ({{uca_lca_offset}} outboard of the LCA pivots). With the {{uca_plan_cant}} plan cant the front pivot sits {{uca_cant_half}} outboard of that ({{uca_pivot_front}}) and the rear pivot {{uca_cant_half}} inboard ({{uca_pivot_rear}}); do not build both brackets at {{uca_pivot:raw:0}}. Check clearance to the SR20 valve cover, exhaust manifold side and inner fender before committing.
 4. Fixture the UCA brackets off the actual arm with a bar through the bushing axis so the 3.5° tilt and the {{uca_plan_cant}} plan cant are captured. ±1 mm on pivot centres is necessary but not sufficient: orientation errors matter as much.
 
 ---

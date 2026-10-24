@@ -59,7 +59,7 @@ Miata rears are sized for a ~1000 kg car closer to 50/50; the A40 is ~{{operatin
 - **Ratio:** the stock RX-8 6-speed final drive is about {{final_drive}} (verify on the unit). Engine speed at {{reference_speed}} on {{tyre_size}} ({{tyre_circumference}} circumference):
 
 | Final drive | CD009 5th ({{gear_5th}}) | CD009 6th ({{gear_6th}}) | Z32 5th ({{gear_z32_top}}, verify) |
-|---|---|---|
+|---|---|---|---|
 | {{final_drive}} | {{rpm_fd_5th}} | {{rpm_fd_6th}} | {{rpm_fd_z32_top}} |
 | {{final_drive_alt1}} | {{rpm_alt1_5th}} | {{rpm_alt1_6th}} | {{rpm_alt1_z32_top}} |
 | {{final_drive_alt2}} | {{rpm_alt2_5th}} | {{rpm_alt2_6th}} | {{rpm_alt2_z32_top}} |

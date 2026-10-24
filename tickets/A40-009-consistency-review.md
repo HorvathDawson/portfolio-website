@@ -1,7 +1,7 @@
 ---
 id: A40-009
 title: Independent cross-post consistency review
-status: in-progress
+status: review
 owner: consistency-review agent (2026-10-24)
 reviewer: independent reviewer agent (2026-10-24, did not edit any A40 file)
 blocked_by: A40-001 … A40-008
@@ -11,7 +11,7 @@ blocked_by: A40-001 … A40-008
 Each fix agent saw only its own files. Someone needs to read the whole build log as the owner will use it.
 
 ## Acceptance criteria
-- [ ] Every A40 post read end to end; any number that disagrees with constants.yaml listed and fixed
+- [x] Every A40 post read end to end; any number that disagrees with constants.yaml listed and fixed
 - [x] Physics spot-checks redone by hand: ride frequency, roll angle, LLTD, damping, rpm table, U-joint angles, track/ET, tyre OD
 - [x] No mention of Ford 9", four-link, live-axle coilovers or 950 mm spring base except as history
 - [x] No pronoun or name errors; first-person voice kept in log posts
@@ -102,3 +102,16 @@ Independent reviewer, 2026-10-24 (working tree 6d0da56, clean). Rendered all 18 
 3. Dependent literals in narrowing-analysis:72/:80 (+74, 2 mm, ~35 mm inboard, ET45 −7) are tracked in A40-008 Failed checks; fix them there.
 
 Optional, not blocking: lca_plan.png "−25 mm rear" and "−348 mm rear" dimension labels sit on top of their arrows, and uca_plan.png's "Rear pivot" label is half under the bushing rectangle; narrowing-analysis "UCA brackets: 273 mm from CL" could add "(pivot-line midpoint; front pivot +6.2, rear −6.2 mm with the 3.2° cant)" so nobody builds both brackets at 273.
+
+## Fixes after review (consistency-review agent, 2026-10-24)
+Working tree, not committed.
+
+1. **rear-suspension rpm table**: separator row now `|---|---|---|---|` (4 cells, matching the header). Re-rendered through `parsePost()`: a `<table>` with 4 header cells (Final drive / CD009 5th (1.000) / CD009 6th (0.794) / Z32 5th (0.759, verify)) and 3 body rows (4.44: 3640/2890/2760; 4.10: 3360/2670/2550; 3.91: 3200/2540/2430); no raw `|---` left in the page HTML.
+2. **donor-geometry-dimensions uca_plan caption**: "both pivots 110 mm either side of the pivot-line midpoint, along the bushing axis (220 mm c-to-c)". The same error was in the Arm symmetry table row (line 89, "±110 mm from BJ"), now "±110 mm from the pivot-line midpoint".
+3. **narrowing-analysis dependent literals**: fixed under A40-008 "Fixes after review" (new derived `tyre_outer_gain`, `tyre_outer_gain_exact`, `tyre_poke_rounding`, `tyre_inner_shift`; ET/width sentence reworded; ET40 test passes).
+4. **Optional notes, done:**
+   - `lca_plan.png`: the three fore-aft dimensions now each have their own column (−25 mm at pivot −22, −348 mm at pivot −95, 322 mm span at pivot −155) and each label sits left of its own arrow with a fixed 5 pt gap, so no label sits on an arrow; left padding widened to fit.
+   - `_draw_arm_core` (shared by lca_plan and uca_plan): "Front pivot" / "Rear pivot" labels sit beyond the bushing ends (front above, rear below), not on the bushing; lateral dimension lines moved down to clear the rear label; uca_plan cant note moved right to clear the "Front pivot" label. Both PNGs opened after the full regeneration: no overlaps.
+   - UCA brackets: new derived `uca_cant_half` / `uca_pivot_front` / `uca_pivot_rear` (6.2 / 279 / 267 mm). narrowing-analysis step 3, frame-design and design-overview now say 273 mm is the pivot-line midpoint with the front/rear pivots ±6.2 mm.
+
+Commands (all exit 0): `npm run constants`, `python3 scripts/plot_geometry_reference.py` (only lca_plan.png, uca_plan.png changed), `npm run check-constants`, `python3 scripts/a40_constants.py --test` (18 ok), `node scripts/check-roadmap-plan.mjs` (0 FAIL), `npm run lint`, `npm run build`. Link check over rendered posts: 156, 0 broken.

@@ -106,7 +106,7 @@ $h_{RA}$ is the roll-axis height under the CG: front RC + {{rear_weight_fraction
 CG uncertainty matters as much as the rear RC: at {{cg_height_low:raw}} / {{cg_height_high}}, springs-only roll is {{roll_springs_cg_low}} / {{roll_springs_cg_high}} and the ARB need for {{roll_target_nom}} is {{arb_add_cg_low:raw}} / {{arb_add_cg_high}}.
 
 <figure>
-  <img src="/assets/projects/a40-austin/blog/plots/roll_vs_cg.png" alt="Body roll at 0.8 g vs CG height for springs only and added ARB stiffness" />
+  <img src="/assets/projects/a40-austin/blog/plots/roll_vs_cg.png" alt="Body roll at {{lateral_accel}} vs CG height for springs only and added ARB stiffness" />
   <figcaption>Roll at {{lateral_accel}} vs CG height. Lines at rear RC {{rear_rc_nom}}, bands span rear RC {{rear_rc_lo:raw}}-{{rear_rc_hi}}. About {{arb_add_rc_nom_nom:0}} of bar stiffness puts the estimated CG at {{roll_target_nom}}.</figcaption>
 </figure>
 

@@ -86,7 +86,7 @@ Ball-joint positions and KPI/caster are fixed by the casting and do not change w
 | Inner pivots from CL, stock | 378.0 mm | **{{uca_pivot_miata:0}}** | scanned | {{front_hub_face_miata:raw}} − 382 (pivot line is 382 mm in from the hub face). **{{uca_lca_offset}} outboard of the LCA pivots** (normal short-long-arm layout). |
 | Inner pivots from CL, A40 | - | **{{uca_pivot:0}}** | build | {{uca_pivot_miata:raw:0}} − {{front_narrowing:raw}} |
 | Effective length (UBJ → pivot line, lateral) | - | **250 mm** | derived | 382 − 132 |
-| Arm symmetry | asymmetric (+113.5 / −143.5) | **symmetric, ±110 mm from BJ** | scanned | 220 mm c-to-c along the bushing axis |
+| Arm symmetry | asymmetric (+113.5 / −143.5) | **symmetric, ±110 mm from the pivot-line midpoint** | scanned | 220 mm c-to-c along the bushing axis |
 | Front pivot height above LCA pivot | 192 mm | **181.78 mm** | scanned | Centre + 6.78 mm |
 | Rear pivot height above LCA pivot | 170 mm | **168.22 mm** | scanned | Centre − 6.78 mm. Total tilt 13.56 mm over 220 mm ≈ 3.5° front-high. |
 | Pivot centre height above LCA pivot | 181 mm | **175 mm** | derived | (front + rear) / 2 |
@@ -124,7 +124,7 @@ The front-view four-bar is set by four points: LCA pivot, UCA pivot, LBJ and UBJ
 
 <figure style="margin:1rem 0">
   <img src="/assets/projects/a40-austin/blog/plots/uca_plan.png" alt="UCA plan view schematic" style="width:100%" />
-  <figcaption>UCA plan view (top-down). BJ at origin, +x outboard, +y forward. Symmetric arm: both pivots 110 mm from the BJ along the bushing axis (220 mm c-to-c), 57 mm bushings drawn along that axis. Lateral arm length (UBJ -> pivot-line midpoint) = 250 mm; the UCA pivot line sits {{uca_lca_offset}} outboard of the LCA pivot line. The axis is drawn at its plan cant, {{uca_plan_cant}} (front pivot {{uca_cant_offset}} outboard of the rear; dotted line = parallel to the CL), so the pivots sit +124 mm and −96 mm fore-aft of the BJ. The cant is inferred from the scanned UBJ position and the symmetric arm, not measured directly (see the [narrowing analysis](./narrowing-analysis#scanned-donor-geometry-what-it-changes)). The axis is also tilted ~3.5° front-high in side view.</figcaption>
+  <figcaption>UCA plan view (top-down). BJ at origin, +x outboard, +y forward. Symmetric arm: both pivots 110 mm either side of the pivot-line midpoint, along the bushing axis (220 mm c-to-c), 57 mm bushings drawn along that axis. Lateral arm length (UBJ -> pivot-line midpoint) = 250 mm; the UCA pivot line sits {{uca_lca_offset}} outboard of the LCA pivot line. The axis is drawn at its plan cant, {{uca_plan_cant}} (front pivot {{uca_cant_offset}} outboard of the rear; dotted line = parallel to the CL), so the pivots sit +124 mm and −96 mm fore-aft of the BJ. The cant is inferred from the scanned UBJ position and the symmetric arm, not measured directly (see the [narrowing analysis](./narrowing-analysis#scanned-donor-geometry-what-it-changes)). The axis is also tilted ~3.5° front-high in side view.</figcaption>
 </figure>
 
 <figure style="margin:1rem 0">
