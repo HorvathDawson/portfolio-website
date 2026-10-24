@@ -1,7 +1,7 @@
 ---
 id: GAR-006
 title: Roadmap views for deciding what to work on
-status: review
+status: done
 owner: roadmap-views agent
 reviewer: independent review agent
 blocked_by:
@@ -19,7 +19,7 @@ The swim-lane map shows all 174 tasks and 388 edges at once. It's hard to see wh
 ## Acceptance criteria
 - [x] Every "ready" task has all hard dependencies complete/decided (checked by a script against the real data)
 - [x] Critical path is a valid chain of unfinished tasks along hard edges
-- [ ] Works at 390 px wide with no page-level horizontal scroll; keyboard-usable
+- [x] Works at 390 px wide with no page-level horizontal scroll; keyboard-usable
 - [x] Map view unchanged
 - [x] `npm run build` and `npm run lint` pass
 - [ ] Owner has tried it and picked the default view
@@ -52,3 +52,6 @@ Owner box ("tried it and picked the default view") stays open.
 
 ## Fix after review (Oct 2026)
 - TaskDrawer focuses its close button on open; closing returns focus to the card that opened it. Checked in Playwright: Enter on a Next up card → focus on .rm-drawer-close; Enter → focus back on .rv-card-main. Needs reviewer re-tick.
+
+### Re-check of the fix (2026-10-24)
+Re-check, independent reviewer (did not implement the fixes), 2026-10-24, on 80c37a3 + A40-010 working tree: A40Roadmap.tsx `TaskDrawer` focuses `closeRef` (`.rm-drawer-close`) on open; A40RoadmapViews.tsx stores `document.activeElement` in `opener` in `openInfo` and refocuses it in `closeInfo` (used by Escape and the close button). Playwright at 1440x900 and 390x844: Next up, focus first `.rv-card-main` → Enter → activeElement `.rm-drawer-close`, inside `.rm-drawer`, URL `?view=next&task=t-decide-arb-front` → Escape → focus back on the same card, URL `?view=next`; Enter on the close button also returns focus to the card. Tree view: same via the `.rv-node-info` button (`&info=t-narrowing-analysis`), focus returns to it. scrollWidth 390 on Next up, Tree and Map at 390; no console errors; build/lint exit 0. Keyboard box now ticked. **Pass; status done** (owner box "tried it and picked the default view" still open, owner-only).

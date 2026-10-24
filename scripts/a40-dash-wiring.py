@@ -1,8 +1,8 @@
 """
 A40 Austin: digital dash + EPAS gateway power/CAN wiring (WireViz).
 
-Emits a YAML harness description and renders it with WireViz to SVG + PNG in
-public/assets/projects/a40-austin/blog/dash/dash-wiring.{svg,png}.
+Emits a YAML harness description and renders it with WireViz to SVG in
+public/assets/projects/a40-austin/blog/dash/dash-wiring.svg.
 
 Power architecture (matches content/a40/digital-dash.md):
   * Constant +12 V (5 A fuse at the source, 18-14 AWG) -> Mini-Box DCDC-USB V(in).
@@ -235,7 +235,7 @@ def main() -> None:
         subprocess.run(
             [
                 "wireviz",
-                "-f", "sp",  # SVG + PNG
+                "-f", "s",  # SVG only (the post uses the SVG)
                 "-o", str(OUT_DIR),
                 "-O", "dash-wiring",
                 str(yml),
@@ -243,7 +243,7 @@ def main() -> None:
             check=True,
         )
 
-    for ext in ("svg", "png"):
+    for ext in ("svg",):
         f = OUT_DIR / f"dash-wiring.{ext}"
         print("wrote", f, f"({f.stat().st_size:,} B)")
 

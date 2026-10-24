@@ -1,7 +1,7 @@
 ---
 id: A40-009
 title: Independent cross-post consistency review
-status: review
+status: done
 owner: consistency-review agent (2026-10-24)
 reviewer: independent reviewer agent (2026-10-24, did not edit any A40 file)
 blocked_by: A40-001 … A40-008
@@ -115,3 +115,12 @@ Working tree, not committed.
    - UCA brackets: new derived `uca_cant_half` / `uca_pivot_front` / `uca_pivot_rear` (6.2 / 279 / 267 mm). narrowing-analysis step 3, frame-design and design-overview now say 273 mm is the pivot-line midpoint with the front/rear pivots ±6.2 mm.
 
 Commands (all exit 0): `npm run constants`, `python3 scripts/plot_geometry_reference.py` (only lca_plan.png, uca_plan.png changed), `npm run check-constants`, `python3 scripts/a40_constants.py --test` (18 ok), `node scripts/check-roadmap-plan.mjs` (0 FAIL), `npm run lint`, `npm run build`. Link check over rendered posts: 156, 0 broken.
+
+### Re-check of the fixes (2026-10-24)
+Re-check, independent reviewer (did not implement the fixes), 2026-10-24, on 80c37a3 + A40-010 working tree: 
+- Fix 1: rear-suspension.md:61 separator is `|---|---|---|---|`. Built site: the rpm table renders as a `<table>` with 4 header cells and 3 rows (4.44: 3640/2890/2760; 4.10: 3360/2670/2550; 3.91: 3200/2540/2430 rpm), no `|---` in the page text; at 390 it scrolls inside its own box (page scrollWidth 390). Screenshots `desk-el-rear-suspension-rpm-table.png`, `phone-el-rear-suspension-rpm-table.png`.
+- Fix 2: donor-geometry-dimensions:127 caption and :89 table row say "110 mm either side of / ±110 mm from the pivot-line midpoint (220 mm c-to-c)".
+- Fix 3: see A40-008 re-check (pass).
+- Optional plot notes: lca_plan.png / uca_plan.png regenerate byte-identical to the committed files (full `python3 scripts/plot_geometry_reference.py` run, exit 0).
+- Regression: 20 posts, 237 internal links (./slug, #heading, /garage, /assets) resolved against the built pages' ids and public/: 0 broken; 30 images + 1 PDF referenced in content/ all served (200, image/pdf types); KaTeX 0 errors; no console errors. Build, lint, check-constants exit 0.
+**Pass; status done.**

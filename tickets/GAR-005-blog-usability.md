@@ -1,7 +1,7 @@
 ---
 id: GAR-005
 title: Blog usability cleanup
-status: review
+status: done
 owner:
 reviewer: independent review agent
 blocked_by:
@@ -76,3 +76,6 @@ The four acceptance boxes themselves pass and stay ticked; the ticket goes back 
 
 ## Fix after review (Oct 2026)
 - Phone car pages: the top-bar title is an h1 (span only on the post-not-found view, which has its own h1). Checked: /garage/a40, /garage/autozam, /garage/a40/steering at 390 px each have exactly one h1. Needs reviewer re-tick.
+
+### Re-check of the fix (2026-10-24)
+Re-check, independent reviewer (did not implement the fixes), 2026-10-24, on 80c37a3 + A40-010 working tree: src/blog/GarageBlog.tsx renders `<h1 className="blog-topbar-title">` on the mobile car list and keeps the span only for `missing && slug`; blogStyles.css has `h1.blog-topbar-title { margin: 0; }` (the class rule sets font-size/weight/family, so it looks as before; screenshot `phone-a40.png`). `npm run build` / `npm run lint` exit 0. Playwright on `vite preview --port 5205` (chromium.launch(), 390x844 isMobile/hasTouch): h1 count = 1 on /garage/a40, /garage/autozam and /garage/a40/no-such-post; 1 on every other page checked at both widths. Regression: scrollWidth 390 on every page checked at 390, no console/page errors, no failed requests. **Pass; status done.** Screenshots in `/tmp/claude-0/-home-user/c87f3b61-444e-51a8-bee1-fcced4861d9c/scratchpad/final/`.

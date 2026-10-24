@@ -86,9 +86,9 @@ def styled_fig(nrows=1, ncols=1, figsize=(7, 4.5)):
     return fig, axes
 
 
-def save(fig, name):
+def save(fig, name, dpi=DPI):
     path = os.path.join(OUT_DIR, name)
-    fig.savefig(path, dpi=DPI, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(path, dpi=dpi, bbox_inches="tight", facecolor=fig.get_facecolor())
     plt.close(fig)
     print(f"  saved {path}")
 
@@ -1099,7 +1099,7 @@ def _plot_rc_migration_panel(half_track, hub_z, tire_od, color, title, fname,
               facecolor="#1a2438", edgecolor=color, labelcolor=TEXT,
               handlelength=1.4, borderpad=0.5)
     fig.tight_layout()
-    save(fig, fname)
+    save(fig, fname, dpi=145)  # 11-in figure: ~1580 px, <= 2x the ~780 px post width
     if len(pts):
         print(f"  {fname}: RC x within \u00b1{np.abs(pts[:, 0]).max():.0f} mm, "
               f"y {pts[:, 1].min():.0f}-{pts[:, 1].max():.0f} mm "

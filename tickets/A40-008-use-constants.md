@@ -1,7 +1,7 @@
 ---
 id: A40-008
 title: Replace hard-coded numbers with constants
-status: review
+status: done
 owner: constants agent
 reviewer: independent reviewer agent (2026-10-24, did not implement)
 blocked_by: A40-007
@@ -51,3 +51,12 @@ Working tree, not committed.
 **ET 38→40 sensitivity re-run** (scratch copy, node_modules symlinked, `wheel_et: 40`, full plot run exit 0, rendered through `parsePost()`): narrowing-analysis reads "+70 mm, 35 mm/side … exact 1230 mm track the table gives +70 (35 mm/side: outer edge 717.5 vs 682.5) … the 0 mm/side difference … ~37 mm further inboard (inner edge 512.5 vs 549.5)". Self-consistent (717.5 − 682.5 = 35, 549.5 − 512.5 = 37). The real repo still has ET 38 (+70 / +74 / 2 / 35, as before).
 
 **Commands (real repo, all exit 0):** `npm run constants`; `python3 scripts/plot_geometry_reference.py` (only lca_plan.png and uca_plan.png changed, from the A40-009 label fixes); `npm run check-constants` (752 placeholders, 18 posts); `python3 scripts/a40_constants.py --test` (18 ok); `node scripts/check-roadmap-plan.mjs` (0 FAIL); `npm run lint`; `npm run build`. Rendered-post link check: 156 links, 0 broken; no `{{` left in rendered text.
+
+### Re-check of the fixes (2026-10-24)
+Re-check, independent reviewer (did not implement the fixes), 2026-10-24, on 80c37a3 + A40-010 working tree: 
+- Fix 1: scripts/a40_constants.py `derive()` has `tyre_outer_gain`, `tyre_outer_gain_exact`, `tyre_poke_rounding`, `tyre_inner_shift`, plus a self-test (+70/+74/2/35). narrowing-analysis:72 uses them. Rendered text: "1230 + 205 = 1435 mm vs 1232 + 133 = 1365 mm stock: +70 mm, 35 mm/side … exact 1234 mm track the table gives +74 (37 mm/side: outer edge 719.5 vs 682.5 mm) … the 2 mm/side difference … ~35 mm further inboard (inner edge 514.5 vs 549.5 mm)". Hand-checked: 1234+205−1365 = 74, 719.5−682.5 = 37, (1234−1230)/2 = 2, 549.5−514.5 = 35. (ET40 run not repeated; the derivations are input-driven and the self-test covers ET38.)
+- Fix 2: narrowing-analysis:80 now reads "each extra mm of ET moves the tyre 1 mm inboard per side … each 10 mm narrower brings the outer edge in 5 mm per side": input-independent.
+- Fix 3: roll_vs_cg alt renders "Body roll at 0.8 g vs CG height…".
+- Extra (UCA brackets): `uca_cant_half`/`uca_pivot_front`/`uca_pivot_rear` derived; narrowing-analysis step 3, frame-design and design-overview render "273 mm … pivot-line midpoint … ±6.2 mm … 279/267 mm".
+- Commands: `npm run check-constants` (752 placeholders, 18 posts, generated up to date), `python3 scripts/a40_constants.py --test` (18 ok), `node scripts/check-roadmap-plan.mjs` (0 FAIL), `npm run build`, `npm run lint`: all exit 0. No `{{` in any rendered post (20 posts). Plot regeneration (A40-010): only rc_migration_* changed (A40-010's dpi change); JSON outputs byte-identical.
+**Pass; status done.**
