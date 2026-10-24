@@ -8,7 +8,7 @@
 
    Conventions:
    - `id`        stable kebab-case key, prefixed `t-`
-   - `epic`      must match an `Epic.id` from blogData.ts
+   - `epic`      must match an epic id in the roadmap car's car.json
    - `posts`     blog post slugs (post slug = filename minus
                  leading `\d+-` prefix). 0..N per task.
    - `order`     optional manual depth override (otherwise
@@ -50,7 +50,10 @@
      anti-squat     unchanged by lateral narrowing)
    ============================================================ */
 
-import { allPosts, epics, type Epic, type Status } from './blogData';
+import { postSlugs, roadmapCar, type Epic } from './cars';
+import type { Status } from './frontmatter';
+
+const epics = roadmapCar.epics;
 
 export type TaskId = string;
 
@@ -2705,7 +2708,7 @@ function validateRoadmap(): void {
   const errors: string[] = [];
   const taskIds = new Set(roadmap.tasks.map((t) => t.id));
   const epicIds = new Set(epics.map((e) => e.id));
-  const postSlugs = new Set(allPosts.map((p) => p.slug));
+  const slugSet = new Set(postSlugs(roadmapCar.id));
 
   // Duplicate IDs
   if (taskIds.size !== roadmap.tasks.length) {
@@ -2722,7 +2725,7 @@ function validateRoadmap(): void {
       errors.push(`Task "${t.id}" references unknown epic "${t.epic}".`);
     }
     for (const slug of t.posts ?? []) {
-      if (!postSlugs.has(slug)) {
+      if (!slugSet.has(slug)) {
         errors.push(`Task "${t.id}" references unknown post slug "${slug}".`);
       }
     }

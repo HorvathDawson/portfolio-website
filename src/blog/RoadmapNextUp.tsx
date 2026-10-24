@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { allPosts } from './blogData';
+import { postPath, roadmapCar } from './cars';
+import { postsFor } from './postIndex';
 import { bottleneckCount, type RoadmapTask, type TaskId, type TaskKind } from './roadmapData';
 import {
   criticalPath,
@@ -13,7 +14,7 @@ import {
   unlockedBy,
 } from './roadmapPlan';
 
-const postBySlug = new Map(allPosts.map((p) => [p.slug, p]));
+const postBySlug = new Map(postsFor(roadmapCar.id).map((p) => [p.slug, p]));
 
 const GROUPS: { kind: TaskKind; label: string; hint: string }[] = [
   { kind: 'decision', label: 'Decide', hint: 'Choices that unblock design work' },
@@ -120,7 +121,7 @@ const ReadyCard: React.FC<{
           {onCrit && <span className="rv-crit-badge" title="On the longest remaining chain">critical path</span>}
           {task.deferrable && <span className="rm-card-defer" title={task.deferrable}>⏱ deferrable</span>}
           {posts.map((p) => (
-            <Link key={p.slug} to={`/a40/${p.slug}`} className="rv-post-link" title={p.title}>
+            <Link key={p.slug} to={postPath(roadmapCar.id, p.slug)} className="rv-post-link" title={p.title}>
               ✎ {p.title}
             </Link>
           ))}

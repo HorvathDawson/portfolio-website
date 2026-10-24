@@ -1,5 +1,5 @@
 /* ============================================================
-   A40 Build — Roadmap planning helpers
+   Roadmap planning helpers (the roadmap car, see cars.ts)
    ------------------------------------------------------------
    Pure graph logic behind the "Next up" and "Tree" views. No
    React here: everything takes a `Roadmap` (defaulting to the
@@ -9,7 +9,7 @@
    gate readiness; soft edges are informational.
    ============================================================ */
 
-import { epics } from './blogData';
+import { roadmapCar } from './cars';
 import {
   roadmap as defaultRoadmap,
   bottleneckScores,
@@ -385,7 +385,7 @@ export function progress(rm: Roadmap = defaultRoadmap): Progress {
     e.done += d;
     epicTally.set(t.epic, e);
   }
-  const byEpic = [...epics]
+  const byEpic = [...roadmapCar.epics]
     .sort((a, b) => a.order - b.order)
     .filter((e) => epicTally.has(e.id))
     .map((e) => ({ id: e.id, title: e.title, ...epicTally.get(e.id)! }));
@@ -419,4 +419,4 @@ export const statusLabel: Record<RoadmapTask['status'], string> = {
   decided: 'Decided',
 };
 
-export const epicTitle: Map<string, string> = new Map(epics.map((e) => [e.id, e.title]));
+export const epicTitle: Map<string, string> = new Map(roadmapCar.epics.map((e) => [e.id, e.title]));

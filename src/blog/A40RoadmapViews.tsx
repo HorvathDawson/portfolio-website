@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { buildLogDescription } from './blogData';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { NotFound } from '../components/NotFound';
+import { carPath, roadmapCar, roadmapPath } from './cars';
 import { getTask, type TaskId } from './roadmapData';
 import { readyTasks } from './roadmapPlan';
 import { RoadmapMap, TaskDrawer } from './A40Roadmap';
@@ -12,7 +13,7 @@ import './blogStyles.css';
 import './roadmapViews.css';
 
 /* ============================================================
-   /a40/roadmap — view switcher
+   /garage/<car>/roadmap — view switcher
    ?view=next (default) | tree | map, &task=<id>
      next: task = drawer open on that task
      tree: task = focused task (defaults to the top ready task)
@@ -53,7 +54,7 @@ const ViewSwitcher: React.FC<{ view: View; task: TaskId | null }> = ({ view, tas
 );
 
 export const A40Roadmap: React.FC = () => {
-  usePageMeta({ title: 'Roadmap · A40 Build Log', description: buildLogDescription, path: '/a40/roadmap' });
+  usePageMeta({ title: `Roadmap · ${roadmapCar.logTitle}`, description: roadmapCar.description, path: roadmapPath(roadmapCar.id) });
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile' || bp === 'tablet';
   const [params, setParams] = useSearchParams();
@@ -129,7 +130,7 @@ export const A40Roadmap: React.FC = () => {
       ].join(' ').trim()}
     >
       <header className="rm-topbar">
-        <Link to="/a40" className="blog-back-link">&larr; A40 Build Log</Link>
+        <Link to={carPath(roadmapCar.id)} className="blog-back-link">&larr; {roadmapCar.logTitle}</Link>
         <h1 className="rm-topbar-title">Roadmap</h1>
         {switcher}
       </header>
@@ -163,4 +164,10 @@ export const A40Roadmap: React.FC = () => {
       )}
     </div>
   );
+};
+
+/** /garage/:car/roadmap: the roadmap belongs to the car with `roadmap: true`. */
+export const CarRoadmap: React.FC = () => {
+  const { car } = useParams<{ car: string }>();
+  return car === roadmapCar.id ? <A40Roadmap /> : <NotFound />;
 };

@@ -1,4 +1,4 @@
-// Build-time plugins: home-page header preloads, <head> metadata, sitemap.
+// Build-time plugins: home-page header preloads, <head> metadata, garage post index, sitemap.
 import fs from 'node:fs'
 import path from 'node:path'
 import type { Plugin } from 'vite'
@@ -6,7 +6,7 @@ import { HEADER_SIZES, HEADER_TILE, headerSrcSet, parallaxLayers } from './src/d
 import {
   GITHUB_URL, HOME_DESCRIPTION, LINKEDIN_URL, RESUME_GENERATOR_PATH, HOME_TITLE, OG_IMAGE, SHARE_DESCRIPTION, SHARE_TITLE, SITE_NAME, SITE_URL, absoluteUrl,
 } from './src/data/site'
-import { postSlug } from './src/blog/postSlug'
+import { carAndSlug, parseFrontmatter, toPostMeta } from './src/blog/frontmatter'
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -81,20 +81,45 @@ export function siteMeta(): Plugin {
   }
 }
 
-/** Emit sitemap.xml: the home page, the resume generator, the build log, the roadmap and every post. */
-export function sitemap(postsDir: string): Plugin {
+/**
+ * `/content/<car>/<post>.md?meta` → the post's frontmatter as a JS object
+ * (src/blog/postIndex.ts), so lists and the car selector never bundle post text.
+ */
+export function garageMeta(): Plugin {
+  return {
+    name: 'garage-meta',
+    enforce: 'pre',
+    load(id) {
+      const [file, query] = id.split('?')
+      if (query !== 'meta' || !file.endsWith('.md')) return
+      this.addWatchFile(file)
+      const { car, slug } = carAndSlug(file)
+      const { meta } = parseFrontmatter(fs.readFileSync(file, 'utf8'))
+      return `export default ${JSON.stringify(toPostMeta(meta, car, slug))}`
+    },
+  }
+}
+
+/** Emit sitemap.xml: the home page, the resume generator, the garage, and every car's log, roadmap and posts. */
+export function sitemap(contentDir: string): Plugin {
   return {
     name: 'sitemap',
     apply: 'build',
     generateBundle() {
-      const posts = fs.readdirSync(postsDir).filter((f) => f.endsWith('.md')).map((file) => {
-        const raw = fs.readFileSync(path.join(postsDir, file), 'utf8')
-        const date = raw.match(/^date:\s*["']?(\d{4}-\d{2}-\d{2})/m)?.[1]
-        return { path: `/a40/${postSlug(file)}`, lastmod: date }
-      })
-      const urls = [{ path: '/' }, { path: RESUME_GENERATOR_PATH }, { path: '/a40' }, { path: '/a40/roadmap' }, ...posts]
+      const urls: { path: string; lastmod?: string }[] = [{ path: '/' }, { path: RESUME_GENERATOR_PATH }, { path: '/garage' }]
+      const carDirs = fs.readdirSync(contentDir).filter((d) => fs.existsSync(path.join(contentDir, d, 'car.json'))).sort()
+      for (const car of carDirs) {
+        const dir = path.join(contentDir, car)
+        const config = JSON.parse(fs.readFileSync(path.join(dir, 'car.json'), 'utf8')) as { roadmap?: boolean }
+        urls.push({ path: `/garage/${car}` })
+        if (config.roadmap) urls.push({ path: `/garage/${car}/roadmap` })
+        for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
+          const meta = toPostMeta(parseFrontmatter(fs.readFileSync(path.join(dir, file), 'utf8')).meta, car, file)
+          urls.push({ path: `/garage/${car}/${carAndSlug(`${car}/${file}`).slug}`, lastmod: meta.date || undefined })
+        }
+      }
       const body = urls
-        .map((u: { path: string; lastmod?: string }) =>
+        .map((u) =>
           `  <url><loc>${absoluteUrl(u.path)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}</url>`)
         .join('\n')
       this.emitFile({

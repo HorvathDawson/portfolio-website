@@ -1,0 +1,372 @@
+/* ==========================================================
+   Garage — car selector, car switcher, garage-log extras.
+   Same palette and type as blogStyles.css; each car sets
+   --car-accent (from its car.json) on its tile or page.
+   ========================================================== */
+
+.blog-page { --car-accent: var(--gold); }
+
+/* ── Selector page (/garage) ─────────────────────── */
+
+.garage-page {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 32px 24px 64px;
+  overflow-x: hidden;
+}
+
+.garage-header {
+  max-width: 1100px;
+  margin: 0 auto 8px;
+}
+
+.garage-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px;
+  margin: 14px 0 4px;
+  color: var(--gold);
+  text-shadow: 0 0 6px var(--gold), 0 0 14px rgba(243, 222, 64, 0.3);
+  animation: gc-glow-pulse 3s ease-in-out infinite;
+}
+
+.garage-lede {
+  margin: 0;
+  opacity: 0.7;
+  color: #3898ec;
+  font-size: 12px;
+}
+
+.garage-grid {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: 28px;
+}
+
+.garage-tile {
+  position: relative;
+  min-width: 0;
+  padding: 18px 20px 20px;
+  border: 3px ridge rgba(112, 56, 207, 0.6);
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.08) 2px, rgba(0, 0, 0, 0.08) 4px),
+    linear-gradient(180deg, rgba(15, 10, 40, 0.95), rgba(5, 5, 30, 0.98));
+  box-shadow: inset 0 0 12px rgba(112, 56, 207, 0.15);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.garage-tile:hover,
+.garage-tile:focus-within,
+.garage-tile.is-inview {
+  transform: translateY(-4px);
+  border-color: var(--car-accent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--car-accent) 35%, transparent);
+}
+
+.garage-tile-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+.garage-tile-link:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.garage-tile-art {
+  position: relative;
+  width: 100%;
+  /* Same box for every car so the text lines up across tiles; art is contained. */
+  aspect-ratio: 3 / 2;
+  margin-bottom: 10px;
+}
+
+.garage-tile-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  margin: 4px 0 0;
+  padding-bottom: 4px;
+  color: var(--warm-white);
+}
+.garage-tile-link:hover .garage-tile-name,
+.garage-tile-link:focus-visible .garage-tile-name {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+.garage-tile-sub {
+  margin: 6px 0;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #3898ec;
+}
+
+.garage-tile-desc {
+  margin: 0 0 10px;
+  font-family: 'Lora', serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.garage-tile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.garage-tile-stats,
+.garage-tile-latest {
+  margin: 4px 0 0;
+  font-size: 12px;
+  opacity: 0.8;
+}
+.garage-tile-latest a {
+  color: var(--gold);
+}
+.garage-tile-latest a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.blog-status--kind { color: var(--warm-white); opacity: 0.8; }
+.blog-status--decided { color: #b07cff; }
+.blog-status--category { color: var(--car-accent); }
+
+/* Art layers: outline at rest, coloured on hover / focus / in view.
+   The !important beats ArtLayer's inline opacity and App.css's
+   small-screen override (which forces the coloured layer on). */
+.garage-art .background-layer { opacity: 1 !important; }
+.garage-art .foreground-layer { opacity: 0 !important; }
+.garage-art .background-layer,
+.garage-art .foreground-layer { transition: opacity 0.35s ease; }
+.garage-tile:is(:hover, :focus-within, .is-inview) .garage-art .foreground-layer { opacity: 1 !important; }
+.garage-tile:is(:hover, :focus-within, .is-inview) .garage-art .background-layer { opacity: 0 !important; }
+
+/* Placeholder until a car's art exists. */
+.garage-art--missing {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 2px dashed rgba(255, 255, 255, 0.35);
+  color: var(--warm-white);
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+}
+.garage-art--missing small {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  opacity: 0.6;
+}
+.garage-tile:is(:hover, :focus-within, .is-inview) .garage-art--missing {
+  border-color: var(--car-accent);
+  color: var(--car-accent);
+}
+
+@media (max-width: 479px) {
+  .garage-page { padding: 20px 16px 48px; }
+  .garage-title { font-size: 28px; }
+  .garage-grid { gap: 20px; }
+  .garage-tile { padding: 14px 14px 16px; }
+}
+
+/* ── Car switcher (car pages) ────────────────────── */
+
+.car-switcher {
+  margin-bottom: 6px;
+}
+.car-switcher ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.car-switcher-all {
+  color: var(--warm-white);
+  opacity: 0.65;
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+.car-switcher-all:hover,
+.car-switcher-all:focus-visible { opacity: 1; text-decoration: underline; }
+
+.car-switcher-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 76px;
+  padding: 4px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  color: var(--warm-white);
+  text-decoration: none;
+  font-size: 10px;
+  opacity: 0.7;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+.car-switcher-link:hover,
+.car-switcher-link:focus-visible { opacity: 1; border-color: var(--car-accent); }
+.car-switcher-link--on {
+  opacity: 1;
+  border-color: var(--car-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--car-accent) 40%, transparent);
+}
+.car-switcher-link:focus-visible,
+.car-switcher-all:focus-visible,
+.garage-chip:focus-visible,
+.sb-item:focus-visible,
+.sb-epic-header:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.car-thumb {
+  display: block;
+  width: 64px;
+  height: 36px;
+  object-fit: contain;
+}
+.car-thumb--missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  font-size: 10px;
+  box-sizing: border-box;
+}
+.car-switcher-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.blog-mobile-list .car-switcher { padding: 8px 8px 0; }
+
+/* ── Garage-log sidebar ──────────────────────────── */
+
+.sb-plain-group { margin-bottom: 10px; }
+.sb-group-title {
+  margin: 10px 12px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--gold);
+}
+.sb-item-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  font-size: 10px;
+}
+.sb-item-cat { color: var(--car-accent); }
+.sb-item-km { opacity: 0.6; }
+.sb-empty {
+  margin: 6px 12px;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.garage-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 12px 8px;
+}
+.garage-chip {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: none;
+  color: var(--warm-white);
+  cursor: pointer;
+}
+.garage-chip[aria-pressed='true'] {
+  background: var(--car-accent);
+  border-color: var(--car-accent);
+  color: var(--dark-blue);
+  font-weight: 700;
+}
+.garage-chip:disabled { opacity: 0.35; cursor: default; }
+
+/* ── Garage post header + car home ───────────────── */
+
+.garage-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 14px;
+  margin: 14px 0 0;
+  font-size: 12px;
+}
+.garage-facts dt { opacity: 0.55; text-transform: uppercase; letter-spacing: 0.8px; font-size: 10px; padding-top: 2px; }
+.garage-facts dd { margin: 0; }
+
+.garage-home-lede {
+  font-family: 'Lora', serif;
+  font-size: 16px;
+  margin: 0;
+}
+
+.garage-service h2,
+.garage-recent h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  margin: 0 0 10px;
+}
+.garage-service { margin-bottom: 28px; }
+.garage-service-empty { font-size: 13px; opacity: 0.75; }
+.garage-service code {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 4px;
+}
+.garage-table-wrap { overflow-x: auto; }
+.garage-service table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.garage-service th,
+.garage-service td {
+  text-align: left;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.garage-service thead th { background: rgba(112, 56, 207, 0.25); }
+.garage-service a,
+.garage-recent a { color: var(--gold); }
+
+.garage-recent ul { padding-left: 18px; margin: 0; }
+.garage-recent li { margin-bottom: 6px; }
+.garage-recent-meta { font-size: 11px; opacity: 0.6; }
+
+.garage-mobile-home { padding: 4px 8px 8px; }
+.garage-mobile-home .garage-service h2 { font-size: 18px; }
+
+.blog-loading { opacity: 0.6; font-size: 13px; }
+
+/* ── Reduced motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .garage-tile,
+  .garage-art .background-layer,
+  .garage-art .foreground-layer,
+  .car-switcher-link { transition: none; }
+  .garage-tile:hover,
+  .garage-tile:focus-within,
+  .garage-tile.is-inview { transform: none; }
+  .garage-title { animation: none; }
+}

@@ -24,7 +24,7 @@ export interface Epic {
 
 interface CarFile {
   name: string;
-  /** Title of the car's log, e.g. "A40 Build Log". */
+  /** Title of the car's log, shown in the sidebar and page title. */
   logTitle: string;
   year: string;
   make: string;

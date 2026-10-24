@@ -7,10 +7,11 @@ kind: log
 mileage_km:
 cost:
 parts: []
+service: []
 tags: [purchase, to-do]
 ---
 
-> **Template, owner to fill in.** Nothing below is a measurement or an observation yet. Replace each placeholder with what you see on the car, and fill `mileage_km` and `cost` in the frontmatter if you want them shown.
+> **Template, owner to fill in.** Nothing below is a measurement or an observation yet. Replace each placeholder with what you see on the car, and fill `mileage_km` and `cost` in the frontmatter if you want them shown. In later posts, list the jobs done in `service: [oil and filter, brake fluid]` and they appear in the service table on the car's page.
 
 ## Condition on the day
 

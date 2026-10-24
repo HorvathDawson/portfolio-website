@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { allPosts, buildLogDescription, type Status } from './blogData';
+import { carPath, postPath, roadmapCar, roadmapPath } from './cars';
+import type { Status } from './frontmatter';
+import { postsFor } from './postIndex';
 import {
   roadmap,
   incomingEdges,
@@ -28,7 +30,7 @@ const statusLabel: Record<Status, string> = {
 
 const ALL_STATUSES: Status[] = ['planning', 'in-progress', 'decided', 'complete'];
 
-const postBySlug = new Map(allPosts.map((p) => [p.slug, p]));
+const postBySlug = new Map(postsFor(roadmapCar.id).map((p) => [p.slug, p]));
 
 /* ── Card ─────────────────────────────────────────── */
 
@@ -398,7 +400,7 @@ export const TaskDrawer: React.FC<{
           <ul className="rm-drawer-list">
             {linkedPosts.map((p) => (
               <li key={p.slug}>
-                <Link to={`/a40/${p.slug}`} className="rm-drawer-link">
+                <Link to={postPath(roadmapCar.id, p.slug)} className="rm-drawer-link">
                   {p.title}
                 </Link>
               </li>
@@ -471,7 +473,7 @@ const COL_GAP = 110;
 
 /** The swim-lane map. `toolbar` (the view switcher) renders in its top bar. */
 export const RoadmapMap: React.FC<{ toolbar?: React.ReactNode }> = ({ toolbar }) => {
-  usePageMeta({ title: 'Roadmap · A40 Build Log', description: buildLogDescription, path: '/a40/roadmap' });
+  usePageMeta({ title: `Roadmap · ${roadmapCar.logTitle}`, description: roadmapCar.description, path: roadmapPath(roadmapCar.id) });
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile' || bp === 'tablet';
   const colW = isMobile ? COL_W_MOBILE : COL_W_DESKTOP;
@@ -1054,7 +1056,7 @@ export const RoadmapMap: React.FC<{ toolbar?: React.ReactNode }> = ({ toolbar })
       ].join(' ').trim()}
     >
       <header className="rm-topbar">
-        <Link to="/a40" className="blog-back-link">&larr; A40 Build Log</Link>
+        <Link to={carPath(roadmapCar.id)} className="blog-back-link">&larr; {roadmapCar.logTitle}</Link>
         <h1 className="rm-topbar-title">Roadmap</h1>
         {toolbar}
 

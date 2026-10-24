@@ -1,0 +1,4 @@
+# Old build-log URLs (the A40 log moved into the garage). Query strings pass through.
+/a40 /garage/a40 301
+/a40/ /garage/a40 301
+/a40/* /garage/a40/:splat 301

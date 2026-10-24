@@ -12,8 +12,8 @@
   "art": {
     "outline": "/assets/garage/autozam/outline.svg",
     "colored": "/assets/garage/autozam/colored.svg",
-    "width": 1205,
-    "height": 757
+    "width": 1279,
+    "height": 873
   },
   "roadmap": false
 }

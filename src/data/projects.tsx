@@ -68,8 +68,8 @@ export const projects: Project[] = [
     category: 'In Progress',
     title: '1950 A40 Austin',
     description: 'Currently modernizing a 1950 Austin A40 by upgrading its suspension, brakes, and motor, blending modern performance with a classic design.',
-    link: '/a40',
-    buttonText: 'Build Log',
+    link: '/garage',
+    buttonText: 'The Garage',
     internal: true,
     visual: (
       <LayeredArt
