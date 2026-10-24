@@ -7,84 +7,84 @@ kind: reference
 tags: [reference, constants, geometry, mass]
 ---
 
-A single source of truth for the headline numbers used across the rest of the build log. If a value is contested or being refined, it is flagged here. Where a more detailed analysis exists, a link is provided.
+The headline numbers for the build, in one place. Other posts use these. If a post disagrees with this page, the post is out of date.
 
-> Numbers marked **(target)** are design intent. Numbers marked **(working)** are current best estimates that may shift as fabrication progresses. Numbers marked **(locked)** are committed and used to drive other dimensions.
+**Status:** **locked** = committed, drives other dimensions. **working** = best current estimate, will change with measurement. **target** = design intent. **open** = not decided.
 
----
+## Vehicle
 
-## Vehicle and chassis
+| Parameter | Value | Status | Notes |
+|---|---|---|---|
+| Operating mass (driver + full tank) | ~950 kg | working | Sum of the mass table below. |
+| Curb mass (no driver) | ~875 kg | working | |
+| Weight distribution F/R | ~55/45 | working | Estimate; corner-weigh once rolling. |
+| Unsprung mass per corner | ~30 kg front, ~33 kg rear | working | Miata corner + 205/65R15 + half the arms; rear adds half a half-shaft. |
+| Sprung mass | ~825 kg | working | Operating mass minus unsprung. Diff and rear subframe are sprung. |
+| Sprung corner mass | ~231 kg front, ~181 kg rear | working | Drives spring rates. |
+| CG height | 575 mm ±50 | working | Miata 460 mm + ~115 mm for the taller body and seating. Refine from CAD (below). |
+| Wheelbase | 2350 mm | locked | Stock A40 Devon. |
 
-| Parameter | Value | Notes |
-|---|---|---|
-| Total mass (curb) | ~950 kg **(working)** | Estimate. Will be re-measured after frame and drivetrain are in. |
-| Sprung mass | ~850 kg **(working)** | Total minus wheels, hubs, brakes, half of arms and axle. |
-| Centre of gravity height | ~575 mm ±50 **(working)** | Used for roll-stiffness math. Will be refined once the build is rolling. |
-| Wheelbase | 2350 mm **(locked)** | Frame is being designed around this. |
-| Front track | 1230 mm **(locked)** | Falls out of 95 mm/side narrowing on a 205/65R15 ET+38 wheel. Nearly matches the stock A40 front track of 1232 mm. Minor tire-to-body interference at simultaneous full steering lock + full bump is a known caveat — see [narrowing analysis](./narrowing-analysis#full-lock-and-full-bump-caveat). |
-| Rear track | 1340 mm **(locked)** | Drives the Ford 9" narrowing target. |
+## Track, wheels, tyres
 
-## Wheels and tires
+| Parameter | Value | Status | Notes |
+|---|---|---|---|
+| Front narrowing | 95 mm per side | locked | Hub face moves from 750 to 655 mm from centreline. Rack cut 190 mm total. |
+| Front track | ~1230 mm (1234 at ET38) | locked | Track = 2 × (hub face − ET). Stock A40 is 1232 mm. Donor baseline (1405 published vs 1420 used) is unverified: measure the donor hub faces. |
+| Rear track | 1340 mm | locked | Narrowed Miata rear, hub face 708 mm from centreline. |
+| Rear narrowing | ~42–47 mm per side | measure | Stock rear hub-face distance − 708 mm. See [rear suspension](./rear-suspension). |
+| Tyre | 205/65R15, OD 647.5 mm | locked | Same front and rear. |
+| Wheel | 15", 4x100, ET38 | locked | On hand. Miata donor baseline is ET40. |
+| Tyre outer-to-outer (front) | ~1435 mm | — | Stock A40 is ~1365 mm, so the tyres sit ~35 mm/side further out than stock. Main fitment risk; check against the body scan. See [narrowing analysis](./narrowing-analysis). |
 
-| Parameter | Value | Notes |
-|---|---|---|
-| Tire | 205/65R15 **(locked)** | Same size front and rear. |
-| Wheel diameter | 15" **(locked)** | |
-| Bolt pattern | 4x100 **(locked)** | Unified across front and rear. Drives Moser axle flange spec on the Ford 9". |
-| Wheel offset (purchased) | ET+38 **(locked)** | Wheels on hand. All current geometry math uses this number. |
-| Wheel offset (reference baseline) | ET+45 | Earlier analysis used this; legacy text in the geometry reference may still cite it. ET+38 is the working value. |
+## Suspension
 
-## Suspension geometry
-
-| Parameter | Value | Notes |
-|---|---|---|
-| Front narrowing per side | 95 mm **(working)** | 190 mm total off the rack, sets the new outer-to-outer of the lower control arm pickups. |
-| Front motion ratio (spring/wheel) | ~0.63 **(working)** | Used in spring-rate sizing. |
-| Rear coilover spring base | ~950 mm **(working)** | Lateral spacing between the two rear coilovers on the axle housing (near the bearing caps on the narrowed 9"). Sets the lever arm for rear roll stiffness. |
+| Parameter | Value | Status | Notes |
+|---|---|---|---|
+| Front | Narrowed Miata NA double wishbone | locked | Narrowed pivots: LCA 234.5 mm, UCA 273 mm from centreline. |
+| Rear | Narrowed Miata NA independent rear | decided | Replaces the Ford 9" / four-link plan (Oct 2026). |
+| Front motion ratio | ~0.68 | working | From the front-view instant centre. See the [geometry reference](./geometry-design-reference). |
+| Rear motion ratio | TBD | measure | Measure on the donor. |
+| Wheel rate target, front | 17.9 N/mm (1.4 Hz), range 13–23 | working | Spring rate = wheel rate ÷ MR². ≈39 N/mm (~220 lb/in) at MR 0.68. |
+| Wheel rate target, rear | 16.1 N/mm (1.5 Hz), range 12–21 | working | Rear ~0.1 Hz above front. |
+| Front roll centre | ~139 mm | working | Kinematic, static ride height. |
+| Rear roll centre | 80–150 mm assumed | model | Narrowed Miata rear; model or measure. |
+| Springs-only roll at 0.8 g | ~6.5–7° | working | Anti-roll bars must add ~16–33 kN·m/rad for 3–4°. See [suspension tuning](./suspension-tuning). |
 
 ## Drivetrain
 
-| Parameter | Value | Notes |
-|---|---|---|
-| Engine | SR20DET **(locked)** | |
-| Transmission | CD009 (350Z 6-speed) **(leaning)** | Adapter plate to SR20 bellhousing pattern. OEM SR20 5-speed is the fallback. Tunnel sized to the larger CD009 envelope so either fits. |
-| Rear axle | Ford 9", 31-spline **(locked)** | Stock-width housing on hand, narrowing to the 1340 mm rear track. Custom Moser axles, 4x100 flanges machined to spec (not a redrill). |
-
----
-
-## Refining the CG estimate from CAD
-
-The 575 mm CG height above is a top-down estimate (Miata 460 mm + ~115 mm for the taller body and higher seating position) with a ±50 mm uncertainty band. Roll, weight transfer, and ARB sizing are all linear in $h_{CG}$, so tightening that number meaningfully tightens the whole downstream geometry math.
-
-The bottom-up version is a weighted average over the major mass items, $h_{CG} = \sum m_i z_i / \sum m_i$. The list below is the minimum set of items to locate in CAD — modeled at their actual mounted position — to get an estimate within ~30 mm of the true value once the build is rolling.
-
-| Item | Mass (kg, est.) | Why it matters | Where the CoG comes from |
+| Parameter | Value | Status | Notes |
 |---|---|---|---|
-| Engine (SR20DET, dressed) | 165–185 | Single largest mass; sits low and far forward. Dominates front-axle weight bias. | Nissan service data lists CoG offset from front face / crank centerline; verify against a CAD bare block + accessory pack. |
-| Transmission (CD009 or SR20 5-spd) | 50–70 | Long lever arm rearward of engine; sits low in tunnel. | Service data or measured from a known reference on the case; CAD block model is fine. |
-| Body shell (stripped, painted) | 200–260 | Largest single contributor to CG **height** because it sits high. ±10 mm in the body's vertical centroid moves the whole-car CG by ~3 mm. | Volumetric centroid of the laser scan, weighted uniformly (acceptable approximation since sheet metal thickness is roughly constant). |
-| Ladder frame (welded) | 70–110 | Sits low; pulls CG down. Important to model since it's a custom part with no published number. | Volumetric centroid of the CAD frame model (uniform tube wall density). |
-| Fuel (full tank) | 45–55 | Sits low and rearward; pulls CG down and aft. Worth modeling at both full and empty to bracket the operating range. | Geometric centroid of the tank's wetted volume at the chosen fill level. |
-| Driver (+ passenger if relevant) | 75 each | Sits high (~450–550 mm above floor). One occupant raises CG noticeably; two raises it more and shifts the balance. | Standard automotive 75 kg occupant model; CoG roughly at sternum height in the seated H-point reference. |
-| Rear axle assembly (housing + diff + brakes + wheels) | 80–110 | Sits low at axle centerline. Mostly unsprung but still part of the total-vehicle CG. | CAD axle model + published Ford 9" diff weight + measured wheel/tire/brake corner. |
-| Front suspension corners (×2) | 25–30 each | Unsprung mass at hub centerline height. | Sum of wheel/tire + hub + brake + half of arms; measure off the bench. |
-| Battery | 15–20 | Small mass but easy to relocate; moving it from front engine bay to rear (boot floor) shifts F/R balance ~1–2%. Height effect is small. | Geometric centroid of the case at the chosen mounting location. |
-| Seats (×1 or ×2) | 12–18 each | Sits at floor pan height; pulls CG down slightly relative to occupant. | Geometric centroid of the seat shell in CAD. |
-| Radiator + coolant (full) | 8–12 | Sits at front of car, low. Small but worth including for F/R balance. | Geometric centroid of the core at its mounted position. |
-| Exhaust system (header to tailpipe) | 12–18 | Long, thin, low. Negligible height effect; small rearward bias contribution. | Centerline of the exhaust path, treated as a uniform line mass in CAD. |
-| Driveshaft | 8–12 | Centerline at floor height, mid-car. Negligible effect; include for completeness. | Geometric centroid (midpoint) of the shaft. |
-
-Items deliberately left off the major-mass list because their combined contribution is below the existing ±50 mm CG uncertainty: wiring harness, brake/fuel lines, interior trim, glass, bumpers, lights, hardware. Those get rolled into a "miscellaneous" lump (~30–50 kg) at the body shell's CoG and revisited only if a tight CG target is needed.
-
-**CAD workflow to produce an estimated CG:**
-
-1. Place each item from the table at its actual mounted position in the assembly.
-2. Assign each part its estimated mass (or measured mass once available).
-3. Use the CAD package's mass-properties tool on the full assembly; it returns the weighted CoG directly.
-4. Re-run with the fuel tank empty and with/without passenger to bracket the operating range.
-
-This gets the estimate from "Miata + 115 mm" (current basis) to a CAD-derived number with traceable inputs. Worth doing once the body scan, frame CAD, and engine model are all in the same assembly.
+| Engine | SR20DET | locked | Mounted 3° down at the rear (tail-down). |
+| Transmission | CD009 (350Z 6-speed) | leaning | See the roadmap decision for the current choice. |
+| Differential | Mazda RX-8 rear diff | decided | Custom mounts. Final drive ~4.44 stock (verify); ratio open. |
+| Half-shafts | Custom length | to order | RX-8 flanges to Miata hubs. |
+| Driveshaft | One-piece, 1330 joints | to order | 5.4° shaft angle, 2.4° per joint, pinion parallel to the gearbox. |
 
 ---
 
-This page is the canonical source. Any other post that contradicts it is out of date — please update either this file or the offending post when you spot a mismatch.
+## Refining the CG height from CAD
+
+Weight transfer scales directly with CG height and roll grows faster than linearly with it, so this number is worth tightening. Compute it bottom-up as $h_{CG} = \sum m_i z_i / \sum m_i$ with every item at its mounted position.
+
+| Item | Mass (kg, est.) | Notes |
+|---|---|---|
+| Engine (SR20DET, dressed) | 150–185 | Largest single mass, low and forward. Weigh or use service data. |
+| Transmission (CD009) | 50–70 | Low, in the tunnel. |
+| Body shell (stripped, painted) | 200–260 | Biggest effect on CG **height**. ±10 mm in its centroid moves the whole-car CG ~2–3 mm. Use the scan's volume centroid. |
+| Ladder frame | 70–110 | Low. Take the centroid from the frame CAD. |
+| Fuel (full) | ~25 | Assumes a stock-size ~30–35 L tank; update if the tank changes. Model full and empty. |
+| Driver | 75 | Add a passenger for a second case. |
+| Rear suspension: RX-8 diff | ~30 (weigh it) | Sprung; on the chassis. |
+| Rear suspension: subframe, arms, uprights, brakes, wheels | ~85–95 | Two ~33 kg corners plus subframe/arms. |
+| Half-shafts | ~8–12 | |
+| Front corners (×2) | ~30 each | Wheel, tyre, hub, brake, half the arms. |
+| Battery | 15–20 | Moving it from the bay to the boot shifts F/R balance ~1–2%. |
+| Seats (×2) | 12–18 each | |
+| Radiator + coolant | 8–12 | |
+| Exhaust | 12–18 | |
+| Driveshaft | 8–12 | |
+| Miscellaneous (wiring, lines, trim, glass, bumpers, lights) | 30–50 | Lump at the body centroid. |
+
+Mid values sum to ~950 kg with the driver and a full tank.
+
+**Workflow:** place each item in the CAD assembly, assign its mass (measured where possible), read the assembly's mass properties, then repeat with the tank empty and with a passenger to bracket the range.

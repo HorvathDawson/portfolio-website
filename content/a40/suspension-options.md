@@ -7,7 +7,7 @@ kind: log
 tags: [suspension, planning]
 ---
 
-Originally I was going to do a Mustang II front end swap. One of the original reasons for going MII was that the Mustang II uses a 4x100 bolt pattern, same as the original A40 OEM wheels. There's a guy on one of the Austin forums — [Vern Scholz's build on Driving.ca](https://driving.ca/column/its-mine/its-mine-vern-scholzs-1950-austin-a40) — who did exactly this and posted a pretty detailed writeup. My plan wasn't to splice the OEM MII crossmember into the original frame, though — it was to fabricate a custom front clip and splice that into the A40 frame.
+Originally I was going to do a Mustang II front end swap, partly for its small-Ford bolt pattern. (Correction: the Mustang II four-lug pattern is 4×108, not 4×100. The Miata hubs are what gave me 4×100.) There's a guy on one of the Austin forums — [Vern Scholz's build on Driving.ca](https://driving.ca/column/its-mine/its-mine-vern-scholzs-1950-austin-a40) — who did exactly this and posted a pretty detailed writeup. My plan wasn't to splice the OEM MII crossmember into the original frame, though — it was to fabricate a custom front clip and splice that into the A40 frame.
 
 But after looking at the approach more carefully I wasn't happy with it. A spliced frame with grafted-in crossmembers is a compromise. The welds are in structural locations, the geometry is dictated by where you can fit the MII parts, and you're working around the limitations of the original frame rails. I decided I'd rather build a completely new frame from scratch and do it right.
 
@@ -28,3 +28,5 @@ Going with Miata suspension also lines up with the rest of the build:
 - The hub and knuckle assembly is compact and well-designed
 
 MII would have worked. But Miata gives me better brakes, a better hub system, more aftermarket support, and a suspension geometry I can actually tune properly for this car's width. That's the direction.
+
+**Update (October 2026):** the rear follows the same logic. It's now a narrowed Miata independent rear with an RX-8 diff instead of a Ford 9" on a four-link; see [rear suspension](./rear-suspension).
