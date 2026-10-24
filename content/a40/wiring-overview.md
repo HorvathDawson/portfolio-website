@@ -21,7 +21,7 @@ This is the starting point for the engine harness: the ECU choice, the decisions
 | Coils | Smart coils: LS truck (4-pin) or R35 GT-R | Open |
 | Wideband | Bosch LSU 4.9 on the Nexus wideband controller | Chosen (verify the S2 has the internal WB) |
 | Harness | Built from scratch: Wiring Specialties connectors, self-terminated, self-loomed | Decided |
-| Battery | Boot assumed for cable sizing below | Location decision still open (boot / under-floor / footwell) |
+| Battery | Probably the boot (not final) | Cable sizing below assumes the boot. Under-floor / footwell still possible |
 
 ### Why the Nexus S2
 
@@ -50,14 +50,14 @@ These set the wire gauge, the fuses and which loads get a relay instead of an EC
 
 | Load | Feed | Wire | Notes |
 |---|---|---|---|
-| Battery + to starter / main bus (boot battery, about 4 m; resize if the location changes) | Main fuse or breaker **within ~300 mm of the battery** | 4 AWG (6 AWG minimum) | Matching ground: battery - to chassis in the boot, plus engine-to-chassis strap of the same size. About 4 m each way, so don't undersize it. Master switch on this run. |
+| Battery + to starter / main bus (assumes the battery in the boot, about 4 m; not final, resize if it moves) | Main fuse or breaker **within ~300 mm of the battery** | 4 AWG (6 AWG minimum) | Matching ground: battery - to chassis in the boot, plus engine-to-chassis strap of the same size. About 4 m each way, so don't undersize it. Master switch on this run. |
 | Starter solenoid | **Relay** (ECU or ignition switch drives the coil) | 12 AWG to solenoid | The solenoid pull-in current is too high for an ECU output. Not a PDM channel. |
 | Fuel pump (external Aeromotive 340 + surge tank) | Relay or a high-current output, own fuse | 10-12 AWG | Size for the pump at full voltage and pressure (**verify** the pump's current draw). Lift pump for the surge tank is a separate small branch if used. |
 | Radiator fans (2, staged) | Relay or high-current outputs | Sized to fuse | Start-up inrush is several times the running current. Size fuses and relays for the inrush, or soft-start with PWM. |
 | EPAS column motor | **Own fuse at the battery, ~50-80 A** (**verify** against the donor Prius fuse box rating) | Sized to that fuse (about 8 AWG class for a few metres; verify) | Heavy chassis ground at the column. Not through the ECU. |
 | EPAS IG wake | Ignition-switched, small fuse | 18-20 AWG | Hard-wired. The column has to wake with the engine stopped, the same as in a Prius. See [EPAS CAN gateway](./epas-can-gateway). |
 | EPAS CAN (`can1`) | From the dash Pi | 22 AWG twisted pair + ground, about 1-1.5 m | 120 Ω at each end. Separate from the Haltech bus. |
-| Dash Pi + display | Constant +12 V, 5 A fuse, plus ignition sense | 18-14 AWG | Detail in the [digital dash](./digital-dash) wiring section. |
+| Dash Pi + display | Constant +12 V, 5 A fuse, plus ignition sense, into the DCDC-USB (V(out) jumpered to 5 V, ~33 W, ~3 A from 12 V) | 18-14 AWG | Detail in the [digital dash](./digital-dash) wiring section. |
 
 ## Branch list
 

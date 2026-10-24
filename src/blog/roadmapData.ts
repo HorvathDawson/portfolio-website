@@ -600,7 +600,7 @@ export const roadmap: Roadmap = {
       epic: 'design',
       status: 'complete',
       posts: ['digital-dash'],
-      summary: 'Architecture locked: Pi 5 (4GB) + Active Cooler + Freenove M.2 NVMe + PiCAN FD Duo Isolated HAT + Waveshare 12.3″ portrait-DSI behind the original A40 bezel, Godot/GDScript UI consuming the Haltech Nexus S2 CAN broadcast, Mini-Box DCDC-USB for clean 12 V + graceful ignition-off shutdown (Automotive-mode timing preset: OFFDELAY 1 min / HARDOFF 1 min). The architecture is done; the digital-dash post stays in-progress because it also logs the hardware and software build (t-dash-hardware, t-dash-software).',
+      summary: 'Architecture locked: Pi 5 (4GB) + Active Cooler + Freenove M.2 NVMe + PiCAN FD Duo Isolated HAT + Waveshare 12.3″ portrait-DSI behind the original A40 bezel, Godot/GDScript UI consuming the Haltech Nexus S2 CAN broadcast, Mini-Box DCDC-USB (V(out) jumpered to 5 V) for the Pi + display supply and graceful ignition-off shutdown (Automotive-mode timing preset: OFFDELAY 1 min / HARDOFF 1 min). The architecture is done; the digital-dash post stays in-progress because it also logs the hardware and software build (t-dash-hardware, t-dash-software).',
     },
     {
       id: 't-dash-hardware',
@@ -608,10 +608,10 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'in-progress',
       posts: ['digital-dash'],
-      summary: 'Phase 1 bench stack (Pi 5 + Freenove NVMe + Waveshare DSI on the 27W USB-C PSU) verified, then Phase 2 swap to the PiCAN FD Duo Isolated HAT + Mini-Box DCDC-USB for the automotive 12V / ignition-shutdown chain. The FD Duo is non-SMPS: DCDC-USB V(out) 12 V feeds an automotive 5.1 V / 5 A buck, which powers the Pi USB-C and the display (one feed each); the HAT takes logic power from the Pi header only.',
+      summary: 'Phase 1 bench stack (Pi 5 + Freenove NVMe + Waveshare DSI on the 27W USB-C PSU) verified, then Phase 2 swap to the PiCAN FD Duo Isolated HAT + Mini-Box DCDC-USB for the automotive 12V / ignition-shutdown chain. The FD Duo is non-SMPS: DCDC-USB V(out) jumpered to 5 V (~33 W, under the 40 W forced-air limit) powers the Pi USB-C and the display directly (one feed each); the HAT takes logic power from the Pi header only.',
       notes: [
         'Phase 1: Pi 5 / NVMe / DSI screen running off bench PSU — proves OS + screen + boot',
-        'Phase 2: drop USB-C, add PiCAN FD Duo Isolated HAT; DCDC-USB V(out) 12 V → 5.1 V / 5 A buck → Pi USB-C + display 5 V (its only feed); nothing from the 12 V side goes into the isolated HAT; usb_max_current_enable=1; DCDC-USB also handles the graceful shutdown on ign-off (OFFDELAY 1 min / HARDOFF 1 min preset)',
+        'Phase 2: drop USB-C, add PiCAN FD Duo Isolated HAT; DCDC-USB V(out) jumpered to 5 V (default is 12 V: measure with a meter before connecting the Pi) → Pi USB-C (short 18 AWG, ≥5.0 V at the Pi under load) + display 5 V (its only feed); fallback if undervoltage: 12 V out + 5.1 V / 5 A buck; nothing from the 12 V side goes into the isolated HAT; usb_max_current_enable=1; DCDC-USB also handles the graceful shutdown on ign-off (OFFDELAY 1 min / HARDOFF 1 min preset)',
         'Dual CAN bringup (can0 Haltech @ 1 Mbps, can1 Toyota EPAS @ 500 kbps) tracked separately as t-dash-fdduo-swap',
         'Hardware must be done before any UI testing on real CAN frames',
       ],
@@ -1118,7 +1118,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Lightweight AGM/Li battery + tray sized to the chosen battery location (engine bay vs trunk).',
+      summary: 'Lightweight AGM/Li battery + tray sized to the chosen battery location (probably the boot, not final).',
     },
     {
       id: 't-buy-kill-switch',
@@ -1145,7 +1145,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'complete',
       kind: 'purchase',
-      summary: 'Purchased: PiCAN FD Duo Isolated (non-SMPS) from Copperhill. Two galvanically-isolated CAN channels: can0 (Haltech, 1 Mbps) + can1 (Toyota Prius column, 500 kbps). Pi gets 5 V from a dedicated 5.1 V / 5 A buck fed by the Mini-Box DCDC-USB.',
+      summary: 'Purchased: PiCAN FD Duo Isolated (non-SMPS) from Copperhill. Two galvanically-isolated CAN channels: can0 (Haltech, 1 Mbps) + can1 (Toyota Prius column, 500 kbps). Pi gets 5 V directly from the Mini-Box DCDC-USB, V(out) jumpered to 5 V.',
       posts: ['epas-can-gateway'],
     },
     {
@@ -1158,7 +1158,7 @@ export const roadmap: Roadmap = {
       notes: [
         'Overlays: mcp251xfd on spi0-0 (CS0 → can0, interrupt 25) and spi0-1 (CS1 → can1, interrupt 24) — see the digital-dash provisioning script',
         'Validate: `ip -details link show can0 / can1` reports correct bitrates and ERROR-ACTIVE',
-        'Pi power topology: HAT does NOT feed Pi over GPIO — 5 V comes from a 5.1 V / 5 A buck fed by the DCDC-USB 12 V output',
+        'Pi power topology: HAT does NOT feed Pi over GPIO — 5 V comes from the DCDC-USB V(out), jumpered to 5 V',
         'CAN: restart-ms via networkd RestartSec on can0 + can1; can0 HAT terminator off (Haltech bus already has two); can1 120 Ω at each end (~60 Ω measured)',
       ],
     },
@@ -1688,8 +1688,8 @@ export const roadmap: Roadmap = {
       epic: 'design',
       kind: 'decision',
       status: 'planning',
-      deferrable: 'Location only needs to be locked before frame welds set the tray mount tabs (soft) and before t-charging-design starts. Battery is out of the engine bay either way; boot vs under-floor vs footwell can be decided once the rear floor + fuel-tank layout is finalised.',
-      summary: 'Single decision: where the battery physically lives. Out of engine bay for the shaved look — boot vs under-floor vs passenger footwell still TBD. Output feeds t-charging-design (cable runs, fuse-panel placement, kill-switch routing).',
+      deferrable: 'Location only needs to be locked before frame welds set the tray mount tabs (soft) and before t-charging-design starts. Battery is out of the engine bay either way; probably the boot (not final), and current cable sizing assumes the boot. Boot vs under-floor vs footwell can be confirmed once the rear floor + fuel-tank layout is finalised.',
+      summary: 'Single decision: where the battery physically lives. Out of engine bay for the shaved look — probably the boot (not final; cable sizing assumes the boot), under-floor or passenger footwell still possible. Output feeds t-charging-design (cable runs, fuse-panel placement, kill-switch routing).',
       notes: [
         'Drives: kill-switch routing, cable spec/length, frame mount tab location',
         'Boot mount: longer cables, more voltage drop, easier access',

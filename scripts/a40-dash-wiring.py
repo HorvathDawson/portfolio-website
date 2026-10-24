@@ -8,14 +8,19 @@ Power architecture (matches content/a40/digital-dash.md):
   * Constant +12 V (5 A fuse at the source, 18-14 AWG) -> Mini-Box DCDC-USB V(in).
     Ignition-switched sense -> DCDC-USB IGN. V(in) must be CONSTANT, not switched,
     or the delayed shutdown cannot work.
-  * DCDC-USB: one regulated output, V(out), jumpered to 12 V. Automotive mode,
+  * DCDC-USB: one regulated output, V(out), jumpered to 5 V (default is 12 V:
+    set the jumper and MEASURE before connecting the Pi). Automotive mode,
     timing preset OFFDELAY 1 min + HARDOFF 1 min. Its mini-USB port is a
     configuration interface only (not a power output). Vaux is unused.
-  * V(out) 12 V -> dedicated automotive 12->5.1 V / 5 A buck. The buck feeds the
-    Pi 5 USB-C input and, on a separate pair, the Waveshare display's 5 V input.
-    The display has exactly one feed (the buck), never the Pi GPIO 5 V pins as well.
+  * V(out) 5 V feeds the Pi 5 USB-C input (5 A pigtail) and, on a separate pair,
+    the Waveshare display's 5 V input. ~33 W total, under the 40 W forced-air
+    threshold; ~3 A drawn from 12 V, so the 5 A source fuse holds. Regulation is
+    +/-2.5 %, so keep the 5 V leads short and heavy (18 AWG, <= 30 cm) and check
+    >= 5.0 V at the Pi under load. The display has exactly one feed (the DCDC-USB),
+    never the Pi GPIO 5 V pins as well.
     Pi config: usb_max_current_enable=1 in config.txt, or PSU_MAX_CURRENT=5000 in
-    the bootloader EEPROM (a non-PD buck is otherwise treated as a 3 A supply).
+    the bootloader EEPROM (a non-PD supply is otherwise current-limited).
+    Fallback if the Pi reports undervoltage: V(out) 12 V + a 5.1 V / 5 A buck.
   * PiCAN FD Duo Isolated (non-SMPS) sits on the GPIO header and takes its logic
     power from the Pi. Its bus side is isolated: no external 12 V or vehicle ground
     goes to the HAT except each bus's own CAN ground reference.
@@ -45,8 +50,8 @@ metadata:
   title: A40 Austin - Digital Dash + EPAS Gateway Wiring
   description: |
     Constant 12 V (5 A fuse) + ignition sense into the DCDC-USB (automotive mode,
-    OFFDELAY 1 min + HARDOFF 1 min). V(out) 12 V feeds a 5.1 V / 5 A buck for
-    the Pi 5 and the display. PiCAN FD Duo Isolated: can0 Haltech 1 Mbit/s,
+    OFFDELAY 1 min + HARDOFF 1 min). V(out) jumpered to 5 V feeds the Pi 5
+    and the display directly. PiCAN FD Duo Isolated: can0 Haltech 1 Mbit/s,
     can1 Prius EPAS 500 kbit/s.
 
 options:
@@ -72,21 +77,16 @@ connectors:
     notes: Automotive mode. Timing preset OFFDELAY 1 min + HARDOFF 1 min. Mini-USB port = config only, not power. Vaux unused.
   DCDC_OUT:
     type: Mini-Box DCDC-USB output
-    subtype: Mini-Fit Jr, V(out) jumpered to 12 V
-    pinlabels: [V(out) 12 V, GND]
+    subtype: Mini-Fit Jr, V(out) jumpered to 5 V
+    pinlabels: [V(out) 5 V, GND]
     bgcolor: '#fff3d6'
+    notes: Default is 12 V. Set 5 V, MEASURE before the Pi. ~33 W, mount with airflow. Need ≥5.0 V at Pi.
   DCDC_PSW:
     type: Mini-Box DCDC-USB PSW header
     subtype: soft on/off pulse
     pinlabels: [PSW 1, PSW 2]
     bgcolor: '#fff3d6'
     notes: Pulses after OFFDELAY; power cut HARDOFF later
-  BUCK:
-    type: Automotive buck 12 V → 5.1 V / 5 A
-    subtype: potted, terminal output (part TBD)
-    pinlabels: [VIN 12 V, GND, 5.1 V OUT, GND OUT]
-    bgcolor: '#fff3d6'
-    notes: Only 5 V source in the system. Feeds the Pi and the display.
   PI:
     type: Raspberry Pi 5
     subtype: 4 GB
@@ -139,11 +139,6 @@ cables:
     length: 1.5
     colors: [RD, WH, BK]
     notes: 18-14 AWG fine on a 5 A fuse. IGN is a sense line (any gauge).
-  W_12V:
-    category: bundle
-    gauge: 18 AWG
-    length: 0.2
-    colors: [YE, BK]
   W_PSW:
     category: bundle
     gauge: 24 AWG
@@ -152,13 +147,13 @@ cables:
     notes: Soft-shutdown pulse. Verify which PSW pin is the switched side.
   W_PI5V:
     category: bundle
-    gauge: 20 AWG
-    length: 0.2
+    gauge: 18 AWG
+    length: 0.3
     colors: [RD, BK]
-    notes: USB-C pigtail, rated 5 A
+    notes: USB-C pigtail, rated 5 A. Short and heavy (≤30 cm).
   W_DISP5V:
     category: bundle
-    gauge: 22 AWG
+    gauge: 20 AWG
     length: 0.3
     colors: [OG, BK]
     notes: The display's only power feed
@@ -196,14 +191,10 @@ connections:
     - DCDC_IN: [1, 2, 3]
 
   - - DCDC_OUT: [1, 2]
-    - W_12V: [1, 2]
-    - BUCK: [1, 2]
-
-  - - BUCK: [3, 4]
     - W_PI5V: [1, 2]
     - PI: [1, 2]
 
-  - - BUCK: [3, 4]
+  - - DCDC_OUT: [1, 2]
     - W_DISP5V: [1, 2]
     - DISP: [2, 3]
 

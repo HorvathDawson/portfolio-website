@@ -104,7 +104,7 @@ These come before writing any code.
 | Item | State |
 |---|---|
 | Architecture (dual bus, isolated HAT) | Locked |
-| Hardware (PiCAN FD Duo Isolated, DCDC-USB + 5 V buck, Pi 5) | On hand / specified |
+| Hardware (PiCAN FD Duo Isolated, DCDC-USB with V(out) jumpered to 5 V, Pi 5) | On hand / specified |
 | Frame IDs, scaling, checksum | From opendbc (Gen 4 Prius). Send rates and the full frame set: verify with a donor log and the bench. |
 | Code | Not written |
 | Bench rig | Not built |

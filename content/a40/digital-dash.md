@@ -22,23 +22,23 @@ The original A40 cluster is coming out. In its place, a Raspberry Pi 5 behind th
 | Computer | Raspberry Pi 5, **4 GB** | Official Active Cooler is required: it throttles fast in a closed dash pod |
 | Storage | Freenove M.2 adapter V2 + Crucial 256 GB NVMe | Boots from NVMe |
 | CAN | [PiCAN FD Duo Isolated (non-SMPS)](https://copperhilltech.com/pican-fd-duo-board-with-real-time-clock-for-raspberry-pi/) | `can0` Haltech 1 Mbit/s, `can1` Prius EPAS 500 kbit/s. Two isolated channels on SPI0 CE0/CE1 |
-| Power manager | Mini-Box DCDC-USB | Ignition-aware shutdown, V(out) jumpered to 12 V ([manual](/assets/projects/a40-austin/blog/dash/PWR-DCDC-USB-manual.pdf)) |
-| 5 V supply | Automotive 12 → 5.1 V / 5 A buck (part TBD) | Only 5 V source: Pi + display |
+| Power manager / 5 V supply | Mini-Box DCDC-USB | Ignition-aware shutdown, V(out) jumpered to **5 V** (default is 12 V). Only 5 V source: Pi + display ([manual](/assets/projects/a40-austin/blog/dash/PWR-DCDC-USB-manual.pdf)) |
 | Display | [Waveshare 12.3-DSI-TOUCH-A](https://www.waveshare.com/wiki/12.3-DSI-TOUCH-A), 1920×720 | DSI ribbon; 5 V ≥ 1 A input |
 | Bench PSU | Official Pi 5 27 W USB-C | Desk testing only |
 
 ## Power and CAN wiring
 
-The DCDC-USB has **one** regulated output, V(out), which is set by jumper (12 V, 5 V and others). It also has an unregulated switched **Vaux**. Its mini-USB port is a **configuration interface, not a power output**. The Pi 5 wants 5.1 V at up to 5 A, so it gets a dedicated buck.
+The DCDC-USB has **one** regulated output, V(out), which is set by jumper (12 V, 5 V and others). It also has an unregulated switched **Vaux** (unused). Its mini-USB port is a **configuration interface, not a power output**. V(out) is jumpered to **5 V** and feeds both the Pi 5 and the display directly.
+
+Power budget at 5 V: Pi 5 at 5 A (25 W) + display ~1-1.5 A (~5-7.5 W) ≈ **33 W**. The manual rates the DCDC-USB at 100 W max (limited by its 10 A input fuse), with forced air needed above 40 W, so 33 W is inside the no-fan rating. Regulation is ±2.5%, so the output can sit as low as ~4.9 V, which is why the 5 V leads are short and heavy.
 
 | Run | From → to | Wire / fuse |
 |---|---|---|
 | Supply | Fuse box **constant** +12 V → DCDC-USB V(in) | **5 A fuse at the source**, 18-14 AWG |
 | Ignition sense | Ignition-switched fused circuit → DCDC-USB IGN | Sense line, any gauge |
 | Ground | DCDC-USB GND → chassis stud | Same gauge as the supply |
-| 12 V rail | DCDC-USB V(out) 12 V → buck input | 18 AWG |
-| Pi | Buck 5.1 V → Pi 5 USB-C (pigtail rated for 5 A) | |
-| Display | Buck 5.1 V → display 5 V/GND (separate pair) | **This is the display's only feed.** Not also from the Pi GPIO 5 V pins, and not 12 V. |
+| Pi | DCDC-USB V(out) 5 V → Pi 5 USB-C (pigtail rated for 5 A) | 18 AWG, ≤30 cm |
+| Display | DCDC-USB V(out) 5 V → display 5 V/GND (separate pair) | 18-20 AWG, short. **This is the display's only feed.** Not also from the Pi GPIO 5 V pins, and not 12 V. |
 | Shutdown | DCDC-USB PSW → Pi 5 **J2** power-button header | 2-wire, verify polarity |
 | `can0` | HAT ch0 → Haltech CAN (H, L, CAN ground) | Twisted pair. HAT terminator **off** (the bus already has two) |
 | `can1` | HAT ch1 → Prius column (H, L, ground) | Twisted pair, ~1-1.5 m, 120 Ω **at each end** |
@@ -47,7 +47,9 @@ Rules:
 
 - **V(in) must be constant 12 V.** If V(in) is ignition-switched, power vanishes with the key and there's no delayed shutdown.
 - **Nothing from the 12 V side goes into the HAT.** The FD Duo's logic side is powered from the Pi header. Its bus sides are isolated and referenced only to their own bus.
-- The Pi sees the buck as a non-PD supply, so set `usb_max_current_enable=1` in `config.txt` or `PSU_MAX_CURRENT=5000` in the bootloader EEPROM (provisioning step below). Without it, USB is capped at 600 mA and the Pi warns about the supply.
+- **Fuse check:** 33 W at 5 V is about 3 A drawn from 12 V (≈3.3 A at 11.2 V with conversion losses). The 5 A source fuse covers that with margin, and the board's own 10 A fuse is never the limit. The 5 A fuse stays.
+- **Ventilation:** 33 W is under the 40 W forced-air threshold, but mount the DCDC-USB where air can move (open side of the dash, not sealed in a pocket behind it). The manual also requires forced air if the unit runs above 65 °C.
+- The Pi sees the DCDC-USB as a non-PD supply, so set `usb_max_current_enable=1` in `config.txt` or `PSU_MAX_CURRENT=5000` in the bootloader EEPROM (provisioning step below). Without it, USB is capped at 600 mA and the Pi warns about the supply.
 
 **Shutdown timing.** DCDC-USB in **Automotive mode**, timing preset **OFFDELAY 1 min + HARDOFF 1 min**:
 1. Key off.
@@ -56,8 +58,10 @@ Rules:
 
 A short key-off (a fuel stop) inside the first minute doesn't reboot the dash. Below 11.2 V the DCDC-USB cuts power early to protect the battery. **Bench-test the key-on pulse:** if it arrives after the Pi has already booted and shuts it down, ignore the power key for the first ~30 s after boot.
 
+**Fallback:** if the Pi still reports undervoltage (`vcgencmd get_throttled` non-zero, or the low-voltage warning) with short heavy leads, jumper V(out) back to 12 V and add an automotive 12 → 5.1 V / 5 A buck for the Pi and display.
+
 <figure class="wide">
-  <img src="/assets/projects/a40-austin/blog/dash/dash-wiring.svg" alt="Dash wiring: constant 12 V with 5 A fuse and ignition sense into the Mini-Box DCDC-USB, its 12 V output into a 5.1 V 5 A buck feeding the Raspberry Pi 5 USB-C and the Waveshare display, PSW to the Pi 5 J2 header, PiCAN FD Duo Isolated with can0 to the Haltech Nexus S2 and can1 to the Prius EPAS column" />
+  <img src="/assets/projects/a40-austin/blog/dash/dash-wiring.svg" alt="Dash wiring: constant 12 V with 5 A fuse and ignition sense into the Mini-Box DCDC-USB, its V(out) jumpered to 5 V feeding the Raspberry Pi 5 USB-C and, on a separate pair, the Waveshare display, PSW to the Pi 5 J2 header, PiCAN FD Duo Isolated with can0 to the Haltech Nexus S2 and can1 to the Prius EPAS column" />
   <figcaption>Dash + gateway wiring. Source: <a href="https://github.com/HorvathDawson/portfolio-website/blob/main/scripts/a40-dash-wiring.py">scripts/a40-dash-wiring.py</a> (WireViz).</figcaption>
 </figure>
 
@@ -70,16 +74,17 @@ A short key-off (a fuel stop) inside the first minute doesn't reboot the dash. B
 3. Stack the Pi on the adapter with the standoffs. Check that the cooler clears the PCIe ribbon.
 4. Connect the PCIe FPC ribbon. Contacts usually face inward, but check the Freenove manual. Seat it flush before closing the latch.
 5. Connect the DSI ribbon to the Pi's CAM/DISP 1 connector (verify which one on the board silk).
-6. Power the display. On the bench it's fine to use Waveshare's GPIO-pin cable (5 V/GND). In the car it moves to the buck, so it has one feed only.
+6. Power the display. On the bench it's fine to use Waveshare's GPIO-pin cable (5 V/GND). In the car it moves to the DCDC-USB 5 V output, so it has one feed only.
 7. Power on with the 27 W PSU.
 
 **Phase 2: car**
 
 1. Seat the FD Duo Isolated on the GPIO header.
 2. Wire the power and CAN runs from the table above.
-3. Set the DCDC-USB jumpers: Automotive mode, 12 V, OFFDELAY 1 min / HARDOFF 1 min.
-4. Before connecting the Pi, measure the buck output under load: 5.1 V.
-5. With everything powered off, measure CAN_H-CAN_L on each bus: ~60 Ω.
+3. Set the DCDC-USB jumpers: Automotive mode, **V(out) 5 V** (the default is 12 V), OFFDELAY 1 min / HARDOFF 1 min. Power-cycle the DCDC-USB after changing jumpers so the setting takes effect.
+4. **Before connecting the Pi, measure V(out) with a meter: it must read ~5 V.** 12 V on the Pi's 5 V input kills it.
+5. Connect the Pi and display, run it under load (e.g. `stress-ng --cpu 4` with the dash up) and measure at the Pi end of the lead: **≥5.0 V**. Check `vcgencmd get_throttled` reports `0x0`. If not, shorten/thicken the leads or use the fallback above.
+6. With everything powered off, measure CAN_H-CAN_L on each bus: ~60 Ω.
 
 ## Flash the OS (Mac)
 

@@ -98,9 +98,10 @@ Ball-joint positions and KPI/caster are fixed by the casting and do not change w
 
 | Item | Value | Notes |
 |---|---|---|
-| Front motion ratio | **≈ 0.68** | The wheel moves about the front-view instant centre, not the LCA pivot. See [geometry design reference](./geometry-design-reference). Replaces the old 0.621. |
-| Spring rates | specify as wheel rates | Spring = wheel rate / MR². Targets in the [tuning reference](./suspension-tuning). |
-| Wheel travel | set by damper stroke ÷ MR | Choose the damper for the travel needed; see [geometry design reference](./geometry-design-reference). |
+| Front motion ratio | **0.680** at an 80° shock (0.690 vertical) | Coilover mount 240 mm out on the LCA; the wheel moves about the front-view instant centre (effective lever 347.8 mm), not the LCA pivot. Replaces the old 0.62-0.63. See [geometry design reference](./geometry-design-reference). |
+| Front spring | **38.7 N/mm (221 lb/in)** | 17.9 N/mm wheel rate / 0.680². Spring = wheel rate / MR². |
+| Rear spring | 38 / 29 / 22 N/mm | 16.1 N/mm wheel rate at rear MR 0.65 / 0.75 / 0.85. Rear MR still to measure. |
+| Front wheel travel | **83 mm bump / 103 mm droop** | 127 mm (5") stroke / 0.680, with 45% of stroke in bump at ride height (assumed). Keeping stock Miata travel instead needs a ~106-112 mm stroke. |
 
 The front-view four-bar is set by four points: LCA pivot, UCA pivot, LBJ and UBJ. Roll centre, instant centre, FVSA, camber gain and motion ratio all follow from those plus the loaded hub height.
 
