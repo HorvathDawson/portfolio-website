@@ -76,3 +76,4 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [GAR-005](./GAR-005-blog-usability.md) | Blog usability cleanup | todo (audit done) |
 | [GAR-006](./GAR-006-roadmap-views.md) | Roadmap views for deciding what to work on | review (owner to pick default) |
 | [GAR-007](./GAR-007-autozam-art-redo.md) | Redo the Autozam AZ-1 line art | todo |
+| [GAR-008](./GAR-008-garage-animation.md) | Animated garage on the /garage page | todo |
