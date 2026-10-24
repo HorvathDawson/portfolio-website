@@ -1,0 +1,19 @@
+{
+  "name": "Autozam AZ-1",
+  "logTitle": "AZ-1 Garage Log",
+  "year": "1990s",
+  "make": "Mazda (Autozam)",
+  "model": "AZ-1",
+  "description": "Mid-engine kei sports car with gullwing doors and a 657 cc Suzuki F6A turbo. Maintenance and mods log.",
+  "kind": "garage",
+  "status": "in-progress",
+  "accent": "#4978f4",
+  "order": 1,
+  "art": {
+    "outline": "/assets/garage/autozam/outline.svg",
+    "colored": "/assets/garage/autozam/colored.svg",
+    "width": 1205,
+    "height": 757
+  },
+  "roadmap": false
+}
