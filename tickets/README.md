@@ -1,6 +1,6 @@
 # Tickets
 
-Markdown tickets for the A40 build-log work. One file per ticket, `A40-NNN-short-name.md`. Not published to the site (the site only reads `content/`).
+Markdown tickets for the garage blog (A40 build log, Autozam log). One file per ticket: `A40-NNN-…` for A40 content, `GAR-NNN-…` for the garage site itself. Not published to the site (the site only reads `content/`).
 
 ## Workflow
 
@@ -69,3 +69,8 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [A40-010](./A40-010-build-and-visual-check.md) | Build, lint, links and visual check | todo |
 | [A40-011](./A40-011-ship.md) | PR, preview check, merge, live check | todo |
 | [A40-012](./A40-012-owner-decisions.md) | Owner measurements and decisions | blocked |
+| [GAR-001](./GAR-001-garage-structure.md) | Turn /a40 into a multi-car garage | todo |
+| [GAR-002](./GAR-002-car-selector.md) | Car selector with outline art | todo |
+| [GAR-003](./GAR-003-autozam-art.md) | Autozam AZ-1 line art, gullwing doors up | blocked (photo) |
+| [GAR-004](./GAR-004-autozam-log.md) | Autozam AZ-1 garage log | todo |
+| [GAR-005](./GAR-005-blog-usability.md) | Blog usability cleanup | todo |
