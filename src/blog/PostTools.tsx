@@ -21,7 +21,7 @@ function useActiveHeading(scroller: React.RefObject<HTMLElement | null>, toc: To
     let raf = 0;
     const update = () => {
       raf = 0;
-      const top = el.getBoundingClientRect().top + 80;
+      const top = el.getBoundingClientRect().top + el.clientHeight * 0.3;
       let current: string | undefined;
       for (const t of toc) {
         const h = document.getElementById(t.id);

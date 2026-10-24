@@ -21,7 +21,10 @@ Working inputs (all "working" values -- verify on the car):
   - Springs are specified as WHEEL rates (1.4 Hz front, 1.5 Hz rear).
 """
 
+import json
 import os
+import sys
+
 import numpy as np
 import matplotlib
 
@@ -29,6 +32,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Arc
 from matplotlib.ticker import MultipleLocator
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import a40_constants  # noqa: E402
+from a40_constants import C  # noqa: E402
 
 # ── Palette (matches blog CSS vars) ──────────────────────────
 BG = "#0f172a"
@@ -81,71 +88,79 @@ def save(fig, name):
 
 
 # ── Shared constants ─────────────────────────────────────────
+# Every build number comes from content/a40/constants.yaml through
+# scripts/a40_constants.py (inputs and the values derived from them).
+# Only the scanned donor geometry (SUSP below) and plot styling live here.
+# Results this script computes (MR, RC, roll, scrub/trail, ...) are written
+# to scripts/a40_geometry_results.json and merged into the generated JSON
+# the posts read (see write_results()).
 # Donor: NA Miata front.
-T_MIATA = 1420  # front track (mm).  Published 1405-1425; 1420 matches the
-#                 scanned subframe + ET40 hub geometry.  Unverified: measure
-#                 the donor hub-face width.
-ET_MIATA = 40  # NA Miata wheel offset (mm).  Hub FACE sits ET outboard of wheel CL.
+T_MIATA = C.front_track_miata  # front track (mm), unverified: measure the donor
+ET_MIATA = C.et_miata  # NA Miata wheel offset (mm).  Hub FACE sits ET outboard of wheel CL.
 #               All `*_from_hub` offsets in SUSP are measured from the hub face.
-HUB_FACE_MIATA = T_MIATA / 2 + ET_MIATA  # 750 mm from car CL
-TIRE_OD_MIATA = 577.0  # 185/60R14
-TIRE_W_MIATA = 185
-WB_MIATA = 2265
-H_CG_MIATA = 460
+HUB_FACE_MIATA = C.front_hub_face_miata  # 750 mm from car CL
+TIRE_OD_MIATA = C.tyre_od_miata  # 185/60R14
+TIRE_W_MIATA = C.tyre_width_miata
+WB_MIATA = C.wheelbase_miata
+H_CG_MIATA = C.cg_height_miata
 
 # A40 build, front.  Lock the pickups / hub-face position, not the track.
-NARROW_PER_SIDE = 95  # mm, locked
-ET_A40 = 38
-HUB_FACE_A40 = HUB_FACE_MIATA - NARROW_PER_SIDE  # 655 mm from CL
-HT_A40 = HUB_FACE_A40 - ET_A40  # 617 mm: exact wheel-CL half-track at ET38
-T_A40_EXACT = int(round(2 * HT_A40))  # 1234 mm
-T_A40 = 1230  # nominal front track used for vehicle-level ratios
-TIRE_OD_A40 = 647.5  # 205/65R15
-TIRE_W_A40 = 205
-WB_A40 = 2350
+NARROW_PER_SIDE = C.front_narrowing  # mm, locked
+ET_A40 = C.wheel_et
+HUB_FACE_A40 = C.front_hub_face  # 655 mm from CL
+HT_A40 = C.front_half_track  # 617 mm: exact wheel-CL half-track at ET38
+T_A40_EXACT = int(round(C.front_track))  # 1234 mm
+T_A40 = C.front_track_nominal  # nominal front track used for vehicle-level ratios
+TIRE_OD_A40 = C.tyre_od  # 205/65R15
+TIRE_W_A40 = C.tyre_width
+WB_A40 = C.wheelbase
 
 # A40 build, rear: narrowed NA Miata IRS.
-T_REAR = 1340  # mm, locked
-H_RC_REAR_LO = 80.0  # mm  -- rear RC unknown until the narrowed Miata rear
-H_RC_REAR_HI = 150.0  # mm     is measured/modelled; carry the range.
-H_RC_REAR_NOM = 100.0  # mm  -- mid value used where one number is needed
-MR_REAR_CASES = (0.65, 0.75, 0.85)  # rear MR unknown: sensitivity only
+T_REAR = C.rear_track  # mm, locked
+H_RC_REAR_LO = C.rear_rc_lo  # mm  -- rear RC unknown until the narrowed Miata rear
+H_RC_REAR_HI = C.rear_rc_hi  # mm     is measured/modelled; carry the range.
+H_RC_REAR_NOM = C.rear_rc_nom  # mm  -- mid value used where one number is needed
+MR_REAR_CASES = (C.rear_mr_lo, C.rear_mr_mid, C.rear_mr_hi)  # rear MR unknown: sensitivity only
 
 # Mass (working).
-H_CG_A40 = 575  # +/- 50 mm
-M_TOTAL = 950  # operating mass, driver + fuel
-M_S_A40 = 825  # sprung mass
-M_CORNER_F = 231  # sprung corner mass, front
-M_CORNER_R = 181  # sprung corner mass, rear
-FRONT_FRAC = 0.55  # static front weight fraction
+H_CG_A40 = C.cg_height  # +/- CG_TOL
+CG_TOL = C.cg_height_tol
+M_TOTAL = C.operating_mass  # operating mass, driver + fuel
+M_S_A40 = C.sprung_mass  # sprung mass
+M_CORNER_F = C.corner_mass_front  # sprung corner mass, front
+M_CORNER_R = C.corner_mass_rear  # sprung corner mass, rear
+FRONT_FRAC = C.front_weight_fraction / 100  # static front weight fraction
 G_ACC = 9.81
-AY = 0.8
+AY = C.lateral_accel
+ROLL_TARGETS = (C.roll_target_lo, C.roll_target_nom, C.roll_target_hi)  # deg
 
 # Ride: wheel rates from target frequencies (independent of MR).
-FREQ_F = 1.4  # Hz
-FREQ_R = 1.5  # Hz (0.1 Hz above front)
-KW_FRONT = (2 * np.pi * FREQ_F) ** 2 * M_CORNER_F  # N/m  ~17,900
-KW_REAR = (2 * np.pi * FREQ_R) ** 2 * M_CORNER_R  # N/m  ~16,100
-K_PHI_FRONT_SPRING = KW_FRONT * (T_A40 / 1000) ** 2 / 2  # N-m/rad ~13.5k
-K_PHI_REAR_SPRING = KW_REAR * (T_REAR / 1000) ** 2 / 2  # N-m/rad ~14.4k
+FREQ_F = C.ride_freq_front  # Hz
+FREQ_R = C.ride_freq_rear  # Hz (0.1 Hz above front)
+FREQ_BAND_F = (C.ride_freq_front_lo, C.ride_freq_front_hi)
+FREQ_BAND_R = (C.ride_freq_rear_lo, C.ride_freq_rear_hi)
+KW_FRONT = C.kw_front * 1000  # N/m  ~17,900
+KW_REAR = C.kw_rear * 1000  # N/m  ~16,100
+K_PHI_FRONT_SPRING = C.roll_stiffness_front * 1000  # N-m/rad ~13.5k
+K_PHI_REAR_SPRING = C.roll_stiffness_rear * 1000  # N-m/rad ~14.4k
 K_PHI_SPRING = K_PHI_FRONT_SPRING + K_PHI_REAR_SPRING  # ~28k
 
 # Shock (front).
-SHOCK_STROKE_MM = 5 * 25.4  # 127 mm
-SHOCK_ALPHA_DEG = 80.0  # shock angle to the LCA at the lower mount (working)
-SHOCK_LEN_RIDE = 330.0  # eye-to-eye at ride height (assumed; only affects
+SHOCK_STROKE_MM = C.shock_stroke  # 127 mm
+SHOCK_ALPHA_DEG = C.shock_angle  # shock angle to the LCA at the lower mount (working)
+SHOCK_LEN_RIDE = C.shock_length_ride  # eye-to-eye at ride height (assumed; only affects
 #                         how MR drifts through travel, not the static MR)
-BUMP_FRACTION = 0.45  # share of the stroke available in bump at ride height
+BUMP_FRACTION = C.shock_bump_fraction / 100  # share of the stroke available in bump at ride height
 #                       (assumption: same ~45/55 split as the stock Miata)
 
 # ARB (placeholder installation ratio -- measure).
-G_SHEAR = 80e9
-L_EFF = 400  # mm ARB effective torsional length
+G_SHEAR = C.steel_shear_modulus * 1e9
+L_EFF = C.arb_length  # mm ARB effective torsional length
 # Installation ratio back-calculated from "stock 19 mm front bar adds
 # ~10,000 N-m/rad" on the Miata: IR = sqrt(10000 / K_bar(19)) = 1.977.
 # IR scales with track (same end-link point on the LCA, smaller wheel
 # travel per degree of roll), so the A40 value is 1.977 * 1230/1420.
-IR_BAR_MIATA = 1.977
+IR_BAR_MIATA = C.arb_ir_miata
 IR_BAR = IR_BAR_MIATA * T_A40 / T_MIATA  # ~1.71
 
 # ── Miata NA front suspension geometry (all in mm) ────────────────
@@ -158,7 +173,7 @@ IR_BAR = IR_BAR_MIATA * T_A40 / T_MIATA  # ~1.71
 # Coordinate convention: +x outboard, +y forward, +z up. Origin at hub/BJ.
 SUSP = dict(
     # ── Knuckle / heights (front view) ──
-    hub_z_ground=265,  # hub centre height above ground at ride height
+    hub_z_ground=C.hub_z_miata,  # hub centre height above ground at ride height (constants)
     # KPI / caster are DERIVED from lbj_from_hub and ubj_from_hub — see
     # KPI_DEG / CASTER_DEG below.  Do not duplicate them here.
     # ── Knuckle BJ and steering arm positions relative to hub centre ──────────
@@ -195,8 +210,8 @@ SUSP = dict(
     uca_bushing=57.0,  # scan: UCA pivot bushing length (both pivots)
     pivot_width=10.0,  # visual width for all pivot rectangles (mm)
     # ── Tire (for RC construction) ──
-    tire_w=185,  # tire section width mm
-    tire_od=577,  # 185/60R14 outer diameter mm
+    tire_w=TIRE_W_MIATA,  # donor tire section width mm
+    tire_od=TIRE_OD_MIATA,  # donor 185/60R14 outer diameter mm
 )
 
 

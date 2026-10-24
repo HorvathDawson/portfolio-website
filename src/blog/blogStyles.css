@@ -1944,7 +1944,7 @@
 
 /* ── Status details on the post header ── */
 .blog-article-dates { margin: 0; }
-.blog-status--kind-reference { color: var(--icg); opacity: 1; }
+.blog-status.blog-status--kind-reference { color: var(--icg); opacity: 1; }
 .sb-item-kind {
   color: var(--icg);
   text-transform: uppercase;
@@ -2068,7 +2068,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: -20px -16px 16px;
+  margin: 0 -16px 16px;
   padding: 8px 12px;
   border-bottom: 3px ridge rgba(112, 56, 207, 0.6);
   background: linear-gradient(180deg, rgba(15, 10, 40, 0.98), rgba(5, 5, 30, 0.98));
@@ -2106,10 +2106,7 @@
   border-top: 2px dashed rgba(255, 255, 255, 0.12);
   font-family: 'Space Mono', monospace;
 }
-@media screen and (max-width: 991px) {
-  .blog-post-bar { margin-top: -24px; }
-  .blog-page--mobile .blog-content-panel { padding-top: 24px; }
-}
+.blog-page--mobile .blog-content-panel:has(> .blog-post-bar) { padding-top: 0; }
 
 /* ── Reduced motion: no blinking, spinning, glowing or marquee ──
    (App.css already turns every animation off; this is explicit for the log.) */
