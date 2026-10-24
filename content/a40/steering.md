@@ -7,18 +7,32 @@ kind: reference
 tags: [steering, safety, fabrication]
 ---
 
-The stock A40 steering is unassisted, and the column is a solid shaft pointed at your chest. Both change.
+The stock A40 steering is unassisted, and the column is a solid shaft pointed at your chest. The column changes; assist is still open.
 
 ## Decisions
 
 | Item | Choice | Status |
 |---|---|---|
-| Assist | Toyota Prius Gen 4 (2016–2022) column-mount EPAS | chosen |
-| Assist control | Pi CAN gateway sending opendbc-decoded Prius speed and rpm frames, for speed-sensitive assist | see [EPAS CAN gateway](./epas-can-gateway) |
-| Column | Collapsible (the Prius column), adapted to the A40 dash | required |
+| Assist | Open: manual (Miata NA manual/depowered rack) or Toyota Prius Gen 4 (2016–2022) EPAS | open |
+| Assist control | Only with EPAS: Pi CAN gateway (see [EPAS CAN gateway](./epas-can-gateway)) | only with EPAS |
+| Column | Collapsible (the Prius column if EPAS), adapted to the A40 dash | required |
 | Rack | Miata NA manual (or depowered) rack, **narrowed 190 mm total (7.5", 95 mm per side)** | locked with the 95 mm/side suspension narrowing |
 | Steering arms | Stock Miata knuckle arms | keep, pending linkage solve |
 | Steering stops | Adjustable hard stops | **mandatory** |
+
+---
+
+## Manual or EPAS
+
+Manual is a realistic option:
+
+- **Load.** Front axle load is ≈ 520 kg (950 kg × 0.55), about the same as an NA Miata, which was sold with a manual rack.
+- **Effort.** Heavier than a stock Miata at parking speed: wider 205/65R15 tyres and more caster (target 4–5.5°). The 9.8 mm trail adds a little on-centre weight at speed. Judge it by feel: drive a manual-rack NA Miata on 205-width tyres.
+- **Main knob:** steering wheel diameter (14–15 in / 350–380 mm).
+- **What manual removes:** the column motor, the CAN gateway, its bench tests, and a safety-critical failure mode.
+- **Keep EPAS possible.** It can be added later if parking effort is too much. Keep space and mounting for the Prius column.
+
+Decide before buying the column (roadmap task `t-decide-steering-assist`).
 
 ---
 
@@ -26,7 +40,7 @@ The stock A40 steering is unassisted, and the column is a solid shaft pointed at
 
 ### Why the Prius column
 
-Cheapest and simplest path. The motor and torque sensor sit on the column, so it does not care which rack is underneath, and there are no pumps, lines or fluid. Junkyard columns are cheap (forum prices for older Prius columns are $35–50; a Gen 4 column will cost more, verify).
+If assist is chosen, this is the cheapest and simplest EPAS path. The motor and torque sensor sit on the column, so it does not care which rack is underneath, and there are no pumps, lines or fluid. Junkyard columns are cheap (forum prices for older Prius columns are $35–50; a Gen 4 column will cost more, verify).
 
 **Why Gen 4.** openpilot supports every 2016–2022 Prius, so the powertrain CAN messages the column sees are decoded in [opendbc](https://github.com/commaai/opendbc) (`toyota_nodsu_pt_generated.dbc` for all of them). That gives tested IDs, scaling and checksum to spoof for proper speed-sensitive assist, instead of guessing from forum posts. Which frames the column actually needs still has to be confirmed with a donor log and on the bench.
 
