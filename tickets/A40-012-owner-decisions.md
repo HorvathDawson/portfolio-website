@@ -29,7 +29,7 @@ These can't be settled from the desk. Each answer goes into the constants file (
 - [ ] **Corner weights** once rolling (four scales or a shop's corner-weight set): replaces the 55/45 estimate.
 
 ## Prepared for the owner (not blocked)
-- [ ] Re-run `scripts/a40-gauge-placeholders.py` on the Mac (Futura/Menlo fonts) and commit the PNGs + `gauges_manifest.json`.
+- [x] Gauge art regenerated (done in the build container with bundled fonts: Jost for Futura, DejaVu Sans Mono for Menlo; no Mac needed any more).
 
 ## Verification
 Each value entered in the constants file with how it was measured in its `note`.

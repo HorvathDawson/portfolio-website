@@ -33,8 +33,9 @@ unrotated needle sprite pointing up, so godot_rot = 90 - math_angle.
   Pills, side='right':  godot_rot =  108 -  66 * t     (t = (v-min)/(max-min))
   Pills, side='left':   godot_rot = -108 +  66 * t
 
-Fonts are macOS system fonts (Futura, Menlo); on other systems PIL falls back
-to its default font, so regenerate the published PNGs on the Mac.
+Fonts are bundled in scripts/fonts (Jost Medium, an open Futura-style face, and
+DejaVu Sans Mono, which Menlo is based on), so the output is the same on any
+machine.
 
 All gauges share a "vintage parchment" aesthetic (warm cream face, soft
 charcoal ink, faded chrome bezel rings, classic Futura-style numerals).
@@ -394,9 +395,13 @@ def rect_inner_radius(theta_deg: float, w: float, h: float,
 # Drawing helpers
 # ---------------------------------------------------------------------------
 
+FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+
+
 def load_font(size: int) -> ImageFont.FreeTypeFont:
     candidates = [
-        # Closest to Gill Sans / Futura on macOS.
+        # Bundled Futura-style face first, so every machine renders the same.
+        os.path.join(FONT_DIR, "Jost-Medium.woff"),
         "/System/Library/Fonts/Supplemental/Futura.ttc",
         "/System/Library/Fonts/Supplemental/GillSans.ttc",
         "/System/Library/Fonts/HelveticaNeue.ttc",
@@ -415,6 +420,7 @@ def load_font(size: int) -> ImageFont.FreeTypeFont:
 def load_mono_font(size: int) -> ImageFont.FreeTypeFont:
     """For digital readouts -- use a slightly mechanical-looking mono."""
     candidates = [
+        os.path.join(FONT_DIR, "DejaVuSansMono.ttf"),
         "/System/Library/Fonts/Menlo.ttc",
         "/System/Library/Fonts/Courier.ttc",
         "/System/Library/Fonts/Monaco.ttf",

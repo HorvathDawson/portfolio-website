@@ -65,7 +65,7 @@
         "Courier.ttc",
         "Monaco.ttf"
       ],
-      "use_for": "live digital readouts (km/h, voltage, AFR, oil temp, ODO)"
+      "use_for": "live digital readouts (km/h, voltage, AFR, oil temp, IAT)"
     }
   },
   "needles": {
@@ -127,7 +127,7 @@
         "sweep_start_math_deg": 225.0,
         "sweep_total_deg": 270.0,
         "value_to_math_angle_deg": "225.0 - (rpm - 0) / (9000 - 0) * 270.0",
-        "godot_rotation_deg_from_up": "rot = sweep_start_math_deg - (rpm / max) * sweep_total_deg - 90",
+        "godot_rotation_deg_cw_from_up": "rot = 90 - math_angle = -135 + (rpm / 9000) * 270",
         "sprite": "needle_long.png"
       },
       "digital": {
@@ -215,10 +215,10 @@
         "major_step": 20,
         "mid_step": 10,
         "minor_step": 5,
-        "warn_start": 85,
-        "warn_end": 100,
-        "cool_start": 0,
-        "cool_end": 10
+        "warn_start": 0,
+        "warn_end": 15,
+        "cool_start": null,
+        "cool_end": null
       },
       "needle": {
         "pivot": [
@@ -230,7 +230,7 @@
         "sweep_start_math_deg": -18.0,
         "sweep_end_math_deg": 48.0,
         "value_to_math_angle_deg": "-18.0 + (v - 0) / (100 - 0) * (48.0 - -18.0)",
-        "godot_rotation_deg_from_up": "rot = (sweep_start_math_deg + t * (sweep_end_math_deg - sweep_start_math_deg)) - 90 (t = (v - min) / (max - min); negate if your engine treats CW as positive \u2014 Godot 2D does)",
+        "godot_rotation_deg_cw_from_up": "rot = 90 - math_angle = 108 - 66 * t  (t = (v - min) / (max - min))",
         "sprite": "needle_short.png"
       },
       "title_anchor": {
@@ -317,7 +317,7 @@
         "sweep_start_math_deg": 198.0,
         "sweep_end_math_deg": 132.0,
         "value_to_math_angle_deg": "198.0 + (v - 40) / (130 - 40) * (132.0 - 198.0)",
-        "godot_rotation_deg_from_up": "rot = (sweep_start_math_deg + t * (sweep_end_math_deg - sweep_start_math_deg)) - 90 (t = (v - min) / (max - min); negate if your engine treats CW as positive \u2014 Godot 2D does)",
+        "godot_rotation_deg_cw_from_up": "rot = 90 - math_angle = -108 + 66 * t  (t = (v - min) / (max - min))",
         "sprite": "needle_short.png"
       },
       "title_anchor": {
@@ -382,16 +382,16 @@
       "canvas_px_per_mm": 8.641666666666667,
       "side": "right",
       "title": "BOOST",
-      "sub_title": "inHg / PSI",
+      "sub_title": "PSI",
       "value": {
-        "min": -30,
-        "max": 20,
-        "major_step": 10,
+        "min": -15,
+        "max": 30,
+        "major_step": 15,
         "mid_step": 5,
         "minor_step": 1,
-        "warn_start": 15,
-        "warn_end": 20,
-        "cool_start": -30,
+        "warn_start": 25,
+        "warn_end": 30,
+        "cool_start": -15,
         "cool_end": 0
       },
       "needle": {
@@ -403,8 +403,8 @@
         "sweep_bottom_deg": 18.0,
         "sweep_start_math_deg": -18.0,
         "sweep_end_math_deg": 48.0,
-        "value_to_math_angle_deg": "-18.0 + (v - -30) / (20 - -30) * (48.0 - -18.0)",
-        "godot_rotation_deg_from_up": "rot = (sweep_start_math_deg + t * (sweep_end_math_deg - sweep_start_math_deg)) - 90 (t = (v - min) / (max - min); negate if your engine treats CW as positive \u2014 Godot 2D does)",
+        "value_to_math_angle_deg": "-18.0 + (v - -15) / (30 - -15) * (48.0 - -18.0)",
+        "godot_rotation_deg_cw_from_up": "rot = 90 - math_angle = 108 - 66 * t  (t = (v - min) / (max - min))",
         "sprite": "needle_short.png"
       },
       "title_anchor": {
@@ -491,7 +491,7 @@
         "sweep_start_math_deg": 198.0,
         "sweep_end_math_deg": 132.0,
         "value_to_math_angle_deg": "198.0 + (v - 0.0) / (1.0 - 0.0) * (132.0 - 198.0)",
-        "godot_rotation_deg_from_up": "rot = (sweep_start_math_deg + t * (sweep_end_math_deg - sweep_start_math_deg)) - 90 (t = (v - min) / (max - min); negate if your engine treats CW as positive \u2014 Godot 2D does)",
+        "godot_rotation_deg_cw_from_up": "rot = 90 - math_angle = -108 + 66 * t  (t = (v - min) / (max - min))",
         "sprite": "needle_short.png"
       },
       "title_anchor": {
@@ -514,7 +514,7 @@
         "align": "center"
       },
       "digital": {
-        "label": "ODO",
+        "label": "IAT",
         "window": {
           "cx": 0.4418349358974359,
           "cy": 0.6483486111111112,

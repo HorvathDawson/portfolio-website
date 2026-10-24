@@ -44,7 +44,7 @@ Reviewer, 2026-10-24. Read digital-dash.md, epas-can-gateway.md, wiring-overview
 - Round 2 (done): applied the roadmap fixes (IG wake + bench-tested loss plan, buck-fed Pi, CAN IDs/scaling/checksum, watchdogs, S2 verify notes); harness = built from scratch. Build, lint and roadmap validation pass (174 tasks).
 
 ## Open for the owner
-- [ ] Rerun `scripts/a40-gauge-placeholders.py` on the Mac (Futura/Menlo fonts) and commit the PNGs + gauges_manifest.json. The Linux render uses fallback fonts, so it wasn't committed.
+- [x] Gauge PNGs + gauges_manifest.json regenerated with bundled fonts (scripts/fonts: Jost Medium, DejaVu Sans Mono), same output on any machine. digital-dash.md "Art status" note to be updated (A40-009).
 - [ ] Battery location (boot assumed for cable sizing).
 - Unverified, marked in posts: PiCAN FD Duo IRQ GPIOs 25/24, Pi 5 J2 pinout, Haltech 0x370 scaling, Prius 0x1C4 scale/checksum, Prius EPS fuse, Nexus S2 output specs, rpi-clone on Pi 5 NVMe.
 
