@@ -639,6 +639,15 @@ h1 {
   }
 }
 /* ---- Not-found page ---- */
+.route-error-detail {
+  max-width: 90vw;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  text-align: left;
+  font-size: 12px;
+  color: #ffb4b4;
+}
+
 .not-found {
   min-height: 100vh;
   display: flex;
