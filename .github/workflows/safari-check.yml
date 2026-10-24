@@ -19,7 +19,7 @@ jobs:
           cat > shot.cjs <<'JS'
           const { chromium } = require('playwright');
           const base = 'https://claude-keen-planck-2zcc5f-personal-website.horvath-dawson.workers.dev';
-          const pages = ['/garage', '/garage/a40', '/garage/a40/build-constants', '/garage/a40/roadmap', '/garage/autozam', '/a40/steering'];
+          const pages = ['/', '/garage', '/garage/a40', '/garage/a40/rear-suspension', '/garage/a40/build-constants', '/garage/a40/roadmap', '/garage/autozam', '/a40/steering'];
           (async () => {
             const b = await chromium.launch(); const out = [];
             for (const [w, h, tag] of [[1440, 900, 'd'], [390, 844, 'm']]) {
