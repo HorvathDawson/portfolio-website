@@ -9,6 +9,7 @@ import {
   GITHUB_URL, HOME_DESCRIPTION, LINKEDIN_URL, RESUME_GENERATOR_PATH, HOME_TITLE, OG_IMAGE, SHARE_DESCRIPTION, SHARE_TITLE, SITE_NAME, SITE_URL, absoluteUrl,
 } from './src/data/site'
 import { carAndSlug, parseFrontmatter, toPostMeta } from './src/blog/frontmatter'
+import { substitutePostBody } from './src/blog/a40Constants'
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -130,7 +131,8 @@ export interface SearchDoc { car: string; slug: string; title: string; sections:
 /** One post → its sections (intro + one per heading), as plain text. */
 function searchDoc(file: string, raw: string): SearchDoc {
   const { car, slug } = carAndSlug(file)
-  const { meta, body } = parseFrontmatter(raw)
+  const { meta, body: md } = parseFrontmatter(raw)
+  const body = substitutePostBody(car, slug, md) // A40 {{constants}}, same as the rendered post
   // Headings use the same KaTeX rendering as the post, so their ids match;
   // section text keeps $maths$ as written (readable and searchable).
   const withMath = new Marked().use(markedKatex({ throwOnError: false, nonStandard: true }))

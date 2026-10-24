@@ -2,7 +2,7 @@ import { marked } from 'marked';
 import markedKatex from 'marked-katex-extension';
 import { parseFrontmatter, toPostMeta, type PostMeta } from './frontmatter';
 import { loadPostRaw, postPath } from './cars';
-import { substituteConstants } from './a40Constants';
+import { substitutePostBody } from './a40Constants';
 
 marked.use(markedKatex({ throwOnError: false, nonStandard: true }));
 
@@ -54,7 +54,7 @@ function excerpt(html: string, max = 160): string {
 export function parsePost(raw: string, car: string, slug: string): BlogPost {
   const { meta, body: md } = parseFrontmatter(raw);
   // A40 posts write numbers as {{constant}} (content/a40/constants.yaml); unknown names throw.
-  const body = car === 'a40' ? substituteConstants(md, `content/a40/${slug}.md`) : md;
+  const body = substitutePostBody(car, slug, md);
   usedHeadingIds.clear();
   const html = (marked.parse(body, { async: false }) as string)
     // Lazy-load post images so long posts don't download every plot up front.

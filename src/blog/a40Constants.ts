@@ -86,3 +86,11 @@ export const placeholdersIn = (text: string): string[] => [...text.matchAll(PLAC
 export const k = (name: string, ...mods: string[]): string => render(name, mods, 'roadmapData.ts');
 /** Number only, e.g. raw('front_track') → "1234". */
 export const raw = (name: string, ...mods: string[]): string => render(name, ['raw', ...mods], 'roadmapData.ts');
+
+/**
+ * The one hook every reader of post Markdown uses (blogData.ts parsePost, the
+ * search index in vite.plugins.ts): substitutes constants in A40 post bodies,
+ * returns other cars' bodies unchanged.
+ */
+export const substitutePostBody = (car: string, slug: string, body: string): string =>
+  car === 'a40' ? substituteConstants(body, `content/a40/${slug}.md`) : body;
