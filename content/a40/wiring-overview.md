@@ -54,7 +54,7 @@ These set the wire gauge, the fuses and which loads get a relay instead of an EC
 | Starter solenoid | **Relay** (ECU or ignition switch drives the coil) | 12 AWG to solenoid | The solenoid pull-in current is too high for an ECU output. Not a PDM channel. |
 | Fuel pump (external Aeromotive 340 + surge tank) | Relay or a high-current output, own fuse | 10-12 AWG | Size for the pump at full voltage and pressure (**verify** the pump's current draw). Lift pump for the surge tank is a separate small branch if used. |
 | Radiator fans (2, staged) | Relay or high-current outputs | Sized to fuse | Start-up inrush is several times the running current. Size fuses and relays for the inrush, or soft-start with PWM. |
-| EPAS column motor | **Own fuse at the battery, ~50-80 A** (**verify** against the donor Prius fuse box rating) | Sized to that fuse (about 8 AWG class for a few metres; verify) | Heavy chassis ground at the column. Not through the ECU. |
+| EPAS column motor (if EPAS) | **Own fuse at the battery, ~50-80 A** (**verify** against the donor Prius fuse box rating) | Sized to that fuse (about 8 AWG class for a few metres; verify) | Heavy chassis ground at the column. Not through the ECU. |
 | EPAS IG wake | Ignition-switched, small fuse | 18-20 AWG | Hard-wired. The column has to wake with the engine stopped, the same as in a Prius. See [EPAS CAN gateway](./epas-can-gateway). |
 | EPAS CAN (`can1`) | From the dash Pi | 22 AWG twisted pair + ground, about 1-1.5 m | 120 Ω at each end. Separate from the Haltech bus. |
 | Dash Pi + display | Constant +12 V, 5 A fuse, plus ignition sense, into the DCDC-USB (V(out) jumpered to 5 V, ~33 W, ~3 A from 12 V) | 18-14 AWG | Detail in the [digital dash](./digital-dash) wiring section. |
@@ -74,7 +74,7 @@ Each branch is a connector and a run of wire to budget for in the bulkhead.
 |---|---|---|
 | Oil temp | 1/8 NPT thermistor (Haltech part, **verify** P/N) | 2-pin, pan bung or filter sandwich plate |
 | Fuel level | A40 sender if it survives the tank rebuild (**verify** its resistance range), else a custom resistive sender | 2-pin to a Nexus analog input, curve set in the ECU |
-| Vehicle speed | **Wheel or driveshaft speed sensor** (Hall, 3-pin) into the Nexus | Required, not optional: the EPAS gateway uses this speed for assist, and GPS drops out (see the gateway post) |
+| Vehicle speed | **Wheel or driveshaft speed sensor** (Hall, 3-pin) into the Nexus | Required, not optional: the speedo needs it, the EPAS gateway (if fitted) uses it for assist, and GPS drops out (see the gateway post) |
 | Gear | Calculated from speed/rpm against the gear ratios | None |
 
 Coolant temp, IAT, MAP, battery voltage, rpm, TPS and AFR reach the dash over CAN with no extra wiring.

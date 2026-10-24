@@ -18,7 +18,7 @@ The integration view: one line per system, then the clearance problems I have to
 | Rear suspension | Narrowed Miata NA IRS, every inboard pickup moved ~42–47 mm per side (measure the donor) for the locked 1340 mm track. RX-8 diff on custom chassis mounts, custom half-shafts. | [rear suspension](./rear-suspension) |
 | Engine + gearbox | SR20DET on a CD009 or Z32 (OEM 5-speed rejected). Tunnel sized to the CD009. Engine/gearbox 3° down at the rear (tail-down), RX-8 pinion parallel. | [motor selection](./motor-selection) |
 | Driveshaft | One-piece, 3.5" drop over 37": shaft 5.4°, both U-joints 2.4°. The diff is sprung, so the angles don't change with travel. | [rear suspension](./rear-suspension#driveshaft-and-u-joint-angles) |
-| Steering | Narrowed Miata NA rack (190 mm total), Prius Gen 4 (2016–2022) EPAS column driven over a Pi CAN gateway. | [steering](./steering) |
+| Steering | Narrowed Miata NA rack (190 mm total), manual steering or a Prius Gen 4 (2016–2022) EPAS column on a Pi CAN gateway (open). | [steering](./steering) |
 | Body | Original A40 shell, laser-scanned (done). Mount style (welded / rubber / hybrid) still open. | this post |
 | Electronics | Haltech Nexus S2; Godot digital dash on a Pi behind the original bezel. | [wiring](./wiring-overview) · [dash](./digital-dash) |
 

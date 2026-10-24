@@ -23,7 +23,7 @@ This is my working log for the A40 build: a 1950 Austin A40 Devon body on a cust
 1. [Teardown](./teardown): what came off the original car.
 2. [Front suspension options](./suspension-options): why a custom frame and not a Mustang II splice.
 3. [Motor selection](./motor-selection): why the SR20DET.
-4. [Steering](./steering): narrowed Miata rack + Prius EPAS column.
+4. [Steering](./steering): narrowed Miata rack; manual steering or a Prius EPAS column (open).
 5. [Dimensions, tyre choice and narrowing](./narrowing-analysis): front track and how far to narrow the donor.
 6. [Donor geometry dimensions](./donor-geometry-dimensions): measured donor pickup points.
 7. [Geometry design reference](./geometry-design-reference): roll centre, scrub, motion ratio, what narrowing changes.
@@ -33,7 +33,7 @@ This is my working log for the A40 build: a 1950 Austin A40 Devon body on a cust
 11. [Ladder frame design](./frame-design), then the [design overview](./design-overview) (integration and clearance checks), then [design finalization and cut list](./design-finalization).
 12. [Wiring overview](./wiring-overview): Haltech Nexus S2 and the harness decisions.
 13. [Digital dash](./digital-dash): Godot dash on a Pi over CAN.
-14. [EPAS CAN gateway](./epas-can-gateway): the same Pi as a dual-bus gateway so the Prius column gets speed-sensitive assist.
+14. [EPAS CAN gateway](./epas-can-gateway): the same Pi as a dual-bus gateway so the Prius column gets speed-sensitive assist (only if EPAS is chosen).
 
 ## By system
 
