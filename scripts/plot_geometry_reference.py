@@ -2245,7 +2245,7 @@ def plot_jacking():
     ax.set_ylabel("Jacking ratio (%)")
     ax.set_title(f"Jacking vs roll center height  (T = {T_A40_EXACT} mm)")
     ax.legend(
-        fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="upper left"
+        fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="lower right"
     )
     ax.set_xlim(0, 180)
     ax.set_ylim(0, 30)
@@ -2298,7 +2298,7 @@ def plot_rack_narrowing():
     # OO = outer-to-outer tire width = track + 205 mm section width.
     # Stock A40 OO is 1365 mm.
     scenarios = [
-        (1365 - TIRE_W_A40, "OO = stock A40 (1365)", PINK, (-60, 45)),
+        (1365 - TIRE_W_A40, "OO = stock A40 (1365)", PINK, (75, 20)),
         (1400 - TIRE_W_A40, "OO 1400 (+17/side)", PURPLE, (-70, 40)),
         (T_A40, f"build: OO {T_A40 + TIRE_W_A40} (+35/side)", GREEN, (40, 45)),
     ]
@@ -3797,8 +3797,8 @@ def plot_driveshaft_angles():
         2 * rear_arc_r,
         2 * rear_arc_r,
         angle=0,
-        theta1=180 - PINION_ANGLE_DEG,
-        theta2=180 - DS_ANGLE_DEG,
+        theta1=180 - DS_ANGLE_DEG,
+        theta2=180 - PINION_ANGLE_DEG,
         color=GREEN,
         lw=2,
         zorder=8,
@@ -3861,13 +3861,13 @@ def plot_driveshaft_angles():
         va="bottom",
     )
     ax.text(
-        px1 - 0.5,
-        py1 + 1.2,
+        px1 + 0.5,
+        py1 - 0.8,
         "RX-8 diff pinion\n(chassis-mounted)",
         color=A40_C,
         fontsize=9,
-        ha="right",
-        va="bottom",
+        ha="center",
+        va="top",
     )
     ax.text(
         x_trans + 0.8,
@@ -3879,20 +3879,21 @@ def plot_driveshaft_angles():
         va="top",
     )
     ax.text(
-        ds_x1 - 0.8,
-        ds_y1 - 1.2,
+        ds_x1,
+        ds_y1 + 0.9,
         "Rear\nU-joint",
         color=GREEN,
         fontsize=7.5,
         ha="center",
-        va="top",
+        va="bottom",
     )
 
     ax.set_title("Driveshaft angles (side view; constant through travel, sprung diff)")
     ax.set_xlabel("Horizontal distance (in)")
     ax.set_ylabel("Vertical (in)")
     ax.legend(
-        fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="lower left"
+        fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+        loc="upper center", bbox_to_anchor=(0.5, -0.36), ncol=3,
     )
     pad = 3
     ax.set_xlim(tx0 - pad, px1 + pad + 3)

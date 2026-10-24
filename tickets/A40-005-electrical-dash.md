@@ -1,7 +1,7 @@
 ---
 id: A40-005
 title: Electrical, CAN gateway and dash
-status: in-progress
+status: review
 owner: electrical agent
 reviewer:
 blocked_by:
@@ -30,7 +30,7 @@ _Filled by the reviewer._
 ## Implementer notes (electrical agent, round 1)
 - Dash wiring redrawn: constant 12 V → DCDC-USB (automotive mode, 1 min/1 min) → 12→5.1 V/5 A buck → Pi 5 USB-C + display 5 V (single feed). PSW → Pi 5 J2. PiCAN FD Duo Isolated, no 12 V into the HAT. can0 HAT terminator off; can1 120 Ω both ends.
 - digital-dash, epas-can-gateway and wiring-overview rewritten; GPS speed replaced by a wheel/driveshaft sensor.
-- Round 2 (in progress): apply its 19 roadmap fixes, harness = built from scratch (decided).
+- Round 2 (done): applied the roadmap fixes (IG wake + bench-tested loss plan, buck-fed Pi, CAN IDs/scaling/checksum, watchdogs, S2 verify notes); harness = built from scratch. Build, lint and roadmap validation pass (174 tasks).
 
 ## Open for the owner
 - [ ] Rerun `scripts/a40-gauge-placeholders.py` on the Mac (Futura/Menlo fonts) and commit the PNGs + gauges_manifest.json. The Linux render uses fallback fonts, so it wasn't committed.
