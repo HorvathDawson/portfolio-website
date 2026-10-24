@@ -20,7 +20,7 @@ The selector needs the AZ-1 in the same traced white-outline + gradient style as
 - [ ] Doors are clearly open (gullwing) in the outline
 - [ ] Line weight and detail level look like the A40 drawing side by side at card size
 - [ ] Both SVGs under ~200 KB (outline 183 KB, colored 224 KB; the A40's are 175/182 KB)
-- [ ] Image is the owner's own photo (supplied by the owner in chat, Oct 2026; owner to confirm rights)
+- [x] Image is the owner's own photo (owner's own car and photo, confirmed Oct 2026)
 
 ## Notes
 Wikimedia Commons is blocked from the build container, and a third-party photo would carry licence terms anyway, so the owner's own photo is the source.
