@@ -36,3 +36,8 @@ _Filled by the reviewer._
 - [ ] Rerun `scripts/a40-gauge-placeholders.py` on the Mac (Futura/Menlo fonts) and commit the PNGs + gauges_manifest.json. The Linux render uses fallback fonts, so it wasn't committed.
 - [ ] Battery location (boot assumed for cable sizing).
 - Unverified, marked in posts: PiCAN FD Duo IRQ GPIOs 25/24, Pi 5 J2 pinout, Haltech 0x370 scaling, Prius 0x1C4 scale/checksum, Prius EPS fuse, Nexus S2 output specs, rpi-clone on Pi 5 NVMe.
+
+## Owner decision (Oct 2026): Gen 4 Prius column
+- Column is a Gen 4 Prius (2016–2022), chosen for its opendbc decoding (openpilot supports all of them; one DBC, `toyota_nodsu_pt_generated`).
+- Gateway post now quotes the real DBC lines: 0xB4 SPEED bytes 5–6 at 0.01 km/h + `toyota_checksum`; 0x1C4 ENGINE_RPM bytes 0–1 signed at 0.78125 rpm/bit + ENGINE_RUNNING, no checksum. Checksum code copied from opendbc.
+- Still verify: send rates and the full set of frames the column needs (donor log + bench), and the undocumented `ENCODER` byte.

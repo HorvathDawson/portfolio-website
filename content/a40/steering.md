@@ -13,8 +13,8 @@ The stock A40 steering is unassisted, and the column is a solid shaft pointed at
 
 | Item | Choice | Status |
 |---|---|---|
-| Assist | Toyota Prius Gen 3 (2010-2015) column-mount EPAS | chosen |
-| Assist control | Pi CAN gateway for speed-sensitive assist; failsafe mode as fallback | see [EPAS CAN gateway](./epas-can-gateway) |
+| Assist | Toyota Prius Gen 4 (2016–2022) column-mount EPAS | chosen |
+| Assist control | Pi CAN gateway sending opendbc-decoded Prius speed and rpm frames, for speed-sensitive assist | see [EPAS CAN gateway](./epas-can-gateway) |
 | Column | Collapsible (the Prius column), adapted to the A40 dash | required |
 | Rack | Miata NA manual (or depowered) rack, **narrowed 190 mm total (7.5", 95 mm per side)** | locked with the 95 mm/side suspension narrowing |
 | Steering arms | Stock Miata knuckle arms | keep, pending linkage solve |
@@ -26,16 +26,18 @@ The stock A40 steering is unassisted, and the column is a solid shaft pointed at
 
 ### Why the Prius column
 
-Cheapest and simplest path. The motor and torque sensor sit on the column, so it does not care which rack is underneath, and there are no pumps, lines or fluid. Junkyard columns are cheap (forum reports $35-50 at U-Pull yards; verify). Any Gen 3 year should share the same CAN frames (verify on the donor).
+Cheapest and simplest path. The motor and torque sensor sit on the column, so it does not care which rack is underneath, and there are no pumps, lines or fluid. Junkyard columns are cheap (forum prices for older Prius columns are $35–50; a Gen 4 column will cost more, verify).
+
+**Why Gen 4.** openpilot supports every 2016–2022 Prius, so the powertrain CAN messages the column sees are decoded in [opendbc](https://github.com/commaai/opendbc) (`toyota_nodsu_pt_generated.dbc` for all of them). That gives tested IDs, scaling and checksum to spoof for proper speed-sensitive assist, instead of guessing from forum posts. Which frames the column actually needs still has to be confirmed with a donor log and on the bench.
 
 ### How it is powered and controlled
 
 1. **Power:** fused 12 V and ground with heavy-gauge cable.
 2. **Wake:** the column's IG wake line is **hard-wired to switched ignition**. Do not rely on the gateway to wake it.
 3. **Assist curve:** the Pi gateway sends the two Toyota frames the column expects (`0x1C4` engine RPM, `0xB4` vehicle speed). With these the column gives speed-sensitive assist. Frame IDs, checksums and the safety reasoning are in the [EPAS CAN gateway](./epas-can-gateway) post.
-4. **Fallback:** if the gateway stops, the column drops to its internal failsafe (fixed assist). That is the worst case and it is acceptable.
+4. **If the gateway stops:** unknown until bench-tested. The column may hold, drop to fixed or no assist, or latch a fault until a key cycle. The gateway's loss policy (hold the last speed, ramp to low assist, never to 0) is in the gateway post.
 
-**Engine-off assist is not promised.** The column only starts assisting once it sees RPM > 0 on CAN, so with the engine off (pushing the car around the shop) it may give no assist. Confirm on the bench rig what the column does with ignition on, engine off, and decide then.
+**Engine-off assist is not promised.** A Prius steers with its engine stopped, so the column probably doesn't need rpm > 0, but it may use `ENGINE_RUNNING` or other frames. Check on the bench what it does with ignition on and the engine off.
 
 ### Options I ruled out
 

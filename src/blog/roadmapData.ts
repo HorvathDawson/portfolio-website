@@ -131,12 +131,12 @@ export const roadmap: Roadmap = {
       epic: 'research',
       kind: 'decision',
       status: 'decided',
-      decision: 'Miata NA rack (depowered, 190 mm narrowed) + Toyota Prius Gen 3 (2010–2015) column-mount EPAS, driven by the dash Pi acting as a dual-bus CAN gateway (Haltech → Toyota frames) for speed-sensitive assist. The column has a hard-wired IG wake; what it does without frames (fixed assist, reduced assist or a DTC latched until key cycle) is to be bench-tested.',
+      decision: 'Miata NA rack (depowered, 190 mm narrowed) + Toyota Prius Gen 4 (2016–2022) column-mount EPAS, driven by the dash Pi acting as a dual-bus CAN gateway (Haltech → Toyota frames) for speed-sensitive assist. The column has a hard-wired IG wake; what it does without frames (fixed assist, reduced assist or a DTC latched until key cycle) is to be bench-tested.',
       posts: ['steering', 'epas-can-gateway'],
       summary: 'Lock the rack donor and the EPAS column donor. Output: parts list, dual-bus gateway architecture, and a bench-tested loss-of-frames plan.',
       notes: [
         'Rack: Miata NA, depowered (Flyin\' Miata method), narrowed by 190 mm total (95 mm per side) to match the front-track delta',
-        'Column: Toyota Prius Gen 3 (2010–2015) — any year in that range probably shares the same powertrain CAN architecture (verify on the bench with the actual column part number)',
+        'Column: Toyota Prius Gen 4 (2016–2022). openpilot supports all of these, and opendbc decodes their powertrain CAN in one DBC (toyota_nodsu_pt_generated), so the speed (0xB4) and rpm (0x1C4) frames, scaling and checksum are known. Which frames the column needs: confirm with a donor log and on the bench',
         'Control strategy: dash Pi rebroadcasts Haltech RPM + speed as Toyota 0x1C4 + 0xB4 frames — see t-decide-epas-control',
         'Loss of frames: column behaviour unknown (fixed assist / reduced / no assist / latched DTC) — bench-test; gateway policy on stale Haltech data is hold last speed then ramp toward low assist, never toward 0',
         'Reject: hydraulic, electro-hydraulic pump, $1500+ kits',
@@ -824,7 +824,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Toyota Prius Gen 3 (2010–2015) column-mount EPAS assembly — column + integrated controller. Any year in that range should work; they probably share the same powertrain CAN architecture (verify on the bench with the actual column part number).',
+      summary: 'Toyota Prius Gen 4 (2016–2022) column-mount EPAS assembly — column + integrated controller. All years use the same opendbc powertrain DBC (toyota_nodsu_pt_generated); still confirm the column part number and log a donor car if possible.',
     },
     {
       id: 't-buy-steering-column',
@@ -1168,7 +1168,7 @@ export const roadmap: Roadmap = {
       epic: 'design',
       status: 'planning',
       posts: ['epas-can-gateway'],
-      summary: 'Lightweight C/Python systemd service translating Haltech → Toyota frames. Reads RPM (Haltech 0x360, bytes 0-1) and speed (Haltech 0x370, bytes 0-1) on can0; writes Toyota 0x1C4 ENGINE_RPM (likely 0.78125 rpm/bit, verify in opendbc) and 0xB4 SPEED (0.01 km/h/bit) on can1 at the rates the DBC / a Prius log shows (verify). The checksum is a plain additive sum in the last byte, only on frames whose DBC defines CHECKSUM (0xB4 does; check 0x1C4). Runs outside the Godot dash app so a UI crash never costs power steering.',
+      summary: 'Lightweight C/Python systemd service translating Haltech → Toyota frames. Reads RPM (Haltech 0x360, bytes 0-1) and speed (Haltech 0x370, bytes 0-1) on can0; writes Toyota 0x1C4 ENGINE_RPM (bytes 0-1, signed, 0.78125 rpm/bit, + ENGINE_RUNNING) and 0xB4 SPEED (bytes 5-6, 0.01 km/h/bit) on can1, per the opendbc Gen 4 Prius DBC; send rates from a Prius log (verify). 0xB4 carries the opendbc toyota_checksum in the last byte; 0x1C4 has none. Runs outside the Godot dash app so a UI crash never costs power steering.',
       notes: [
         'Separate systemd unit, Restart=always, StartLimitIntervalSec=0, WatchdogSec + sd_notify, hardware watchdog (RuntimeWatchdogSec), early-boot start',
         'Loss policy: stale Haltech speed → hold last speed, then ramp toward high-speed/low assist (never toward 0); rate-limit speed changes',
@@ -1875,7 +1875,7 @@ export const roadmap: Roadmap = {
       notes: [
         'Gateway runs as its own systemd service — NOT inside the Godot dash app (UI crash != lose power steering)',
         'Hardware: PiCAN FD Duo Isolated (non-SMPS) HAT replacing the single-channel PiCAN3',
-        'Toyota frames: 0x1C4 ENGINE_RPM (likely 0.78125 rpm/bit, verify) + 0xB4 SPEED (raw = km/h ÷ 0.01); plain additive checksum in the last byte, only on frames that define CHECKSUM; rates per DBC / Prius log (verify)',
+        'Toyota frames (opendbc, Gen 4 Prius): 0x1C4 ENGINE_RPM (0.78125 rpm/bit, no checksum) + 0xB4 SPEED (raw = km/h ÷ 0.01, toyota_checksum in the last byte); rates from a Prius log (verify); confirm on the bench that the column needs no other frames',
         'Failure mode: unknown until bench-tested (possible latched DTC); speed source must be a wheel/driveshaft sensor, not GPS; dual-CAN MCU gateway is the upgrade path',
       ],
     },
