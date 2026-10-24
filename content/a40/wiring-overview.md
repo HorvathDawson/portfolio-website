@@ -20,7 +20,7 @@ This is the starting point for the engine harness: the ECU choice, the decisions
 | Injectors | 1000-1100 cc/min high-impedance EV14-style (keeps E85 open) | Size chosen, part not picked |
 | Coils | Smart coils: LS truck (4-pin) or R35 GT-R | Open |
 | Wideband | Bosch LSU 4.9 on the Nexus wideband controller | Chosen (verify the S2 has the internal WB) |
-| Harness | Haltech universal trunk + custom engine sub-harnesses | Leaning, price both first |
+| Harness | Built from scratch: Wiring Specialties connectors, self-terminated, self-loomed | Decided |
 | Battery | Boot assumed for cable sizing below | Location decision still open (boot / under-floor / footwell) |
 
 ### Why the Nexus S2
@@ -32,7 +32,7 @@ This is the starting point for the engine harness: the ECU choice, the decisions
 
 ### Injector sizing
 
-Roughly 350 whp needs about **790 cc/min on petrol** and **about 1000-1100 cc/min on E85** (about 80 % duty, base pressure 3 bar; **verify** with the final pump and regulator). The earlier 550 cc/min was too small for either. Plan: 1000-1100 cc/min EV14-style, USCAR/EV14 connectors.
+Power target is ~300 whp, with fuel and injectors sized for ~350 whp of headroom. Roughly 350 whp needs about **790 cc/min on petrol** and **about 1000-1100 cc/min on E85** (about 80 % duty, base pressure 3 bar; **verify** with the final pump and regulator). The earlier 550 cc/min was too small for either. Plan: 1000-1100 cc/min EV14-style, USCAR/EV14 connectors.
 
 ### Air metering
 
@@ -52,7 +52,7 @@ These set the wire gauge, the fuses and which loads get a relay instead of an EC
 |---|---|---|---|
 | Battery + to starter / main bus (boot battery, about 4 m; resize if the location changes) | Main fuse or breaker **within ~300 mm of the battery** | 4 AWG (6 AWG minimum) | Matching ground: battery - to chassis in the boot, plus engine-to-chassis strap of the same size. About 4 m each way, so don't undersize it. Master switch on this run. |
 | Starter solenoid | **Relay** (ECU or ignition switch drives the coil) | 12 AWG to solenoid | The solenoid pull-in current is too high for an ECU output. Not a PDM channel. |
-| Fuel pump | Relay or a high-current output, own fuse | 10-12 AWG | Size for the pump at full voltage and pressure (**verify** the pump's current draw). |
+| Fuel pump (external Aeromotive 340 + surge tank) | Relay or a high-current output, own fuse | 10-12 AWG | Size for the pump at full voltage and pressure (**verify** the pump's current draw). Lift pump for the surge tank is a separate small branch if used. |
 | Radiator fans (2, staged) | Relay or high-current outputs | Sized to fuse | Start-up inrush is several times the running current. Size fuses and relays for the inrush, or soft-start with PWM. |
 | EPAS column motor | **Own fuse at the battery, ~50-80 A** (**verify** against the donor Prius fuse box rating) | Sized to that fuse (about 8 AWG class for a few metres; verify) | Heavy chassis ground at the column. Not through the ECU. |
 | EPAS IG wake | Ignition-switched, small fuse | 18-20 AWG | Hard-wired. The column has to wake with the engine stopped, the same as in a Prius. See [EPAS CAN gateway](./epas-can-gateway). |
@@ -81,7 +81,7 @@ Coolant temp, IAT, MAP, battery voltage, rpm, TPS and AFR reach the dash over CA
 
 ## Harness build
 
-**Trunk:** Haltech universal harness for the ECU-side trunk (connector already terminated, labelled flying leads). **Engine side:** custom sub-harnesses for injectors, coils and sensors. Price both paths before committing.
+**Decided: built from scratch**, pin by pin against the Nexus pinout, with Wiring Specialties connectors, self-terminated and self-loomed. The Haltech universal harness (pre-terminated ECU connector) was the alternative and was rejected.
 
 **Connectors:** kitted connectors from Wiring Specialties, covering EV14 injectors (×4), coils (×4, type follows the coil choice), sensors (CTS, IAT, oil/fuel pressure), DBW TB + pedal and LSU 4.9. Bulkhead: Deutsch Autosport or similar (open).
 
@@ -96,8 +96,7 @@ Coolant temp, IAT, MAP, battery voltage, rpm, TPS and AFR reach the dash over CA
 ## Next
 
 1. Pinout and branch map: the Nexus pinout reduced to a one-page diagram.
-2. Universal vs custom: price both and commit.
-3. Connector BOM.
-4. Engine-side sub-harness build.
-5. Trunk and bulkhead.
-6. First power-up: ECU on the bench, outputs checked with test loads, sensors added one at a time.
+2. Connector BOM.
+3. Engine-side sub-harness build.
+4. Trunk and bulkhead.
+5. First power-up: ECU on the bench, outputs checked with test loads, sensors added one at a time.

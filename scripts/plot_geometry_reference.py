@@ -98,7 +98,7 @@ NARROW_PER_SIDE = 95  # mm, locked
 ET_A40 = 38
 HUB_FACE_A40 = HUB_FACE_MIATA - NARROW_PER_SIDE  # 655 mm from CL
 HT_A40 = HUB_FACE_A40 - ET_A40  # 617 mm: exact wheel-CL half-track at ET38
-T_A40_EXACT = 2 * HT_A40  # 1234 mm
+T_A40_EXACT = int(round(2 * HT_A40))  # 1234 mm
 T_A40 = 1230  # nominal front track used for vehicle-level ratios
 TIRE_OD_A40 = 647.5  # 205/65R15
 TIRE_W_A40 = 205
@@ -1079,6 +1079,11 @@ def _plot_rc_migration_panel(half_track, hub_z, tire_od, color, title, fname,
               handlelength=1.4, borderpad=0.5)
     fig.tight_layout()
     save(fig, fname)
+    if len(pts):
+        print(f"  {fname}: RC x within \u00b1{np.abs(pts[:, 0]).max():.0f} mm, "
+              f"y {pts[:, 1].min():.0f}-{pts[:, 1].max():.0f} mm "
+              f"(span {np.ptp(pts[:, 1]):.0f}); max roll "
+              f"\u00b1{np.degrees(phi_max_roll):.2f} deg")
 
 
 def plot_rc_migration():
