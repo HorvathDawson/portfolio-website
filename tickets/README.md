@@ -74,4 +74,4 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [GAR-003](./GAR-003-autozam-art.md) | Autozam AZ-1 line art, gullwing doors up | blocked (photo) |
 | [GAR-004](./GAR-004-autozam-log.md) | Autozam AZ-1 garage log | todo |
 | [GAR-005](./GAR-005-blog-usability.md) | Blog usability cleanup | todo (audit done) |
-| [GAR-006](./GAR-006-roadmap-views.md) | Roadmap views for deciding what to work on | in-progress |
+| [GAR-006](./GAR-006-roadmap-views.md) | Roadmap views for deciding what to work on | review (owner to pick default) |

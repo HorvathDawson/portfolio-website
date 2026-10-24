@@ -90,12 +90,15 @@ function kindRank(t: RoadmapTask): number {
   return k === 'decision' ? 0 : k === 'task' ? 1 : 2;
 }
 
-/** In-progress first, then bottleneck score desc, then decision > task > purchase, then title. */
+/** Tasks that unblock something before those that don't; then in-progress first,
+ *  then bottleneck score desc, then decision > task > purchase, then title. */
 export function compareByPriority(
   a: RoadmapTask,
   b: RoadmapTask,
   scores: Map<TaskId, number> = bottleneckScores,
 ): number {
+  const gates = Number((scores.get(b.id) ?? 0) > 0) - Number((scores.get(a.id) ?? 0) > 0);
+  if (gates) return gates;
   const ip = Number(b.status === 'in-progress') - Number(a.status === 'in-progress');
   if (ip) return ip;
   const ds = (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0);
@@ -209,6 +212,9 @@ export interface TreeOptions {
   depth: number;
   hardOnly: boolean;
   hideDone: boolean;
+  /** Drop edges already implied by a longer path among the shown nodes
+   *  (transitive reduction). Defaults to true. */
+  reduce?: boolean;
 }
 
 export interface TreeSide {
@@ -218,8 +224,11 @@ export interface TreeSide {
   columns: TaskId[][];
   /** Every node on this side with its column. */
   col: Map<TaskId, number>;
-  /** Edges among focus + this side's nodes. */
+  /** Edges among focus + this side's nodes (deduplicated; transitively
+   *  reduced unless `reduce: false`). */
   edges: RoadmapEdge[];
+  /** Edges left out because a longer shown path already implies them. */
+  impliedEdges: number;
   /** Done tasks skipped because `hideDone` was on (direct or deeper). */
   hiddenDone: number;
   /** Nodes on the depth boundary that have further neighbours not shown. */
@@ -266,9 +275,34 @@ function buildSide(
     }
   }
   const members = new Set(dist.keys());
-  const edges: RoadmapEdge[] = [];
+  const seenEdge = new Set<string>();
+  let edges: RoadmapEdge[] = [];
   for (const id of members) {
-    for (const e of neighbours(id)) if (members.has(other(e))) edges.push(e);
+    for (const e of neighbours(id)) {
+      const key = `${e.from}>${e.to}`;
+      if (!members.has(other(e)) || seenEdge.has(key)) continue;
+      seenEdge.add(key);
+      edges.push(e);
+    }
+  }
+  let impliedEdges = 0;
+  if (opts.reduce !== false) {
+    const succ = new Map<TaskId, TaskId[]>();
+    for (const e of edges) succ.set(e.from, [...(succ.get(e.from) ?? []), e.to]);
+    // Is `to` reachable from `from` without using the direct edge?
+    const implied = (e: RoadmapEdge): boolean => {
+      const stack = (succ.get(e.from) ?? []).filter((n) => n !== e.to);
+      const seen = new Set(stack);
+      while (stack.length) {
+        const u = stack.pop()!;
+        if (u === e.to) return true;
+        for (const v of succ.get(u) ?? []) if (!seen.has(v)) { seen.add(v); stack.push(v); }
+      }
+      return false;
+    };
+    const kept = edges.filter((e) => !implied(e));
+    impliedEdges = edges.length - kept.length;
+    edges = kept;
   }
   // Longest-path layering inside the member set keeps every edge monotonic.
   const col = new Map<TaskId, number>();
@@ -305,7 +339,7 @@ function buildSide(
     columns[c].sort((a, b) => bary(a) - bary(b) || compareByPriority(idx.task.get(a)!, idx.task.get(b)!));
     columns[c].forEach((id, i) => row.set(id, i));
   }
-  return { columns, col, edges, hiddenDone: hidden.size, truncated };
+  return { columns, col, edges, impliedEdges, hiddenDone: hidden.size, truncated };
 }
 
 export function focusTree(id: TaskId, opts: TreeOptions, rm: Roadmap = defaultRoadmap): FocusTree | null {
@@ -363,9 +397,26 @@ export function progress(rm: Roadmap = defaultRoadmap): Progress {
 export function searchTasks(query: string, rm: Roadmap = defaultRoadmap): RoadmapTask[] {
   const q = query.trim().toLowerCase();
   if (!q) return rm.tasks.slice();
-  return rm.tasks.filter((t) =>
-    t.id.toLowerCase().includes(q) ||
-    t.title.toLowerCase().includes(q) ||
-    (t.summary ?? '').toLowerCase().includes(q),
-  );
+  // Title hits first, then id hits, then summary-only hits.
+  const rank = (t: RoadmapTask): number =>
+    t.title.toLowerCase().includes(q) ? 0
+      : t.id.toLowerCase().includes(q) ? 1
+        : (t.summary ?? '').toLowerCase().includes(q) ? 2
+          : 3;
+  return rm.tasks
+    .map((t) => ({ t, r: rank(t) }))
+    .filter((x) => x.r < 3)
+    .sort((a, b) => a.r - b.r)
+    .map((x) => x.t);
 }
+
+/* ── Labels ────────────────────────────────────────── */
+
+export const statusLabel: Record<RoadmapTask['status'], string> = {
+  planning: 'Planning',
+  'in-progress': 'In progress',
+  complete: 'Complete',
+  decided: 'Decided',
+};
+
+export const epicTitle: Map<string, string> = new Map(epics.map((e) => [e.id, e.title]));

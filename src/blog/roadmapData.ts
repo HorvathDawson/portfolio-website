@@ -2461,8 +2461,6 @@ export const roadmap: Roadmap = {
     { from: 't-decide-arb-front',   to: 't-buy-arb',                kind: 'hard' },
 
     /* Brake hydraulic spec gates master purchase + pedal box. */
-    { from: 't-decide-brake-system', to: 't-buy-brake-master',    kind: 'hard' },
-    { from: 't-decide-brake-system', to: 't-pedal-box-design',    kind: 'hard' },
   ],
 };
 

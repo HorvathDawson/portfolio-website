@@ -55,9 +55,14 @@ try {
     const expected = roadmap.tasks.filter((t) => !done(t) && hardIn(t.id).every((d) => done(byId.get(d))));
     assert.deepEqual(new Set(ready.map((t) => t.id)), new Set(expected.map((t) => t.id)));
   });
-  check('ready ranking puts in-progress tasks first', () => {
-    const firstPlanned = ready.findIndex((t) => t.status !== 'in-progress');
-    if (firstPlanned >= 0) assert.ok(ready.slice(firstPlanned).every((t) => t.status !== 'in-progress'));
+  check('ready ranking: tasks that gate work first, in-progress first within each group', () => {
+    const gates = (t) => (data.bottleneckScores.get(t.id) ?? 0) > 0;
+    const firstIdle = ready.findIndex((t) => !gates(t));
+    if (firstIdle >= 0) assert.ok(ready.slice(firstIdle).every((t) => !gates(t)), 'a gating task ranks below an idle one');
+    for (const group of [ready.filter(gates), ready.filter((t) => !gates(t))]) {
+      const firstPlanned = group.findIndex((t) => t.status !== 'in-progress');
+      if (firstPlanned >= 0) assert.ok(group.slice(firstPlanned).every((t) => t.status !== 'in-progress'));
+    }
   });
   check('critical path is a hard-edge chain of unfinished tasks', () => {
     assert.ok(path_.length > 0, 'empty path');

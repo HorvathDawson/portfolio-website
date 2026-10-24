@@ -1,7 +1,7 @@
 ---
 id: GAR-006
 title: Roadmap views for deciding what to work on
-status: in-progress
+status: review
 owner: roadmap-views agent
 reviewer:
 blocked_by:
@@ -26,3 +26,11 @@ The swim-lane map shows all 174 tasks and 388 edges at once. It's hard to see wh
 
 ## Verification
 _Filled by the reviewer._
+
+## Implementer notes
+- New: src/blog/roadmapPlan.ts (logic), A40RoadmapViews.tsx (switcher, now the /a40/roadmap route), RoadmapNextUp.tsx, RoadmapTree.tsx, roadmapViews.css, scripts/check-roadmap-plan.mjs (11 invariant checks against the real data: `node scripts/check-roadmap-plan.mjs`).
+- A40Roadmap.tsx: TaskDrawer exported; main component renamed RoadmapMap; switcher in its top bar.
+- Ranking: tasks that gate something first, in-progress first within each group, then bottleneck score.
+- Tree omits links implied by a longer chain (count shown).
+- Removed two duplicate brake-system edges from roadmapData.ts (kept the originals).
+- Critical path today (14): narrowing analysis → SA v2 → front shocks → frame design → design finalization → buy metal → frame build → engine mockup → trans crossmember → engine install → wiring → engine startup → alignment → registration.

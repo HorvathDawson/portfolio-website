@@ -8,7 +8,7 @@ import { NotFound } from './components/NotFound.tsx'
 // The A40 build log pulls in marked, KaTeX and ~150 KB of roadmap data, so it
 // is split into its own chunks and only downloaded when a blog route is visited.
 const A40Blog = lazy(() => import('./blog/A40Blog.tsx').then((m) => ({ default: m.A40Blog })))
-const A40Roadmap = lazy(() => import('./blog/A40Roadmap.tsx').then((m) => ({ default: m.A40Roadmap })))
+const A40Roadmap = lazy(() => import('./blog/A40RoadmapViews.tsx').then((m) => ({ default: m.A40Roadmap })))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

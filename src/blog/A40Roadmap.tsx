@@ -307,14 +307,16 @@ const EdgeOverlay: React.FC<EdgeOverlayProps> = ({
 
 /* ── Detail drawer ────────────────────────────────── */
 
-const TaskDrawer: React.FC<{
+export const TaskDrawer: React.FC<{
   task: RoadmapTask;
   onClose: () => void;
   onSelectTask: (id: TaskId) => void;
   isMobile: boolean;
   isolated: boolean;
   onToggleIsolate: () => void;
-}> = ({ task, onClose, onSelectTask, isMobile, isolated, onToggleIsolate }) => {
+  /** Label for the isolate button; other views reuse it as "show in tree". */
+  isolateLabel?: string;
+}> = ({ task, onClose, onSelectTask, isMobile, isolated, onToggleIsolate, isolateLabel }) => {
   const incoming = incomingEdges(task.id);
   const outgoing = outgoingEdges(task.id);
   const linkedPosts = (task.posts ?? [])
@@ -377,7 +379,7 @@ const TaskDrawer: React.FC<{
           onClick={onToggleIsolate}
           title="Show only this task and everything connected to it"
         >
-          ⌖ Isolate this path
+          {isolateLabel ?? '⌖ Isolate this path'}
         </button>
       )}
 
@@ -467,7 +469,8 @@ const COL_W_MOBILE = 200;
 const ROW_GAP = 80;
 const COL_GAP = 110;
 
-export const A40Roadmap: React.FC = () => {
+/** The swim-lane map. `toolbar` (the view switcher) renders in its top bar. */
+export const RoadmapMap: React.FC<{ toolbar?: React.ReactNode }> = ({ toolbar }) => {
   usePageMeta({ title: 'Roadmap · A40 Build Log', description: buildLogDescription, path: '/a40/roadmap' });
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile' || bp === 'tablet';
@@ -1053,6 +1056,7 @@ export const A40Roadmap: React.FC = () => {
       <header className="rm-topbar">
         <Link to="/a40" className="blog-back-link">&larr; A40 Build Log</Link>
         <h1 className="rm-topbar-title">Roadmap</h1>
+        {toolbar}
 
         <div className="rm-legend" aria-label="Legend">
           <span className="rm-legend-item">
