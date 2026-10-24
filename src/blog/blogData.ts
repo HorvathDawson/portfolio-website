@@ -60,11 +60,11 @@ export interface Epic {
 
 /** Epics define the top-level threads of the build. */
 export const epics: Epic[] = [
-  { id: 'project',      title: 'Project Overview',              status: 'complete',     order: 0 },
+  { id: 'project',      title: 'Project Overview',              status: 'in-progress',  order: 0 },
   { id: 'research',     title: 'Research & Initial Decisions',  status: 'complete',     order: 1 },
   { id: 'narrowing',    title: 'Narrowing & Geometry Analysis', status: 'in-progress',  order: 2 },
   { id: 'design',       title: 'Pre-Build Design',              status: 'in-progress',  order: 3 },
-  { id: 'fabrication',  title: 'Fabrication',                   status: 'planning',     order: 4 },
+  { id: 'fabrication',  title: 'Fabrication',                   status: 'in-progress',  order: 4 },
   { id: 'finishing',    title: 'Finishing & Interior',          status: 'planning',     order: 5 },
 ];
 

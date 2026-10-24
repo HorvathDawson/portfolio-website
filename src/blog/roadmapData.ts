@@ -237,7 +237,7 @@ export const roadmap: Roadmap = {
     {
       id: 't-measure-donor-rear',
       title: 'Measure Donor Miata Rear',
-      epic: 'research',
+      epic: 'narrowing',
       status: 'planning',
       summary: 'Measure (or scan) the donor NA rear before the rear pickups are drawn: stock rear hub-face half-width (sets the narrowing amount), every inboard pickup incl. toe links, and the rear motion ratio.',
       notes: [
@@ -355,7 +355,7 @@ export const roadmap: Roadmap = {
       status: 'planning',
       summary: 'Pick rear shocks. Output: vendor + part numbers, ordered length + stroke, mount-end specs.',
       notes: [
-        'Rear is the narrowed Miata IRS: coilover between the Miata rear lower arm and a frame tower (Miata-fit coilover is a candidate)',
+        'Rear is the narrowed Miata IRS: coilover from the Miata rear corner (stock lower mount) to a frame-side tower (Miata-fit coilover is a candidate)',
         'Rear MR: TBD — measure on the donor (t-measure-donor-rear); spring = 16.1 N/mm wheel rate ÷ MR²',
         'Critical damping at the wheel ≈ 3.4 kN·s/m rear (4.1 front); ride ζ 0.3–0.4, roll ζ 0.4–0.5 — adjustable dampers',
         'Unsprung ~33 kg per rear corner (diff, subframe and inner half-shaft are sprung)',
@@ -371,9 +371,9 @@ export const roadmap: Roadmap = {
       id: 't-design-overview',
       title: 'Basic CAD Mockup',
       epic: 'design',
-      status: 'complete',
+      status: 'in-progress',
       posts: ['design-overview'],
-      summary: 'Rough CAD assembly tying body, frame, drivetrain, and suspension together. Placeholder for refinement as decisions land.',
+      summary: 'Rough CAD assembly tying body (scanned), frame, drivetrain, and suspension together. Re-opened Oct 2026 to swap the Ford 9″ / four-link for the narrowed Miata IRS + RX-8 diff (pickups, diff mounts, half-shaft clearance).',
     },
     {
       id: 't-decide-tubbing',
@@ -404,6 +404,7 @@ export const roadmap: Roadmap = {
       notes: [
         'Engine in shop; CAD-mocked but not yet physically test-fit (frame not built)',
         'Engine sits as low as possible with radiator clearance and pedal-box room',
+        'Engine/trans sit 3° down at the rear (tail-down); RX-8 pinion set parallel',
         'Trans mount NOT finalized — moves with t-decide-trans',
         'If CD009 wins: bigger tunnel + crossmember mount nodes shift back',
       ],
@@ -443,7 +444,7 @@ export const roadmap: Roadmap = {
         'Passthroughs to plan: steering shaft, wiring grommets',
         'Master cylinders mount cabin-side; reservoirs pass through to engine bay',
         'Heater: planning electric (no heater-core passthrough needed)',
-        'Throttle: DBW — no cable passthrough (see t-buy-dbw-pedal)',
+        'Throttle: planned DBW conversion (stock SR20DET is cable) — no cable passthrough (see t-buy-dbw-pedal)',
         'Nothing actually blocks starting this — just needs the time',
       ],
     },
@@ -482,7 +483,7 @@ export const roadmap: Roadmap = {
         'Driver target: just me + helmet (with headrest for safety)',
         'Seat: between OEM and racing — not yet sourced (must accommodate helmet)',
         'Push H-point rearward → enables firewall-forward → more pedal-box / engine room (constrained by rear-seat usability)',
-        'Mounting: sub-floor on frame seat-mount tubes; body may be welded to frame (unibody-style) — undecided',
+        'Mounting: sub-floor on frame seat-mount tubes; body-to-frame attachment still open (t-decide-body-mounting)',
         'Sightline: tall A40 dash not expected to be a problem',
         'Hard prereq for firewall-setback finalization (t-decide-firewall) and frame seat-mount nodes',
         '— Procedure (SAE J826 / J1100 derived) —',
@@ -520,7 +521,7 @@ export const roadmap: Roadmap = {
       status: 'planning',
       summary: 'Output: rad + IC core sized to grille opening (from scan), fan + shroud spec, frame mount nodes, hose / IC-pipe routing envelope, separate oil-cooler location.',
       notes: [
-        'Power target: ~250 hp sustainable / low-stress (boost TBD)',
+        'Power target: ~300 whp; injectors/fuel sized for ~350 whp headroom (boost TBD)',
         'Rad: Mishimoto X-Line for 1992–2000 Civic (likely half-core variant)',
         'IC: FMIC, lower half in front of rad',
         'Separate oil cooler — location TBD',
@@ -537,22 +538,22 @@ export const roadmap: Roadmap = {
     },
     {
       id: 't-decide-brake-system',
-      title: 'Brake Hydraulic Spec (Master, Pedal Ratio, Bias)',
+      title: 'Brake Hydraulic Spec (Master, Pedal Ratio, Split, Bias)',
       epic: 'design',
       kind: 'task',
       status: 'planning',
-      deferrable: 'Manual-brake decision is locked. The bore + pedal-ratio + bias calc only needs to be done before t-buy-brake-master and t-pedal-box-design, both of which are well downstream of frame welding.',
-      summary: 'Output: confirmed master bore + pedal ratio (calc), diagonal split plumbing layout, prop-valve PN, F/R bias target. Manual-brake decision already locked.',
+      deferrable: 'Manual-brake decision is locked. The bore + pedal-ratio + split + bias calc only needs to be done before t-buy-brake-master and t-pedal-box-design, both of which are well downstream of frame welding.',
+      summary: 'Output: master bore + pedal ratio (calc), circuit split, proportioning-valve count + PN, F/R bias target. Manual brakes already locked. Open decision: the brake split.',
       notes: [
-        'Sized to ~950 kg with non-50/50 bias',
+        'Sized to ~950 kg operating mass, ~55/45 F/R (estimate)',
         'F=PA worksheet: caliper piston area F+R, line pressure target, driver foot force → pedal ratio + master bore + pedal travel at peak braking',
-        'Master bore: leaning ~7/8" (small) — needs F=PA + line-pressure calc to confirm',
+        'Master bore: leaning ~7/8" (small) — needs the F=PA + line-pressure calc to confirm',
         'Pedal ratio: starting from 5.5:1 (typical for manual brake) — pedal box should allow adjustability (multi-hole pivot)',
-        'Split: diagonal (X-pattern)',
-        'Prop valve: leaning Tilton — exact PN TBD',
-        'Calipers: 4-corner Miata baseline (front + rear); Miata rears bracketed onto Ford 9" housing',
+        'OPEN — split: a diagonal (X) split has no "rear circuit", so one rear proportioning valve cannot work. Options: (a) front/rear split + one adjustable rear valve (simplest), or (b) X-split with two valves set identically',
+        'Prop valve: leaning Tilton — PN and count follow the split',
+        'Calipers: Miata NA on all four corners; rears ride on the Miata rear uprights (no custom brackets) and include the integrated cable parking brake',
         'Rotor: 231 mm solid baseline',
-        'Prop valve required — Miata rears are sized for ~1000 kg car',
+        'Adjustable rear proportioning required; bias set at shakedown',
       ],
     },
     {
@@ -597,18 +598,19 @@ export const roadmap: Roadmap = {
       epic: 'design',
       status: 'complete',
       posts: ['digital-dash'],
-      summary: 'Architecture locked: Pi 5 (4GB) + Active Cooler + Freenove M.2 NVMe + PiCAN3 HAT + Waveshare 12.3″ portrait-DSI behind the original A40 bezel, Godot/GDScript UI consuming the Haltech Nexus S2 CAN broadcast, Mini-Box DCDC-USB for clean 12 V + ~45 s graceful shutdown. Full stack, BoM, and Phase 1/Phase 2 wiring documented in the digital-dash post — that spec is what hardware, software, CAN-integration, and install build against.',
+      summary: 'Architecture locked: Pi 5 (4GB) + Active Cooler + Freenove M.2 NVMe + PiCAN FD Duo Isolated HAT + Waveshare 12.3″ portrait-DSI behind the original A40 bezel, Godot/GDScript UI consuming the Haltech Nexus S2 CAN broadcast, Mini-Box DCDC-USB for clean 12 V + graceful ignition-off shutdown (Automotive-mode timing preset: OFFDELAY 1 min / HARDOFF 1 min). The architecture is done; the digital-dash post stays in-progress because it also logs the hardware and software build (t-dash-hardware, t-dash-software).',
     },
     {
       id: 't-dash-hardware',
       title: 'Dash Hardware Assembly',
       epic: 'fabrication',
       status: 'in-progress',
+      posts: ['digital-dash'],
       summary: 'Phase 1 bench stack (Pi 5 + Freenove NVMe + Waveshare DSI on the 27W USB-C PSU) verified, then Phase 2 swap to the PiCAN FD Duo Isolated HAT + Mini-Box DCDC-USB for the automotive 12V / ignition-shutdown chain. The FD Duo is non-SMPS — the Pi is powered directly from the Mini-Box DCDC-USB, not through the HAT.',
       notes: [
         'Phase 1: Pi 5 / NVMe / DSI screen running off bench PSU — proves OS + screen + boot',
-        'Phase 2: drop USB-C, add PiCAN FD Duo Isolated HAT; Pi 5 V comes directly from the Mini-Box DCDC-USB; clean 12 V from the DCDC-USB powers the screen and biases the HAT-side; DCDC-USB also handles ~45 s graceful shutdown on ign-off',
-        'Dual CAN bringup (can0 Haltech @ 1 Mbps, can1 Toyota EPAS @ 500 kbps) tracked separately as t-dash-dual-can-bringup',
+        'Phase 2: drop USB-C, add PiCAN FD Duo Isolated HAT; Pi 5 V comes directly from the Mini-Box DCDC-USB; clean 12 V from the DCDC-USB powers the screen and biases the HAT-side; DCDC-USB also handles the graceful shutdown on ign-off (OFFDELAY 1 min / HARDOFF 1 min preset)',
+        'Dual CAN bringup (can0 Haltech @ 1 Mbps, can1 Toyota EPAS @ 500 kbps) tracked separately as t-dash-fdduo-swap',
         'Hardware must be done before any UI testing on real CAN frames',
       ],
     },
@@ -617,10 +619,11 @@ export const roadmap: Roadmap = {
       title: 'Dash UI / Software',
       epic: 'design',
       status: 'in-progress',
+      posts: ['digital-dash'],
       summary: 'Godot/GDScript dashboard app on the Pi 5: layout (survival data peripheral, driving data center, admin right), CAN frame parsing, render loop. Built as a Godot 2D scene exported to dash_app.arm64 with Sway autoboot. Can be developed against synthetic / replayed CAN data before a real ECU is on hand.',
       notes: [
         'Priority order: coolant temp, oil pressure, AFR, MAP, tach, speed, oil temp, fuel level, battery V, IAT',
-        'Bench-testable with PiCAN3 in loopback or pre-recorded Haltech logs',
+        'Bench-testable against pre-recorded Haltech logs replayed on vcan0 or the FD Duo in loopback',
       ],
     },
     {
@@ -628,10 +631,10 @@ export const roadmap: Roadmap = {
       title: 'Dash ↔ Haltech CAN Integration',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Wire PiCAN3 to the Haltech CAN bus, decode the live broadcast, and validate every gauge against a running ECU. Friend\'s Haltech can be used as a temporary signal source while the A40\'s own ECU is still in a box.',
+      summary: 'Wire the FD Duo can0 channel to the Haltech CAN bus, decode the live broadcast, and validate every gauge against a running ECU. Friend\'s Haltech can be used as a temporary signal source while the A40\'s own ECU is still in a box.',
       deferrable: 'Initial decode/validation can happen against a friend\'s Haltech bench-side; final integration waits on the car\'s own ECU + harness.',
       notes: [
-        'Requires hardware (PiCAN3 + Pi) and dash UI both functional',
+        'Requires hardware (FD Duo + Pi) and dash UI both functional',
         'Goal: every priority signal verified end-to-end on a live ECU before this is called done',
         'Hard prereq on ECU choice (locks CAN broadcast spec)',
       ],
@@ -648,7 +651,7 @@ export const roadmap: Roadmap = {
       title: '3D-Print Dash Shroud',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Design and 3D-print the shroud that connects the Waveshare 12.3" screen + Pi stack to the original A40 dash bezel opening. Includes screen-mount features and clearance for the DSI ribbon and PiCAN3 stack.',
+      summary: 'Design and 3D-print the shroud that connects the Waveshare 12.3" screen + Pi stack to the original A40 dash bezel opening. Includes screen-mount features and clearance for the DSI ribbon and FD Duo stack.',
       notes: [
         'Active area target ≥ 10.5" × 3.5" to fill the bezel cleanly',
         'Mount geometry pulled directly from the bezel scan',
@@ -673,9 +676,9 @@ export const roadmap: Roadmap = {
       notes: [
         'Datum: vehicle centerline + front lower-LCA pivot point (subject to change)',
         'Method: plumb bob + tape for layout, scan-verify before tack',
-        'Realistic tolerance with these tools: ±2 mm on suspension pickups, ±5 mm on body / non-critical nodes',
+        'Tolerance (geometry reference): ±1 mm on suspension pickups, ±0.5 mm on UCA inner mounts, ±5 mm on body / non-critical nodes; left-right symmetry matters more than absolute position',
         'Re-scan after final weld to capture distortion; compare deltas to CAD',
-        'Hard nodes to hit: 4 LCA pivots, upper shock mounts, rack mounts, rear housing brackets',
+        'Hard nodes to hit: front LCA + UCA pivots, upper shock mounts, rack mounts, rear IRS pickups (incl. toe links), RX-8 diff mounts',
       ],
     },
 
@@ -712,7 +715,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'All-aluminum crossflow radiator sized for ~250–300 hp SR20, sized to the A40 grille opening.',
+      summary: 'All-aluminum crossflow radiator sized for the ~300 whp target and the A40 grille opening.',
     },
     {
       id: 't-buy-intercooler',
@@ -744,7 +747,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Standalone ECU — most likely Haltech Nexus S2 (all-in-one ECU + PDM + wideband + DBW). Final pick locked in the wiring overview.',
+      summary: 'Haltech Nexus S2 (all-in-one ECU + PDM + wideband + DBW control) — decided in t-decide-ecu.',
       posts: ['wiring-overview'],
     },
 
@@ -755,37 +758,44 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Custom driveshaft cut/balanced to final length.',
+      summary: 'Custom one-piece driveshaft cut/balanced to final length. The shop needs the trans output yoke spec and the RX-8 pinion flange spec. Design angles: shaft 5.4° (3.5″ drop over 37″), both U-joints 2.4°, constant through travel (sprung diff).',
     },
     {
-      id: 't-buy-rear-housing',
-      title: 'Buy: Ford 9" Housing',
-      epic: 'fabrication',
-      status: 'complete',
-      kind: 'purchase',
-      summary: 'Ford 9" rear-end housing — needs narrowing to spec.',
-    },
-    {
-      id: 't-buy-axles',
-      title: 'Buy: Rear Axles',
+      id: 't-buy-miata-rear',
+      title: 'Buy: Miata NA Rear Suspension',
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Cut-to-spec axles sized for the narrowed Ford 9" housing. Length set by rear track.',
+      summary: 'Donor NA rear: subframe (for measurement / possible narrowing), upper + lower arms, toe links, uprights with hubs. Rear calipers/rotors are already on hand (t-buy-calipers).',
     },
     {
-      id: 't-narrow-rear-housing',
-      title: 'Narrow Rear Housing',
+      id: 't-buy-rx8-diff',
+      title: 'Buy: Mazda RX-8 Rear Diff',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Cut the Ford 9" housing to width, re-weld the tubes, true to spec.',
+      kind: 'purchase',
+      summary: 'RX-8 rear diff — stronger than the NA unit, which is not suited to a 300+ whp SR20DET. Stock final drive ~4.44 on 6-speed cars; verify the ratio and LSD type on the unit bought. Weigh it for the CG table (~30 kg class).',
     },
     {
-      id: 't-rear-brake-brackets',
-      title: 'Rear Brake Bracket Fab',
+      id: 't-buy-half-shafts',
+      title: 'Buy: Custom Half-Shafts',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Brackets so Miata calipers/rotors mount to the Ford 9" axle flanges.',
+      kind: 'purchase',
+      summary: 'Custom drive axles made to length: RX-8 diff output flanges to the Miata rear hubs. Length measured on the jig once the narrowed pickups and diff mounts are fixed.',
+    },
+    {
+      id: 't-rear-irs-fab',
+      title: 'Fab Narrowed Rear Pickups + RX-8 Diff Mounts',
+      epic: 'fabrication',
+      status: 'planning',
+      summary: 'Build the rear IRS mounting on the frame: every Miata rear inboard pickup (toe links included) translated inboard by the measured narrowing (~42–47 mm/side) to land the 1340 mm track, plus custom RX-8 diff mounts with the pinion set parallel to the trans.',
+      notes: [
+        'Open in CAD: pickups built into the frame (like the front) vs a cut-and-narrowed Miata rear subframe bolted to it',
+        'Fit with the real arms, uprights and diff in place on the jig; check left-right symmetry before welding',
+        'Check half-shaft clearance to frame, exhaust and fuel tank through full travel',
+        'Tolerance: ±1 mm on pickups',
+      ],
     },
 
     /* Purchases — chassis interior */
@@ -848,8 +858,8 @@ export const roadmap: Roadmap = {
       summary: 'Hard line (3/16" cunifer or stainless), AN flex hoses for axle + caliper drops, fittings, P-clips, flare tool consumables. Routing follows frame rails away from heat sources.',
       notes: [
         'Hard line: cunifer preferred over stainless for ease of bending and corrosion resistance',
-        'Flex hoses at each caliper + one bridging frame to rear axle housing',
-        'Diagonal (X-pattern) split layout — separate runs from each master port to opposite-corner caliper pairs',
+        'Flex hoses at each caliper (frame → front knuckles, frame → rear uprights)',
+        'Run layout follows the split decision in t-decide-brake-system (F/R split or X-split)',
       ],
     },
     {
@@ -866,7 +876,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Inline adjustable proportioning valve (Wilwood/Tilton) for the rear circuit. Required: Miata rears are oversized for the A40’s weight.',
+      summary: 'Inline adjustable proportioning valve(s) (Wilwood/Tilton). Count follows the split decision: one on the rear circuit (F/R split) or two set identically (X-split).',
     },
 
     /* Builds */
@@ -945,18 +955,18 @@ export const roadmap: Roadmap = {
       title: 'Driveline Install',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Driveshaft, narrowed rear end, axles.',
+      summary: 'RX-8 diff on its mounts, half-shafts, driveshaft.',
     },
     {
       id: 't-brake-lines-fab',
       title: 'Brake Line Routing & Fab',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Bend, flare, and route hard lines along frame rails per the diagonal (X-pattern) split. Mount the adjustable proportioning valve inline on the rear circuit (accessible from cabin / under-dash for adjustment). Mount tabs / P-clips welded to frame during frame fab.',
+      summary: 'Bend, flare, and route hard lines along the frame rails per the chosen split (t-decide-brake-system). Mount the adjustable proportioning valve(s) where they can be reached for adjustment. Mount tabs / P-clips welded to the frame during frame fab.',
       notes: [
-        'Two hard-line runs from the master — one per diagonal circuit',
-        'Prop valve sits inline on the rear circuit, upstream of the rear flex hose',
-        'Flex hoses bridge frame → each front caliper and frame → rear axle (axle moves on four-link)',
+        'Two hard-line circuits from the master — layout set by the F/R vs X-split decision',
+        'Valve(s) inline upstream of the rear flex hoses',
+        'Flex hoses bridge frame → each caliper; rear flex must take full droop without tension and full bump without kinking',
         'Keep lines off the exhaust + downpipe; heat shielding where unavoidable',
       ],
     },
@@ -965,18 +975,17 @@ export const roadmap: Roadmap = {
       title: 'Brake System Install',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Mount master cylinder, install hard lines + flex hoses + adjustable prop valve (per t-brake-lines-fab), bolt on calipers, install rear caliper brackets, bench-bleed the master, full-system bleed.',
+      summary: 'Mount master cylinder, install hard lines + flex hoses + adjustable prop valve(s) (per t-brake-lines-fab), bolt on calipers (rears on the Miata uprights, no brackets), bench-bleed the master, full-system bleed.',
     },
     {
       id: 't-wiring',
       title: 'Engine Wiring Harness',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Engine + chassis harness, power distribution, grounds. Likely a hybrid build: Haltech Nexus universal harness for the ECU trunk, custom engine-side sub-harnesses with Wiring Specialties connectors, full DR-25 loom.',
+      summary: 'Engine + chassis harness, power distribution, grounds. Decided: built from scratch with Wiring Specialties connectors, self-terminated and self-loomed in DR-25 (see t-decide-harness-strategy).',
       posts: ['wiring-overview'],
       notes: [
         'Pinout & branch map — single one-page diagram of every Nexus branch',
-        'Universal-vs-custom call (leaning hybrid: universal trunk + custom sub-harnesses)',
         'Connector BOM from Wiring Specialties (EV14 injectors, smart coils, Bosch sensors, DBW TB + pedal, LSU 4.9, bulkhead)',
         'Engine-side sub-harnesses: injectors, coils, sensors',
         'Trunk + firewall bulkhead pass-through',
@@ -995,7 +1004,7 @@ export const roadmap: Roadmap = {
         'Coolant filled + bled',
         'Oil priming',
         'ECU base map loaded',
-        'Brakes bled, e-brake holds',
+        'Brakes bled, parking brake holds',
         'All grounds verified',
         'First crank no-spark sanity check',
       ],
@@ -1047,13 +1056,13 @@ export const roadmap: Roadmap = {
       title: 'Fuel System Design',
       epic: 'design',
       status: 'planning',
-      deferrable: 'Tank choice (stock vs custom cell) only needs to be resolved once exhaust routing is finalized in CAD. Pump architecture (in-tank vs external+surge) is also a late call — Aeromotive 340 is already on hand. Nothing here gates frame welding.',
-      summary: 'Likely reuse stock A40 tank under boot floor, but possible clearance conflict with the driver-side SR20 downpipe routing may force a custom fuel cell. Pump architecture (in-tank vs surge+external) TBD — Aeromotive 340 already on hand. Output: line routing, filter, regulator, vent.',
+      deferrable: 'Tank choice (stock vs custom cell) only needs to be resolved once exhaust routing is finalized in CAD. Pump architecture is decided (external Aeromotive 340 + surge tank — t-decide-fuel-architecture). Nothing here gates frame welding.',
+      summary: 'Likely reuse stock A40 tank under boot floor, but possible clearance conflict with the driver-side SR20 downpipe routing may force a custom fuel cell. Pump architecture decided: external Aeromotive 340 + surge tank (see t-decide-fuel-architecture). Output: surge-tank location, line routing, filter, regulator, vent. Fuel system sized for ~350 whp headroom over the ~300 whp target.',
       notes: [
         'Tank: stock A40 in stock location is the default — but downpipe routing (driver side, under pedal box, along driver-side frame rail) may interfere. Confirm clearance against exhaust CAD before committing.',
         'Fallback: custom fuel cell sized to fit around the locked exhaust path (and/or relocated forward of the rear axle for CG).',
-        'Pump: Aeromotive 340 in hand — surge-tank vs in-tank conversion still being researched',
-        'Surge tank likely if stock tank lacks baffling for cornering',
+        'Pump: decided — external Aeromotive 340 (on hand) fed from a surge tank (see t-decide-fuel-architecture)',
+        'Check half-shaft and diff clearance to the tank / surge tank (rear is now IRS)',
         'Hard-line routing along frame, away from exhaust',
         'Safety bias: high-quality fittings, fire sleeve, no rubber in cabin, vent routed away from cockpit',
       ],
@@ -1065,7 +1074,7 @@ export const roadmap: Roadmap = {
       status: 'planning',
       kind: 'task',
       summary: 'Reusing stock A40 tank — inspect, clean, seal, pressure-test before reinstall.',
-      notes: ['Internal cleaning + seal coating', 'Sender / pickup compatibility with EFI fuel pressure', 'Add bulkhead fittings for return + vent if surge-tank route chosen'],
+      notes: ['Internal cleaning + seal coating', 'Sender / pickup compatibility with EFI fuel pressure', 'Add bulkhead fittings for surge-tank feed/return + vent'],
     },
     {
       id: 't-buy-fuel-pump',
@@ -1073,7 +1082,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'complete',
       kind: 'purchase',
-      summary: 'Aeromotive 340 already on hand. Surge tank (if external route) still TBD.',
+      summary: 'Aeromotive 340 already on hand. Surge tank is bought with the fuel lines (t-buy-fuel-lines).',
     },
     {
       id: 't-buy-fuel-lines',
@@ -1081,14 +1090,14 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'AN line, hard line, filter, regulator, fittings.',
+      summary: 'Surge tank, AN line, hard line, filter, regulator, fittings.',
     },
     {
       id: 't-fuel-install',
       title: 'Fuel System Install',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Mount tank/pump, run hard + flex lines, plumb regulator and filter.',
+      summary: 'Mount tank, surge tank and pump, run hard + flex lines, plumb regulator and filter.',
     },
 
     /* ─────────── Charging / battery / kill switch ─────────── */
@@ -1140,10 +1149,10 @@ export const roadmap: Roadmap = {
       title: 'Dash Hardware: Dual CAN Bringup',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Bring up both CAN channels on the PiCAN FD Duo Isolated: device-tree overlays for MCP251xFD on SPI0 + SPI1, can0 @ 1 Mbps for the Haltech side, can1 @ 500 kbps for the Toyota EPAS side. Validate with loopback + a recorded Haltech log.',
+      summary: 'Bring up both CAN channels on the PiCAN FD Duo Isolated: device-tree overlays for the two MCP251xFD controllers on SPI0 CS0 / CS1, can0 @ 1 Mbps for the Haltech side, can1 @ 500 kbps for the Toyota EPAS side. Validate with loopback + a recorded Haltech log.',
       posts: ['epas-can-gateway'],
       notes: [
-        'Overlays: mcp251xfd on SPI0 (can0) and SPI1 (can1) with correct oscillator + interrupt pins',
+        'Overlays: mcp251xfd on spi0-0 (CS0 → can0, interrupt 25) and spi0-1 (CS1 → can1, interrupt 24) — see the digital-dash provisioning script',
         'Validate: `ip -details link show can0 / can1` reports correct bitrates and ERROR-ACTIVE',
         'Pi power topology: HAT does NOT feed Pi over GPIO — 5 V comes directly from Mini-Box DCDC-USB',
       ],
@@ -1154,10 +1163,10 @@ export const roadmap: Roadmap = {
       epic: 'design',
       status: 'planning',
       posts: ['epas-can-gateway'],
-      summary: 'Lightweight C/Python systemd service translating Haltech → Toyota frames. Reads RPM (Haltech 0x360, bytes 0-1) and speed (Haltech 0x370, bytes 0-1) on can0; writes Toyota 0x1C4 Powertrain (50 Hz) and 0xB4 Speed (20 Hz) on can1 with the 8-bit rolling checksum on byte 7. Runs outside the Godot dash app so a UI crash never costs power steering.',
+      summary: 'Lightweight C/Python systemd service translating Haltech → Toyota frames. Reads RPM (Haltech 0x360, bytes 0-1) and speed (Haltech 0x370, bytes 0-1) on can0; writes Toyota 0x1C4 Powertrain (50 Hz) and 0xB4 Speed (20 Hz) on can1 with the 8-bit additive checksum on byte 7. Runs outside the Godot dash app so a UI crash never costs power steering.',
       notes: [
         'Separate systemd unit, Restart=always, WatchdogSec set',
-        'Speed conversion: Haltech km/h × 10 → mph → Toyota DBC scale 0.0062',
+        'Speed conversion: decode Haltech 0x370 to km/h, then Toyota raw = km/h ÷ 0.01 (DBC scale 0.01 kph, bytes 5–6)',
         'Checksum: ((id>>8) + (id&0xFF) + DLC + bytes 0..6) & 0xFF',
         'No UI dependency — logs to journald only',
         'Bench-developable against recorded Haltech logs replayed on vcan0',
@@ -1296,7 +1305,7 @@ export const roadmap: Roadmap = {
       title: 'Rear Suspension Install',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Bolt up the four-link, narrowed rear, and rear shocks to the frame.',
+      summary: 'Bolt up the narrowed Miata rear (arms, toe links, uprights, hubs, brakes), half-shafts and rear coilovers to the frame.',
     },
 
     /* ─────────── Engine + clutch hardware ─────────── */
@@ -1347,9 +1356,9 @@ export const roadmap: Roadmap = {
       title: 'Decide: E-Brake Style',
       epic: 'design',
       kind: 'decision',
-      status: 'planning',
-      deferrable: 'Hand-brake choice can wait until the rear caliper choice is made; doesn’t block frame.',
-      summary: 'Cable handbrake vs hydraulic handle. Drives caliper choice and routing.',
+      status: 'decided',
+      decision: 'Cable handbrake into the integrated parking-brake mechanism of the Miata NA rear calipers (not drum-in-hat; no second caliper).',
+      summary: 'Comes with the rear-suspension change: the NA rear calipers already carry a cable parking brake. Remaining work is the handle location and cable routing.',
     },
     {
       id: 't-buy-ebrake',
@@ -1357,14 +1366,14 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Handle, cable or hydraulic line, and any second caliper.',
+      summary: 'Handle + cables to the NA rear calipers\' integrated parking brake.',
     },
     {
       id: 't-ebrake-install',
       title: 'Parking Brake Install',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Mount handle, route cable / hydraulic line to rear calipers, set holding adjustment.',
+      summary: 'Mount handle, route cables to the NA rear calipers, set holding adjustment.',
     },
 
     /* ─────────── Seat hardware ─────────── */
@@ -1453,7 +1462,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Drive-by-wire pedal + APS (Bosch-style) and Haltech wiring — SR20DET converted to DBW.',
+      summary: 'Drive-by-wire pedal + APS (Bosch-style) and Haltech wiring for the planned DBW conversion (the SR20DET is cable throttle stock).',
     },
 
     /* ─────────── Wheels & tires ─────────── */
@@ -1477,15 +1486,17 @@ export const roadmap: Roadmap = {
     /* ─────────── Anti-roll bars ─────────── */
     {
       id: 't-decide-arb',
-      title: 'Decide: ARB Diameters & Mount Provisions',
+      title: 'Decide: ARB Sizing & Mount Provisions',
       epic: 'design',
       kind: 'decision',
       status: 'planning',
-      summary: 'Pick front bar diameter (22–25 mm starting range), arm length, end-link attachment on the LCA. Weld mount provisions on both front and rear; rear bar itself deferred until rolling-chassis roll-balance test.',
+      summary: 'Size the bars to the roll-stiffness target, then pick arm length and end-link attachment. Weld mount provisions front and rear; the rear bar is final-sized at the rolling-chassis roll-balance test.',
       notes: [
-        'Front bar mandatory (without it the car rolls 17° at 0.8 G)',
-        'D⁴ stiffness sets size',
-        'Rear: provisions only, bar later',
+        'Springs-only roll at 0.8 g ≈ 6.5–7° (rear RC 150–80 mm); spring roll stiffness ≈ 28 kN·m/rad total (13.5 front / 14.4 rear)',
+        'For 3–4° the bars must add ~16–33 kN·m/rad (≈24 kN·m/rad for 3.5° at rear RC 100 mm)',
+        'Bar diameter: TBD from that target; solid bar; stiffness scales with D⁴',
+        'LLTD: start ~3–5% above the front static weight fraction',
+        'Rear: IRS at both ends, so a rear ARB is a normal tuning part — provisions now, bar sized at the roll-balance test',
       ],
     },
     {
@@ -1494,7 +1505,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'planning',
       kind: 'purchase',
-      summary: 'Front bar (mandatory, ~22 mm DOM working number) + end-link hardware. Rear deferred until rolling-chassis roll-balance test.',
+      summary: 'Front bar (solid; diameter from t-decide-arb-front) + end-link hardware. Rear bar sized at the rolling-chassis roll-balance test.',
     },
 
     /* ─────────── Exterior lighting ─────────── */
@@ -1547,7 +1558,7 @@ export const roadmap: Roadmap = {
       title: 'SR20 Pre-Install Refresh',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Pre-install bench work on the SR20DET: gasket refresh, bore inspection, head/main bolts, dual-guide valve oil-squirter mod, wideband O2 bung in the downpipe, silicone coolant hose set.',
+      summary: 'Pre-install bench work on the SR20DET: gasket refresh, bore inspection, head/main bolts, valve-guide / oil-squirter work (verify what the mod is before ordering parts), wideband O2 bung in the downpipe, silicone coolant hose set.',
       notes: [
         'Compression + leakdown',
         'Gaskets + valve cover refresh',
@@ -1557,16 +1568,16 @@ export const roadmap: Roadmap = {
     },
     {
       id: 't-decide-final-drive',
-      title: 'Decide: Ring & Pinion Ratio + LSD',
+      title: 'Decide: Final Drive Ratio + LSD',
       epic: 'research',
       kind: 'decision',
       status: 'planning',
-      summary: 'Pick the Ford 9″ ratio (3.55 / 3.73 / 4.10) and LSD model. Driven by transmission gearing + final tune target.',
-      deferrable: '3rd-member can be ordered late; doesn’t block axle housing or shafts.',
+      summary: 'RX-8 diff: stock final drive ~4.44 on the 6-speed car (verify on the unit bought). Ratio swaps exist; NC MX-5 ratios reportedly share the case (verify). Pick the ratio for the chosen trans gearing and the ~300 whp target, and confirm the LSD.',
+      deferrable: 'A ratio change is a diff rebuild on the bench; it does not block the diff mounts or half-shafts (verify any swap keeps the same output flanges).',
       notes: [
-        'Ratio: 3.55 / 3.73 / 4.10',
-        'LSD: Truetrac/Torsen gear-type baseline',
-        'Revisit if inside-rear lift is observed at shakedown',
+        'Start point: stock RX-8 ~4.44 (verify)',
+        'Candidates: RX-8 / NC MX-5 ratios that fit the case — verify fitment',
+        'Revisit if inside-rear wheelspin is observed at shakedown',
       ],
     },
     {
@@ -1574,7 +1585,7 @@ export const roadmap: Roadmap = {
       title: 'Pinion Angle Setup on Jig',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'On the jig at ride height, set upper four-link bar lengths to give equal 2–3° U-joint operating angles. Done before driveshaft is measured.',
+      summary: 'On the jig, set the engine/trans 3° tail-down and the RX-8 pinion parallel to it (3° nose-up): shaft 5.4° (3.5″ over 37″), both U-joints 2.4°. The diff is sprung, so these angles hold through suspension travel. Done before the driveshaft is measured.',
     },
     {
       id: 't-bump-steer-check',
@@ -1588,7 +1599,7 @@ export const roadmap: Roadmap = {
       title: 'Driveshaft Safety Loop Fab',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Hoop welded to a frame crossmember surrounding the driveshaft to retain it if a U-joint fails. Standard practice for solid-axle RWD; common inspection requirement.',
+      summary: 'Hoop welded to a frame crossmember surrounding the driveshaft to retain it if a U-joint fails. Standard practice for RWD; common inspection requirement.',
     },
     {
       id: 't-engine-tune',
@@ -1612,7 +1623,7 @@ export const roadmap: Roadmap = {
       epic: 'design',
       kind: 'decision',
       status: 'decided',
-      decision: 'Forward-mounted top-mount manifold. Routes the downpipe down past cylinders 3/4 on the passenger side, keeping it clear of the firewall and steering shaft and giving the cleanest path under the floor.',
+      decision: 'Forward-mounted top-mount manifold. Routes the downpipe down past cylinders 3/4 on the driver side, keeping it clear of the firewall and steering shaft and giving the cleanest path under the floor.',
       summary: 'Pick turbo (likely re-using one on hand), manifold flange (T3/T4), scroll arch, wastegate style, mount position. Strategy: work from envelope down — manifold geometry should minimize firewall hack-out, then exhaust + IC piping fall out of that.',
       notes: [
         'Forward top-mount manifold chosen — turbo sits high and forward, downpipe drops on the driver side between cyl 3/4',
@@ -1628,7 +1639,7 @@ export const roadmap: Roadmap = {
       epic: 'design',
       kind: 'decision',
       status: 'decided',
-      decision: 'No cage initially. Body welded to frame for stiffness (unibody-style). Frame to include provisions so a cage can be added later.',
+      decision: 'No cage initially. Frame to include provisions so a cage can be added later. (Body-to-frame attachment is a separate open decision — t-decide-body-mounting.)',
       summary: 'Full cage vs harness bar vs none. Affects frame nodes, seat H-point, and harness mounting.',
     },
     {
@@ -1638,9 +1649,9 @@ export const roadmap: Roadmap = {
       kind: 'decision',
       status: 'planning',
       deferrable: 'Frame rails can accept welded, rubber, or hybrid body mounts. Real decision can wait until body trial-fit.',
-      summary: 'Welded (unibody-style) vs traditional rubber body mounts vs hybrid. Drives NVH, frame stiffness, paint sequencing, and t-body-mount scope. Deferrable — the actual decision can wait until trial-fit since frame rails can accept either approach.',
+      summary: 'Welded (body and frame as one structure) vs traditional rubber body mounts vs hybrid. Drives NVH, frame stiffness, paint sequencing, and t-body-mount scope. Deferrable — the actual decision can wait until trial-fit since frame rails can accept either approach.',
       notes: [
-        'Leaning welded for stiffness (consistent with t-decide-cage = no cage initially)',
+        'Leaning welded for stiffness',
         'NVH trade-off: welded = more vibration into cabin',
         'Still open — traditional rubber mounts and hybrid both viable',
       ],
@@ -1684,22 +1695,11 @@ export const roadmap: Roadmap = {
       epic: 'design',
       kind: 'decision',
       status: 'decided',
-      decision: 'Haltech Elite / Nexus.',
+      decision: 'Haltech Nexus S2 (ECU + PDM + wideband + DBW control in one unit).',
       summary: 'ECU platform — drives wiring strategy, dash CAN integration, and tuning workflow.',
     },
 
     /* ─────────── Added fabrication tasks ─────────── */
-    {
-      id: 't-fab-four-link',
-      title: 'Fab Four-Link Rear (Welder Series Kit + Custom Mounts)',
-      epic: 'fabrication',
-      status: 'planning',
-      summary: 'Welder Series Horton Hot Rod four-link kit modified to A40 frame. Custom frame + housing brackets to allow IC (instant center) and RC (roll center) adjustment.',
-      notes: [
-        'Base kit: Welder Series Horton Hot Rod',
-        'Custom multi-hole brackets at frame and housing for IC / RC tuning at shakedown',
-      ],
-    },
     {
       id: 't-pedal-box-install',
       title: 'Pedal Box Install',
@@ -1761,7 +1761,7 @@ export const roadmap: Roadmap = {
       title: 'Rust Repair (Floors, Sills, A-Pillars)',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Cut and patch rust through-holes everywhere a Mk1 typically rots — floors, sills, A-pillar bases, dogleg, boot floor, inner fenders. Beyond the single rocker patch noted at teardown.',
+      summary: 'Cut and patch rust through-holes everywhere an A40 Devon body typically rots — floors, sills, A-pillar bases, dogleg, boot floor, inner fenders. Beyond the single rocker patch noted at teardown.',
       notes: [
         'Floors (driver + passenger)',
         'Sills (rocker assemblies)',
@@ -1821,7 +1821,7 @@ export const roadmap: Roadmap = {
       notes: [
         'Tool: Einstar 2',
         'Output: delta map of pickup points',
-        'If deltas are within ±2 mm tolerance, no rework',
+        'If deltas are within tolerance (±1 mm pickups, ±0.5 mm UCA inner mounts), no rework',
       ],
     },
     {
@@ -1868,7 +1868,7 @@ export const roadmap: Roadmap = {
       notes: [
         'Gateway runs as its own systemd service — NOT inside the Godot dash app (UI crash != lose power steering)',
         'Hardware: PiCAN FD Duo Isolated (non-SMPS) HAT replacing the single-channel PiCAN3',
-        'Toyota frames: 0x1C4 Powertrain (RPM, 50 Hz) + 0xB4 Speed (20 Hz), with 8-bit rolling checksum on byte 7',
+        'Toyota frames: 0x1C4 Powertrain (RPM, 50 Hz) + 0xB4 Speed (20 Hz), with 8-bit additive checksum on byte 7',
         'Failure mode: column falls back to internal failsafe (fixed assist) — same as no-gateway baseline',
       ],
     },
@@ -1887,9 +1887,9 @@ export const roadmap: Roadmap = {
       epic: 'narrowing',
       kind: 'decision',
       status: 'in-progress',
-      summary: 'Front ARB is effectively mandatory (without it the car rolls ~17° at 0.8 G per t-decide-arb). Lock diameter + mount geometry now so frame ships with usable provisions. Rear ARB stays deferred (see t-decide-arb).',
+      summary: 'Front ARB is needed: springs alone give ≈6.5–7° of roll at 0.8 g, and the bars must add ~16–33 kN·m/rad to reach 3–4° (see t-decide-arb). Lock diameter + mount geometry now so the frame ships with usable provisions.',
       notes: [
-        'Working number: 22 mm DOM tube',
+        'Solid bar; diameter TBD from the roll-stiffness target',
         'Mount provisions: bracket tabs welded to frame at front cross-tube',
       ],
     },
@@ -1918,19 +1918,23 @@ export const roadmap: Roadmap = {
     { from: 't-sa-v2',              to: 't-decide-shocks-front',  kind: 'hard' },
     { from: 't-sa-v2',              to: 't-decide-shocks-rear',   kind: 'hard' },
 
-    /* Track-rear → axle width spec → narrow housing + axles */
-    { from: 't-decide-track-rear',  to: 't-axle-research',        kind: 'hard' },
-    { from: 't-susp-research',      to: 't-axle-research',        kind: 'soft' },
-    { from: 't-axle-research',      to: 't-buy-axles',            kind: 'hard' },
-    { from: 't-buy-rear-housing',   to: 't-buy-axles',            kind: 'hard', label: 'Housing flange/bearing bores constrain axle spec.' },
-    { from: 't-buy-rear-housing',   to: 't-narrow-rear-housing',  kind: 'hard' },
-    { from: 't-narrow-rear-housing', to: 't-frame-build',         kind: 'hard', label: 'Narrowed housing is mocked into the jig for four-link install.' },
+    /* Rear suspension decision → donor measurements → pickups, diff mounts, half-shafts */
+    { from: 't-decide-track-rear',  to: 't-decide-rear-suspension', kind: 'hard' },
+    { from: 't-susp-research',      to: 't-decide-rear-suspension', kind: 'soft' },
+    { from: 't-decide-rear-suspension', to: 't-buy-miata-rear',     kind: 'hard' },
+    { from: 't-decide-rear-suspension', to: 't-buy-rx8-diff',       kind: 'hard' },
+    { from: 't-buy-miata-rear',     to: 't-measure-donor-rear',     kind: 'hard' },
+    { from: 't-measure-donor-rear', to: 't-sa-v2',                  kind: 'soft', label: 'Rear MR + pickups for the rear model.' },
+    { from: 't-measure-donor-rear', to: 't-design-finalization',    kind: 'hard', label: 'Rear pickup coordinates for the cut list.' },
+    { from: 't-decide-rear-suspension', to: 't-frame-design',       kind: 'hard', label: 'Rear pickups + diff mounts live in the frame.' },
     { from: 't-buy-wheels',         to: 't-frame-build',           kind: 'hard', label: 'Wheels needed for chassis mockup at ride height.' },
     { from: 't-buy-tires',          to: 't-frame-build',           kind: 'hard', label: 'Tires needed for chassis mockup at ride height.' },
-    { from: 't-axle-research',      to: 't-narrow-rear-housing',  kind: 'hard', label: 'Cut width set by axle length.' },
-    { from: 't-narrow-rear-housing', to: 't-rear-brake-brackets', kind: 'hard' },
-    { from: 't-decide-brake-system', to: 't-rear-brake-brackets', kind: 'hard', label: 'Caliper choice sets bracket geometry.' },
-    { from: 't-buy-calipers',       to: 't-rear-brake-brackets',  kind: 'soft' },
+    { from: 't-frame-build',        to: 't-rear-irs-fab',          kind: 'hard', label: 'Brackets go on after the crossmembers.' },
+    { from: 't-measure-donor-rear', to: 't-rear-irs-fab',          kind: 'hard', label: 'Narrowing amount = hub-face half-width − 708 mm.' },
+    { from: 't-buy-miata-rear',     to: 't-rear-irs-fab',          kind: 'hard', label: 'Real arms + uprights fitted on the jig.' },
+    { from: 't-buy-rx8-diff',       to: 't-rear-irs-fab',          kind: 'hard', label: 'Diff mounts fitted to the real case.' },
+    { from: 't-rear-irs-fab',       to: 't-buy-half-shafts',       kind: 'hard', label: 'Half-shaft length measured on the jig.' },
+    { from: 't-buy-rx8-diff',       to: 't-buy-half-shafts',       kind: 'hard', label: 'RX-8 output flange spec.' },
 
     /* Shocks must land before frame design finalizes */
     { from: 't-decide-shocks-front', to: 't-frame-design',        kind: 'hard', label: 'Shock body length sets pickup geometry.' },
@@ -1984,7 +1988,7 @@ export const roadmap: Roadmap = {
     { from: 't-decide-trans',       to: 't-decide-shifter',        kind: 'hard' },
     { from: 't-decide-shifter',     to: 't-shifter-design',        kind: 'hard' },
     { from: 't-decide-trans',       to: 't-buy-driveshaft',        kind: 'hard' },
-    { from: 't-axle-research',      to: 't-buy-driveshaft',        kind: 'hard' },
+    { from: 't-buy-rx8-diff',       to: 't-buy-driveshaft',        kind: 'hard', label: 'RX-8 pinion flange spec.' },
     { from: 't-decide-engine-placement', to: 't-buy-driveshaft',   kind: 'hard' },
 
     /* Cooling / intake purchases follow their designs */
@@ -2037,9 +2041,8 @@ export const roadmap: Roadmap = {
     /* Frame → drivetrain / engine install chain */
     { from: 't-frame-build',        to: 't-engine-install',        kind: 'hard' },
     { from: 't-firewall-build',     to: 't-engine-install',        kind: 'soft' },
-    { from: 't-narrow-rear-housing', to: 't-driveline-install',    kind: 'hard' },
-    { from: 't-buy-axles',          to: 't-driveline-install',     kind: 'hard' },
-    { from: 't-rear-brake-brackets', to: 't-driveline-install',    kind: 'soft' },
+    { from: 't-rear-irs-fab',       to: 't-driveline-install',     kind: 'hard' },
+    { from: 't-buy-half-shafts',    to: 't-driveline-install',     kind: 'hard' },
     { from: 't-buy-driveshaft',     to: 't-driveline-install',     kind: 'hard' },
     { from: 't-engine-install',     to: 't-driveline-install',     kind: 'hard' },
 
@@ -2126,7 +2129,7 @@ export const roadmap: Roadmap = {
     { from: 't-decide-epas-control', to: 't-buy-can-hat-duo',      kind: 'hard' },
     { from: 't-decide-epas-control', to: 't-epas-gateway-software', kind: 'hard' },
     { from: 't-buy-can-hat-duo',    to: 't-dash-fdduo-swap',       kind: 'hard' },
-    { from: 't-dash-hardware',      to: 't-dash-fdduo-swap',       kind: 'hard', label: 'FD Duo swap is Phase 3 of dash hardware.' },
+    { from: 't-dash-hardware',      to: 't-dash-fdduo-swap',       kind: 'hard', label: 'Dual-CAN bringup runs on the Phase 2 hardware stack.' },
     { from: 't-dash-fdduo-swap',    to: 't-epas-gateway-bench',    kind: 'hard' },
     { from: 't-epas-gateway-software', to: 't-epas-gateway-bench', kind: 'hard' },
     { from: 't-buy-epas',           to: 't-epas-gateway-bench',    kind: 'hard', label: 'Column needs to be on the bench for assist validation.' },
@@ -2182,8 +2185,8 @@ export const roadmap: Roadmap = {
 
     /* Rear suspension hardware */
     { from: 't-buy-shocks-rear',    to: 't-suspension-install-rear', kind: 'hard' },
-    { from: 't-narrow-rear-housing', to: 't-suspension-install-rear', kind: 'hard' },
-    { from: 't-buy-axles',          to: 't-suspension-install-rear', kind: 'hard' },
+    { from: 't-rear-irs-fab',       to: 't-suspension-install-rear', kind: 'hard' },
+    { from: 't-buy-half-shafts',    to: 't-suspension-install-rear', kind: 'hard' },
     { from: 't-frame-build',        to: 't-suspension-install-rear', kind: 'hard' },
 
     { from: 't-suspension-install-front', to: 't-alignment',       kind: 'hard' },
@@ -2204,7 +2207,7 @@ export const roadmap: Roadmap = {
 
     /* Brake decisions feed brake design */
     { from: 't-decide-power-brakes', to: 't-decide-brake-system',  kind: 'hard', label: 'Booster vs manual sizes the master.' },
-    { from: 't-decide-ebrake',      to: 't-decide-brake-system',   kind: 'soft', label: 'Caliper choice may include parking provision.' },
+    { from: 't-decide-ebrake',      to: 't-decide-brake-system',   kind: 'soft', label: 'Rear calipers carry the parking brake.' },
     { from: 't-decide-power-brakes', to: 't-pedal-box-design',     kind: 'soft', label: 'Booster vs manual sets pedal ratio.' },
 
     /* E-brake chain */
@@ -2286,13 +2289,13 @@ export const roadmap: Roadmap = {
 
     /* Final drive (ratio + LSD) */
     { from: 't-decide-trans',       to: 't-decide-final-drive',    kind: 'hard', label: 'Trans gearing sets ratio target.' },
-    { from: 't-axle-research',      to: 't-decide-final-drive',    kind: 'soft' },
+    { from: 't-buy-rx8-diff',       to: 't-decide-final-drive',    kind: 'soft', label: 'Verify the ratio on the unit bought.' },
     { from: 't-decide-final-drive', to: 't-driveline-install',     kind: 'hard' },
 
     /* Pinion angle setup → driveshaft measurement */
     { from: 't-frame-build',        to: 't-pinion-angle-setup',    kind: 'hard' },
-    { from: 't-narrow-rear-housing', to: 't-pinion-angle-setup',   kind: 'hard' },
-    { from: 't-suspension-install-rear', to: 't-pinion-angle-setup', kind: 'hard' },
+    { from: 't-rear-irs-fab',       to: 't-pinion-angle-setup',    kind: 'hard', label: 'Diff mounts set the pinion angle.' },
+    { from: 't-engine-mockup-on-frame', to: 't-pinion-angle-setup', kind: 'hard', label: 'Engine/trans at 3° tail-down.' },
     { from: 't-pinion-angle-setup', to: 't-buy-driveshaft',        kind: 'hard', label: 'Length measured after pinion is set.' },
 
     /* Bump-steer validation */
@@ -2346,13 +2349,6 @@ export const roadmap: Roadmap = {
     /* ECU */
     { from: 't-decide-ecu',         to: 't-buy-ecu',               kind: 'hard' },
     { from: 't-decide-ecu',         to: 't-decide-harness-strategy', kind: 'soft' },
-
-    /* Four-link fabrication */
-    { from: 't-buy-rear-housing',   to: 't-fab-four-link',         kind: 'hard' },
-    { from: 't-narrow-rear-housing', to: 't-fab-four-link',        kind: 'hard', label: 'Bracket positions reference final housing width.' },
-    { from: 't-frame-build',        to: 't-fab-four-link',         kind: 'hard' },
-    { from: 't-sa-v2',              to: 't-fab-four-link',         kind: 'soft', label: 'Bar lengths from kinematic tuning.' },
-    { from: 't-fab-four-link',      to: 't-suspension-install-rear', kind: 'hard' },
 
     /* Pedal box install */
     { from: 't-firewall-build',     to: 't-pedal-box-install',     kind: 'hard' },

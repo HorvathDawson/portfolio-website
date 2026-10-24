@@ -3,26 +3,38 @@
 Outputs (all PNG, transparent backgrounds where applicable, written to
 ``public/assets/projects/a40-austin/blog/dash/gauges/``):
 
-  Center (Slot 3, rounded square — slightly narrower than tall):
-    - center_tach.png       SR20 0-9000 RPM tach with recessed digital MPH
-                            and gear-indicator cutouts (vintage rolling-
-                            counter aesthetic).
-
-  Side pills (Slots 1, 2, 4, 5 — vertical stadiums):
-    - pill_oil_pressure.png Oil Pressure 0-100 PSI + digital battery volts.
-    - pill_coolant_temp.png Coolant temp 100-260 F + digital oil temp.
-    - pill_boost.png        Boost -30 inHg to +20 PSI + digital AFR.
-    - pill_fuel.png         Fuel level E..F + digital odometer.
+  Slot layout, left to right (matches content/a40/digital-dash.md):
+    1 far left    pill_oil_pressure.png Oil pressure 0-100 psi (red 0-15 psi
+                                        low-pressure band) + digital battery V.
+    2 inner left  pill_coolant_temp.png Coolant 40-130 °C (blue 40-60, red
+                                        110-130) + digital oil temp.
+    3 centre      center_tach.png       0-9000 rpm tach (red from 7500) with
+                                        recessed digital km/h and gear windows.
+    4 inner right pill_boost.png        Boost -15..+30 psi gauge pressure, one
+                                        linear psi scale (blue vacuum side, red
+                                        25-30 psi) + digital AFR.
+    5 far right   pill_fuel.png         Fuel E..F (amber below 10 %) + digital
+                                        intake air temp (IAT).
 
   Needles:
     - needle_long.png       Long tapered black needle for the center tach.
     - needle_short.png      Shorter needle for the side pill gauges.
 
-  Preview:
-    - dashboard_preview.png All five gauges laid out left-to-right against
-                            a wood-grain bezel placeholder, for sanity
-                            checking proportions before importing into
-                            Godot.
+  Preview / integration:
+    - dashboard_preview.png All five gauges with demo values, for checking
+                            proportions before importing into Godot.
+    - dashboard_panel.png   Same, placed on the scanned bezel (dashscan.dxf).
+    - gauges_manifest.json  Pivots, sweeps, value->angle formulas, digital
+                            window anchors and panel placement for Godot.
+
+Godot rotation: Node2D.rotation_degrees is clockwise-positive with the
+unrotated needle sprite pointing up, so godot_rot = 90 - math_angle.
+  Tach:                 godot_rot = -135 + 270 * (rpm / 9000)
+  Pills, side='right':  godot_rot =  108 -  66 * t     (t = (v-min)/(max-min))
+  Pills, side='left':   godot_rot = -108 +  66 * t
+
+Fonts are macOS system fonts (Futura, Menlo); on other systems PIL falls back
+to its default font, so regenerate the published PNGs on the Mac.
 
 All gauges share a "vintage parchment" aesthetic (warm cream face, soft
 charcoal ink, faded chrome bezel rings, classic Futura-style numerals).
@@ -691,9 +703,9 @@ def render_center_tach() -> Image.Image:
                 f"{CENTER_SWEEP_START} - (rpm - {CENTER_RPM_MIN}) / "
                 f"({CENTER_RPM_MAX} - {CENTER_RPM_MIN}) * {CENTER_SWEEP_TOTAL}"
             ),
-            "godot_rotation_deg_from_up": (
-                "rot = sweep_start_math_deg - "
-                "(rpm / max) * sweep_total_deg - 90"
+            "godot_rotation_deg_cw_from_up": (
+                f"rot = 90 - math_angle = {90 - CENTER_SWEEP_START:g} + "
+                f"(rpm / {CENTER_RPM_MAX}) * {CENTER_SWEEP_TOTAL:g}"
             ),
             "sprite": "needle_long.png",
         },
@@ -1058,11 +1070,11 @@ def render_pill_gauge(*,
                 f"({value_max} - {value_min}) * "
                 f"({sweep_end} - {sweep_start})"
             ),
-            "godot_rotation_deg_from_up": (
-                "rot = (sweep_start_math_deg + t * "
-                "(sweep_end_math_deg - sweep_start_math_deg)) - 90 "
-                "(t = (v - min) / (max - min); negate if your engine treats "
-                "CW as positive — Godot 2D does)"
+            "godot_rotation_deg_cw_from_up": (
+                f"rot = 90 - math_angle = {90 - sweep_start:g} "
+                f"{'-' if sweep_end > sweep_start else '+'} "
+                f"{abs(sweep_end - sweep_start):g} * t  "
+                f"(t = (v - min) / (max - min))"
             ),
             "sprite": "needle_short.png",
         },
@@ -1153,7 +1165,7 @@ PREVIEW_DEMO_VALUES = {
     "oil":     {"primary": 55,   "value": "13.8 V"},   # 55 PSI; 13.8 V battery
     "coolant": {"primary": 85,   "value": "99°C"},     # 85 °C; oil temp 99 °C
     "boost":   {"primary": 2.5,  "value": "11.5"},     # 2.5 PSI; AFR 11.5
-    "fuel":    {"primary": 0.62, "value": "042871"},   # 62 % fuel; ODO
+    "fuel":    {"primary": 0.62, "value": "38°C"},     # 62 % fuel; IAT 38 °C
 }
 
 PREVIEW_ORDER = ["oil", "coolant", "center", "boost", "fuel"]
@@ -1756,15 +1768,18 @@ def main() -> None:
     saved["center"] = center
     print(f"  -> center_tach.png      ({center.width}x{center.height})")
 
-    # --- Slot 1: Oil Pressure (warn high) + battery volts digital ---
+    # --- Slot 1: Oil pressure + battery volts digital ---
+    # Low pressure is what kills the engine, so the red band is at the
+    # bottom (0-15 psi). The live warning in Godot / Haltech protection is
+    # rpm-dependent (rule of thumb ~10 psi per 1000 rpm; verify against the
+    # engine's measured baseline), not a fixed number.
     oil, manifests["oil"] = render_pill_gauge(
         title="OIL",
         sub_title="PSI",
         value_min=0, value_max=100,
         major_step=20, mid_step=10, minor_step=5,
         label_formatter=lambda v: str(int(round(v))),
-        warn_start=85, warn_end=100, warn_color=REDLINE,
-        cool_start=0, cool_end=10,  # too-low pressure danger
+        warn_start=0, warn_end=15, warn_color=REDLINE,  # low pressure
         digital_label="BATTERY", digital_value="",
         side="right",  # far-left slot: faces IN (dial on right half)
         outline=pill_outlines.get("oil"),
@@ -1792,16 +1807,19 @@ def main() -> None:
     saved["coolant"] = coolant
     print(f"  -> pill_coolant_temp.png ({coolant.width}x{coolant.height})")
 
-    # --- Slot 4: Boost (-30 inHg .. +20 PSI) + AFR digital ---
-    # Use a single linear scale -30..+20, with major step 10, label sign.
+    # --- Slot 4: Boost (-15 .. +30 psi gauge) + AFR digital ---
+    # One linear psi scale (no inHg/psi mix): needle value = MAP_kPa_abs /
+    # 6.895 - baro_psi. Red band 25-30 psi sits above the expected ~18-22 psi
+    # target for ~350 whp; move it to the Haltech overboost cut once the
+    # turbo and boost target are chosen (verify).
     boost, manifests["boost"] = render_pill_gauge(
         title="BOOST",
-        sub_title="inHg / PSI",
-        value_min=-30, value_max=20,
-        major_step=10, mid_step=5, minor_step=1,
+        sub_title="PSI",
+        value_min=-15, value_max=30,
+        major_step=15, mid_step=5, minor_step=1,
         label_formatter=lambda v: f"{int(round(v)):+d}".replace("+0", "0"),
-        warn_start=15, warn_end=20, warn_color=REDLINE,
-        cool_start=-30, cool_end=0,  # vacuum side
+        warn_start=25, warn_end=30, warn_color=REDLINE,
+        cool_start=-15, cool_end=0,  # vacuum side
         digital_label="AFR", digital_value="",
         side="right",  # inner-right slot: faces OUT (dial on right half)
         outline=pill_outlines.get("boost"),
@@ -1811,7 +1829,7 @@ def main() -> None:
     saved["boost"] = boost
     print(f"  -> pill_boost.png        ({boost.width}x{boost.height})")
 
-    # --- Slot 5: Fuel + odometer digital ---
+    # --- Slot 5: Fuel + intake air temp (IAT) digital ---
     # Fuel uses 0..1 scaled with E, 1/4, 1/2, 3/4, F labels.
     fuel_labels = {0.0: "E", 0.25: "¼", 0.5: "½", 0.75: "¾", 1.0: "F"}
 
@@ -1827,7 +1845,7 @@ def main() -> None:
         major_step=0.25, mid_step=0.125, minor_step=0.0625,
         label_formatter=fuel_label,
         warn_start=0.0, warn_end=0.10, warn_color=WARN_AMBER,
-        digital_label="ODO", digital_value="",
+        digital_label="IAT", digital_value="",
         side="left",  # far-right slot: faces IN (dial on left half)
         outline=pill_outlines.get("fuel"),
     )
@@ -1910,7 +1928,7 @@ def main() -> None:
             },
             "mono": {
                 "candidates": ["Menlo.ttc", "Courier.ttc", "Monaco.ttf"],
-                "use_for": "live digital readouts (km/h, voltage, AFR, oil temp, ODO)",
+                "use_for": "live digital readouts (km/h, voltage, AFR, oil temp, IAT)",
             },
         },
         "needles": {
@@ -1978,27 +1996,41 @@ def main() -> None:
             with open(manifest_path, "w") as f:
                 json.dump(full_manifest, f, indent=2, default=str)
 
-    # --- Godot integration notes ---
+    # --- Godot integration notes (all numbers read back from the manifest) ---
     print()
-    print("Godot integration:")
+    print("Godot integration (godot_rot is clockwise-positive, 0 = needle up):")
+    c = manifests["center"]
+    lp = full_manifest["needles"]["long"]["pivot"]
+    sp = full_manifest["needles"]["short"]["pivot"]
     print("  Center tach (center_tach.png):")
     print(f"    - size            : {CENTER_W}x{CENTER_H}")
-    print(f"    - needle pivot    : ({CENTER_W // 2}, {CENTER_H // 2}) px")
-    print( "    - rotation (CW+)  : rot_deg = 135 - (rpm/9000) * 270")
-    print(f"    - needle: needle_long.png, pivot ({long_needle.width // 2}, "
-          f"{int(long_needle.height * 0.78)})")
+    print(f"    - dial pivot      : ({c['needle']['pivot'][0]:g}, {c['needle']['pivot'][1]:g}) px")
+    print(f"    - rotation        : rot_deg = {90 - CENTER_SWEEP_START:g} + "
+          f"{CENTER_SWEEP_TOTAL:g} * (rpm/{CENTER_RPM_MAX})")
+    print(f"    - needle          : needle_long.png, hinge ({lp[0]}, {lp[1]}) "
+          f"-> Offset ({-lp[0]}, {-lp[1]})")
     print()
     print("  Pill gauges (pill_*.png):")
-    pivot_inset_px = int(PILL_W * PILL_PIVOT_INSET_FRAC)
     print(f"    - size            : {PILL_W}x{PILL_H}")
-    print(f"    - needle pivot    : side='right' -> ({pivot_inset_px}, {PILL_H // 2}) px")
-    print(f"                        side='left'  -> ({PILL_W - pivot_inset_px}, {PILL_H // 2}) px")
-    print(f"    - sweep: +{PILL_SWEEP_TOP_DEG}° above / -{PILL_SWEEP_BOTTOM_DEG}° below horizontal toward dial side")
-    print( "    - rotation (math angle, CCW+ from +x, PIL y-down):")
-    print(f"        side='right': angle = -{PILL_SWEEP_BOTTOM_DEG} + t * {PILL_SWEEP_TOP_DEG + PILL_SWEEP_BOTTOM_DEG}")
-    print(f"        side='left' : angle = (180+{PILL_SWEEP_BOTTOM_DEG}) - t * {PILL_SWEEP_TOP_DEG + PILL_SWEEP_BOTTOM_DEG}")
-    print(f"    - needle: needle_short.png, pivot ({short_needle.width // 2}, "
-          f"{int(short_needle.height * 0.78)})")
+    for slot in ("oil", "coolant", "boost", "fuel"):
+        g = manifests[slot]
+        n = g["needle"]
+        v = g["value"]
+        a0, a1 = n["sweep_start_math_deg"], n["sweep_end_math_deg"]
+        print(f"    - {slot:<8}: side={g['side']:<5} pivot "
+              f"({n['pivot'][0]:g}, {n['pivot'][1]:g}) px, "
+              f"rot_deg = {90 - a0:g} {'-' if a1 > a0 else '+'} {abs(a1 - a0):g} * t, "
+              f"t = (v - min) / (max - min), range {v['min']:g}..{v['max']:g}")
+    print(f"    - needle          : needle_short.png, hinge ({sp[0]}, {sp[1]}) "
+          f"-> Offset ({-sp[0]}, {-sp[1]})")
+    if dxf is not None and "bezel" in full_manifest:
+        print()
+        print("  Panel placement on the 1920x720 screen (top-left px, uniform scale):")
+        for pl in full_manifest["bezel"].get("gauge_placement_panel_px", []):
+            gp = pl["gauge_px"]
+            print(f"    - {pl['slot']:<8}: position ({gp['x'] / PANEL_SSAA:g}, "
+                  f"{gp['y'] / PANEL_SSAA:g}), scale "
+                  f"{gp['scale_native_to_panel'] / PANEL_SSAA:.3f}")
     print()
     print("Done.")
 

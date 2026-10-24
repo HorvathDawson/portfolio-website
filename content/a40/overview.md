@@ -7,36 +7,42 @@ kind: log
 tags: [overview, planning]
 ---
 
-This is just a log for myself as I work through putting this car together. The A40 is a 1950 Austin Devon going onto a completely custom ladder frame (body-to-frame attachment — welded vs rubber-mounted vs hybrid — still TBD), with narrowed MX-5 front suspension, a triangulated four-link rear with a narrowed Ford 9", an SR20DET, and Miata disc brakes all around on a unified 4x100 bolt pattern.
+This is my working log for the A40 build: a 1950 Austin A40 Devon body on a custom ladder frame, with a narrowed Mazda NA Miata front suspension, a narrowed NA Miata independent rear with a Mazda RX-8 diff and custom half-shafts, an SR20DET on a CD009 or Z32 gearbox, and Miata disc brakes on a 4x100 bolt pattern all round. How the body attaches to the frame (welded, rubber-mounted or a mix) is still open.
 
-Posts are organized by topic. Some of this is research, some is geometry work, some is fabrication. Updated as I go.
+> Headline numbers (mass, track, wheelbase, tyres, drivetrain) live in [build constants](./build-constants). If another post disagrees, the constants page wins. Task status lives on the roadmap.
 
-> Headline numbers (mass, track, wheelbase, tire spec, drivetrain) live in [build constants](./build-constants). If anything in another post drifts from those, the constants page wins.
+## Changes to the plan
+
+| Date | Change | Detail |
+|---|---|---|
+| Oct 2026 | Rear: Ford 9" four-link live axle → narrowed Miata NA IRS + RX-8 diff + custom half-shafts. Rear track stays 1340 mm. | [rear suspension](./rear-suspension) |
+| Earlier | Gearbox: OEM SR20 5-speed rejected (weak 3rd gear); CD009 or Z32, whichever clean unit turns up first. | roadmap: Decide Transmission |
 
 ## Reading order
 
-If you want to follow the build the way it was actually decided:
-
-1. [Teardown](./teardown) — what came off the original car.
-2. [Front suspension options](./suspension-options) — why a custom frame and not a Mustang II splice.
-3. [Motor selection](./motor-selection) — why SR20DET.
-4. [Steering](./steering) — narrowed Miata rack + junkyard EPAS column.
-5. [Dimensions, tire choice & narrowing](./narrowing-analysis) — the math that sets front track and how much to narrow the donor.
-6. [Geometry design reference](./geometry-design-reference) — pickup points, roll centre, scrub, what changes when you narrow.
-7. [Suspension tuning reference](./suspension-tuning) — spring rates, ARB sizing, dampers, alignment.
-8. [Four-link rear](./four-link-rear), [rear axle & driveshaft](./rear-axle).
-9. [Frame jig build](./frame-jig).
-10. [Ladder frame design](./frame-design) → [design overview](./design-overview) (integration view) → [design finalization & cut list](./design-finalization).
-11. [Digital dash](./digital-dash) — Godot/GDScript dash on a Pi over CAN.
-12. [EPAS CAN gateway](./epas-can-gateway) — same Pi, second job: dual-bus gateway so the Prius column gets speed-sensitive assist.
+1. [Teardown](./teardown): what came off the original car.
+2. [Front suspension options](./suspension-options): why a custom frame and not a Mustang II splice.
+3. [Motor selection](./motor-selection): why the SR20DET.
+4. [Steering](./steering): narrowed Miata rack + Prius EPAS column.
+5. [Dimensions, tyre choice and narrowing](./narrowing-analysis): front track and how far to narrow the donor.
+6. [Donor geometry dimensions](./donor-geometry-dimensions): measured donor pickup points.
+7. [Geometry design reference](./geometry-design-reference): roll centre, scrub, motion ratio, what narrowing changes.
+8. [Suspension tuning reference](./suspension-tuning): wheel rates, anti-roll bars, dampers, alignment.
+9. [Rear suspension](./rear-suspension): narrowed Miata IRS, RX-8 diff, half-shafts, driveshaft angles.
+10. [Frame jig](./frame-jig).
+11. [Ladder frame design](./frame-design), then the [design overview](./design-overview) (integration and clearance checks), then [design finalization and cut list](./design-finalization).
+12. [Wiring overview](./wiring-overview): Haltech Nexus S2 and the harness decisions.
+13. [Digital dash](./digital-dash): Godot dash on a Pi over CAN.
+14. [EPAS CAN gateway](./epas-can-gateway): the same Pi as a dual-bus gateway so the Prius column gets speed-sensitive assist.
 
 ## By system
 
-- **Reference & constants:** [build constants](./build-constants)
-- **Front suspension:** [options](./suspension-options) → [narrowing](./narrowing-analysis) → [geometry reference](./geometry-design-reference) → [tuning reference](./suspension-tuning)
-- **Rear suspension + axle:** [four-link](./four-link-rear) → [rear axle & driveshaft](./rear-axle)
-- **Steering:** [steering](./steering)
-- **Frame:** [jig](./frame-jig) → [frame design](./frame-design) → [design overview](./design-overview) → [design finalization](./design-finalization)
-- **Drivetrain:** [motor selection](./motor-selection)
-- **Electronics:** [digital dash](./digital-dash) · [EPAS CAN gateway](./epas-can-gateway)
-
+| System | Posts |
+|---|---|
+| Reference | [build constants](./build-constants) |
+| Front suspension | [options](./suspension-options) → [narrowing](./narrowing-analysis) → [donor dimensions](./donor-geometry-dimensions) → [geometry reference](./geometry-design-reference) → [tuning](./suspension-tuning) |
+| Rear suspension and driveline | [rear suspension](./rear-suspension) |
+| Steering | [steering](./steering) |
+| Frame | [jig](./frame-jig) → [frame design](./frame-design) → [design overview](./design-overview) → [design finalization](./design-finalization) |
+| Engine | [motor selection](./motor-selection) |
+| Electrical | [wiring overview](./wiring-overview) · [digital dash](./digital-dash) · [EPAS CAN gateway](./epas-can-gateway) |
