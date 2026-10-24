@@ -1289,7 +1289,7 @@ def plot_motion_ratio():
     ax.set_ylabel("Motion ratio (shock / wheel)")
     ax.set_title("Front motion ratio through travel (four-bar, A40 build)")
     ax.legend(fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
-              loc="lower left")
+              loc="lower center")
     ax.set_ylim(0.55, 0.78)
     save(fig, "motion_ratio.png")
 
@@ -1320,7 +1320,7 @@ def plot_motion_ratio_vs_angle():
             label=f"old LCA-pivot lever {old:.3f} · sin(α) (wrong)")
 
     ax.axvspan(65, 85, color=GREEN, alpha=0.07)
-    ax.text(75, 0.505, "practical shock-tower range", color=GREEN, fontsize=7,
+    ax.text(75, 0.74, "practical shock-tower range", color=GREEN, fontsize=7,
             ha="center", alpha=0.85)
     for a in (65, 75, 80, 85):
         v = front_mr(alpha_deg=a)
@@ -1355,7 +1355,7 @@ def plot_ride_frequency():
             ax.plot(kw, np.sqrt(kw * 1000 / mm) / (2 * np.pi), color=c,
                     linewidth=0.8, linestyle=ls, alpha=0.6)
     ax.axhspan(1.2, 1.6, color=GOLD, alpha=0.07)
-    ax.text(5.5, 1.62, "1.2-1.6 Hz street front / 1.3-1.7 Hz rear", color=GOLD,
+    ax.text(5.5, 1.62, "1.2-1.6 Hz street band (rear runs ~0.1 Hz higher)", color=GOLD,
             fontsize=7, alpha=0.8)
 
     ks_f = KW_FRONT / front_mr() ** 2 / 1000
