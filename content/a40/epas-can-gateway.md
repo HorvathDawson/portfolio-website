@@ -7,149 +7,99 @@ kind: reference
 tags: [electronics, can-bus, epas, steering, raspberry-pi, safety]
 ---
 
-The [digital dash](./digital-dash) is an infotainment job — it reads the Haltech CAN broadcast and renders gauges. This post is a different problem entirely: a **drive-by-wire networking project** that takes the same Pi and turns it into a hardware-isolated CAN gateway between two completely different vehicle networks so a 2010 Toyota Prius EPAS column thinks it's still bolted into a Prius.
+The steering is a Gen 3 Prius EPAS column (see the [steering post](./steering)). With no CAN traffic it runs a single fixed assist level. A level light enough for parking is too light and nervous at highway speed, and a level that suits the highway is heavy in a parking lot. To get speed-sensitive assist, the column has to see the Prius frames it expects. The dash Pi reads the Haltech broadcast and re-sends speed and rpm in Toyota format on a second, isolated bus.
 
-Same Pi 5, same enclosure behind the dash. **Different software stack, different HAT, different safety bar.**
-
----
-
-## Why a gateway exists at all
-
-The [steering post](./steering) locked in a junkyard column-mount EPAS. The default plan was "Prius column in failsafe mode" — power it up with 12 V + ignition and accept the fixed assist curve.
-
-Failsafe works. But it gives you one assist level forever — parking-lot heavy on the highway, twitchy in a parking lot, no speed-sensitive falloff. The Prius column **can** do speed-sensitive assist, but only when it sees the two CAN messages it expects from a Prius powertrain.
-
-So the brain already sitting behind the dash gets a second job: read what the Haltech is broadcasting and rebroadcast the same physical signals on the Toyota wire format the column expects.
-
----
-
-## Architecture
-
-Two physically separate CAN buses, one Pi sitting between them.
-
-| Bus | Speed | Role | Frames the Pi cares about |
-|---|---|---|---|
-| `can0` | 1 Mbps | Haltech Nexus S2 broadcast | Dash reads everything; gateway reads RPM + speed |
-| `can1` | 500 kbps | Toyota Prius column comms | Pi *writes* spoofed Powertrain + Speed frames |
-
-The buses do **not** see each other electrically. Isolation matters here — Haltech grounds and the Prius column grounds will sit at slightly different potentials once the car is running, and a ground loop between two CAN transceivers is exactly the kind of thing that fries a $40 HAT and leaves the car with no power steering on the highway.
-
----
-
-## Hardware
-
-The dash Pi was already speced for a **PiCAN FD Duo Isolated (non-SMPS)** HAT from the start — see the [digital dash post](./digital-dash) for the full stack. Two design choices on that HAT make the gateway possible:
-
-| HAT feature | Why it matters |
-|---|---|
-| **Galvanic isolation per channel** | Haltech grounds and Prius column grounds sit at slightly different potentials once the car is running. A ground loop between two non-isolated CAN transceivers is exactly the kind of thing that fries a $40 HAT and leaves the car with no power steering on the highway. Isolation is the primary reason this HAT is in the build. |
-| **Two independent channels** | `can0` at 1 Mbps for the Haltech broadcast, `can1` at 500 kbps for the Toyota column. Independent controllers, independent transceivers — the two buses do not see each other electrically. |
-
-The non-SMPS variant intentionally trades the on-HAT 5 V converter for the isolation. The Pi instead drinks its 5 V directly from the Mini-Box DCDC-USB — same DCDC-USB the dash already uses for clean power + safe-shutdown signalling.
-
----
-
-## How the frame spec was found: opendbc
-
-Reverse-engineering a stranger's CAN bus from scratch is a project of its own. Toyota does not publish their DBC files, but the open-source self-driving community has — over years of cars-on-bench reverse engineering — done the work for them.
-
-[opendbc](https://github.com/commaai/opendbc) is the comma.ai-maintained repository of community-reverse-engineered DBC files. **DBC** is the de-facto file format for describing a CAN database: which frame IDs exist on a given vehicle, what bytes inside each frame mean, the scale factor and offset for each signal, the broadcast rate, and — critically for Toyota — which byte holds the checksum and how it is computed.
-
-The relevant files for this build live in [`opendbc/dbc/`](https://github.com/commaai/opendbc/tree/master/opendbc/dbc) under names like `toyota_prius_2010_pt_generated.dbc`. Cracking one open gives signal definitions like:
-
-```text
-BO_ 452 SPEED: 8 XXX                 ; frame ID 0xB4 = 452 decimal, 8 bytes
- SG_ ENCODER : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ SPEED : 47|16@0+ (0.01,0) [0|250] "kph" XXX   ; bytes 5–6, scale 0.01
- SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX        ; byte 7 = rolling checksum
-```
-
-That one block tells the gateway exactly where to write the speed value, what scale to apply, and where the checksum goes. The Powertrain frame (`0x1C4`) is described the same way in the same file, and the checksum algorithm is documented in the comma.ai source under `opendbc/can/can_define.py` and the various Toyota safety files in [openpilot](https://github.com/commaai/openpilot).
-
-### Finding signals for a different donor column
-
-The workflow generalises. To evaluate any other OEM column-mount EPAS donor:
-
-1. Look up the donor's powertrain DBC in `opendbc/dbc/` (e.g. `honda_civic_*`, `gm_global_a_powertrain.dbc`, `hyundai_*`).
-2. Find the steering / EPS file for the same chassis (commonly `*_eps.dbc` or `*_steering.dbc`).
-3. Identify which broadcast frames the EPS controller *listens for* (RPM + speed are the universal pair; some manufacturers also want a brake or ignition frame).
-4. Read off the byte positions, scale factors, and checksum strategy. Anything not documented in opendbc is usually documented in [openpilot](https://github.com/commaai/openpilot) under the same OEM's safety folder.
-5. Confirm the bus speed: most Toyota powertrain buses are 500 kbps, but some GM and FCA platforms run 125/250 kbps and that has to match `can1` config on the Pi.
-
-### 2010 vs 2011 Prius interchangeability
-
-The 2010 and 2011 Toyota Prius (Gen 3) share the same powertrain CAN architecture — same IDs, same bauds, same checksum scheme. Practically that means a **2011 column** can be driven by the **2010 Prius DBC** without modification, which broadens the junkyard hunt: any 2010–2015 Gen 3 Prius column is fair game, and the gateway code stays identical. Pivoting to a *different* generation (Gen 2 2004–2009, or Gen 4 2016+) or a *different OEM* would require re-walking the opendbc workflow above.
-
----
-
-## What the column actually needs
-
-Out of the entire Prius CAN traffic map, only two frames keep the column alive and out of limp mode:
-
-| Toyota frame | Hz | Source on the Haltech side | Translation |
-|---|---|---|---|
-| **`0x1C4`** Powertrain (RPM) | 50 | Haltech `0x360`, bytes 0-1 | Raw RPM value, packed into Toyota frame, checksum byte 7 |
-| **`0xB4`** Speed | 20 | Haltech `0x370`, bytes 0-1 (km/h × 10) | Convert km/h × 10 → mph, scale by 0.0062 (Toyota DBC), pack into bytes 5-6, checksum byte 7 |
-
-No brake state, no gear, no ignition state, no body-control frames. The column is a relatively dumb actuator — once it sees RPM > 0 it wakes up, and the speed value just modulates the assist curve.
-
-### Toyota rolling checksum
-
-Every Toyota frame ends with an 8-bit checksum in byte 7 calculated across the CAN ID + length + payload:
-
-```
-checksum = ( (CAN_ID >> 8)
-           + (CAN_ID & 0xFF)
-           + DLC
-           + byte0 + byte1 + byte2 + byte3 + byte4 + byte5 + byte6 ) & 0xFF
-```
-
-Same algorithm applies to both `0x1C4` and `0xB4`. Get this wrong and the column ignores the frame, falls back to its internal failsafe, and you're back to fixed assist.
-
----
-
-## Software topology
-
-The gateway does **not** live inside the Godot dash app.
-
-The dash is a UI. UIs crash. The day the gauge font update or a config file typo locks up the renderer is **not** the day to also lose power steering at 70 mph.
-
-So the gateway runs as its own thing:
-
-- Lightweight C or Python service.
-- Started as a `systemd` unit, `Restart=always`, `WatchdogSec=` configured.
-- Subscribes to `can0` via SocketCAN, decodes the two Haltech frames it cares about.
-- Recomputes Toyota frames + checksum, writes to `can1`.
-- Logs to journald, no UI dependency.
-
-The Godot dash continues to do its own thing on `can0`. If the dash app crashes, the EPAS gateway service keeps running. If the gateway service crashes, systemd restarts it within a second and the Prius column falls back to its own internal failsafe in the meantime — which is the same fixed-assist behaviour you'd have had without the gateway at all. Worst case = stock-Prius-column-in-failsafe. Acceptable.
-
----
-
-## Current state
-
-- **Architecture:** locked (dual bus, Pi gateway, isolated HAT).
-- **Hardware spec:** locked (PiCAN FD Duo Isolated, Mini-Box DCDC-USB, Pi 5 + NVMe — already on hand).
-- **Translation math:** locked (frame IDs, byte layout, scale factors, checksum algorithm — see tables above).
-- **Donor column:** 2010–2015 Toyota Prius (Gen 3) — the entire Gen 3 run shares the same powertrain CAN architecture, so any year in that range is interchangeable for the gateway. Pivoting to a different generation or OEM would require re-walking the opendbc workflow.
-- **Code:** not written.
-- **Bench rig:** not built.
-- **In-car install:** not done.
-
-Next step is bench: FD Duo on the Pi, a benchtop CAN tool playing a recorded Haltech log on `can0`, the column hooked to `can1`, and a torque-sensor input on the column wiggled by hand to confirm assist actually scales with the spoofed speed.
-
----
-
-## Why split this out of the dash post
-
-The dash and the gateway share a Pi and a power supply. They share nothing else:
+The dash is a UI and the gateway is part of the steering, so they share a Pi and a power supply but nothing else.
 
 | | Dash | Gateway |
 |---|---|---|
-| Failure mode | Black screen | Lose power assist |
-| Criticality | Annoying | Drive-by-wire |
-| Stack | Godot, GDScript, sway, plymouth | C/Python, systemd, SocketCAN |
-| Bus count | 1 | 2 |
-| Isolation | Not required | Required |
+| Failure mode | Black screen | Change in steering assist |
+| Stack | Godot, sway, Plymouth | Small C/Python service, systemd, SocketCAN |
+| Buses | `can0` read-only | `can0` in, `can1` out |
 
-Burying drive-by-wire networking inside a UI post would let one set of design concerns leak into the other. They get separate documents.
+## Architecture
+
+| Bus | Bitrate | Node(s) | Pi role | Termination |
+|---|---|---|---|---|
+| `can0` | 1 Mbit/s | Haltech Nexus S2 (+ any Haltech devices) | Listen: rpm (0x360), vehicle speed (0x370) | The Haltech bus already has two terminators. **Don't add a third**: HAT ch0 jumper off, ~60 Ω measured across CAN_H/L with power off. |
+| `can1` | 500 kbit/s | Prius EPAS column only | Transmit: 0x1C4 rpm, 0xB4 speed | 120 Ω at the HAT (ch1 jumper on) **and** 120 Ω at the column, unless its ECU already has one. Measure: ~60 Ω total with power off. |
+
+Hardware: a **PiCAN FD Duo Isolated (non-SMPS)**, with two MCP2518FD controllers on SPI0 CE0/CE1, each channel galvanically isolated. Power and the wiring diagram are in the [digital dash post](./digital-dash).
+
+**Why isolation.** A non-isolated transceiver tolerates a few volts of common-mode offset, so a few hundred mV of ground difference won't damage it. Isolation is there for these reasons:
+- It stops ground-loop current and alternator/motor noise between the Pi supply, the Haltech ground and the column ground.
+- It keeps a wiring fault on one bus from reaching the Pi or the other bus.
+
+This only works if each isolated side is referenced to its own bus. Never wire the DCDC 12 V or the Pi supply ground into the HAT's bus-side terminals, because that bypasses the isolation.
+
+## Frame translation
+
+Source: [opendbc](https://github.com/commaai/opendbc), comma.ai's community DBC files. Find the Toyota powertrain DBC that defines `BO_ 180 SPEED` and `BO_ 452 ENGINE_RPM`. The excerpt below is illustrative, so copy the real lines from the file before coding:
+
+```text
+BO_ 180 SPEED: 8 XXX
+ SG_ SPEED : 47|16@0+ (0.01,0) [0|250] "kph" XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+```
+
+(DBC has no `;` comments. Notes go in `CM_` lines.)
+
+| Toyota frame | Signal | Scale | From Haltech | Conversion |
+|---|---|---|---|---|
+| **0xB4** (180) SPEED | bytes 5-6, big-endian | 0.01 km/h/bit | 0x370 bytes 0-1, vehicle speed, 0.1 km/h/bit (**verify** in the Haltech CAN protocol doc) | `raw = kmh / 0.01` = **Haltech raw × 10**. No mph step. |
+| **0x1C4** (452) ENGINE_RPM | 16 bits | likely **0.78125 rpm/bit** (**verify** in opendbc before coding) | 0x360 bytes 0-1, 1 rpm/bit | `raw = rpm / 0.78125` |
+
+Send rates: match what the DBC or a real Prius log shows (**verify**; the earlier notes said 0xB4 at 20 Hz and 0x1C4 at 50 Hz).
+
+**Checksum.** It's a plain additive sum, not a rolling counter, and **only frames whose DBC defines a `CHECKSUM` signal have one**. 0xB4 does. Check 0x1C4 in the DBC. Where present it's the last byte:
+
+```text
+checksum = ((ID >> 8) + (ID & 0xFF) + DLC + byte0 + ... + byte[DLC-2]) & 0xFF
+```
+
+Search the opendbc source for `toyota_checksum` to cross-check. A wrong checksum gets the frame ignored.
+
+**Other columns.** For other columns the workflow is the same:
+1. Find the donor's powertrain DBC in opendbc.
+2. Find which frames the EPS listens for (speed and rpm are the usual pair, and some also want ignition or brake).
+3. Read off the byte positions, scales and checksum.
+4. Confirm the bus bitrate.
+
+Gen 3 Prius (2010-2015) columns *probably* share these IDs. **Verify** on the bench with the actual column's part number before relying on it.
+
+## Safety requirements
+
+These come before writing any code.
+
+1. **IG wake is hard-wired.** A Prius steers with the engine stopped, so the column wakes on its ignition (IG) input, not on rpm > 0. Feed it from an ignition-switched fused circuit ([wiring overview](./wiring-overview)).
+2. **Speed source is a wheel or driveshaft speed sensor** into the Nexus (→ 0x370). GPS is not acceptable. A GPS dropout reads 0 km/h, which gives parking-level assist at speed.
+3. **Loss policy (gateway side):**
+   - If the Haltech speed is stale (for example more than 200 ms), **hold the last speed**.
+   - If it stays stale, **ramp toward a high-speed, low-assist value**.
+   - **Never ramp toward 0.**
+   - Rate-limit the speed sent to the column to what the car can physically do (for example 1 g, about 35 km/h per second).
+4. **Column behaviour when frames stop is unknown.** It may hold, fall back to fixed assist, drop assist, or **latch a DTC until a key cycle**. Bench-test pulling `can1` and `can0` at different simulated speeds before the car moves.
+5. **Keep the service alive:**
+   - `restart-ms` (or the networkd `RestartSec`) on `can0` and `can1`, so bus-off recovers on its own.
+   - systemd unit with `Restart=always`, `RestartSec=200ms`, `StartLimitIntervalSec=0` (never gives up), and `WatchdogSec=` with `sd_notify` from the main loop.
+   - Hardware watchdog: `RuntimeWatchdogSec=` in `/etc/systemd/system.conf`, so a hung kernel reboots.
+   - Start early in boot: depend only on the CAN interfaces, not on the dash, network-online or the user session.
+6. **Stronger design to keep in mind:** a small dual-CAN microcontroller (for example a Teensy 4.x or an STM32 with two CAN controllers) boots in milliseconds and has no OS to hang. The Pi gateway is the prototype, and the MCU is the upgrade path if the bench tests show slow boot or a latched DTC.
+
+## Status
+
+| Item | State |
+|---|---|
+| Architecture (dual bus, isolated HAT) | Locked |
+| Hardware (PiCAN FD Duo Isolated, DCDC-USB + 5 V buck, Pi 5) | On hand / specified |
+| Frame IDs and scaling | Drafted above. Verify against opendbc and the bench. |
+| Code | Not written |
+| Bench rig | Not built |
+| In car | Not done |
+
+**Bench test plan:**
+1. FD Duo on the Pi, with a replayed Haltech log on `can0`.
+2. The column on `can1` with its own 12 V supply, motor fuse and IG wake.
+3. Measure the termination on both buses.
+4. Check that assist changes with the spoofed speed (turn the input shaft by hand and feel the effort).
+5. Run the loss tests from item 4 above.

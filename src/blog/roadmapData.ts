@@ -422,6 +422,7 @@ export const roadmap: Roadmap = {
         'Routes under the pedal box, then along the driver-side frame rail',
         'No crossmember relief notches required — path clears existing crossmembers',
         'Clearance to steering rack and column shaft verified',
+        'Re-check against the RX-8 diff and half-shafts (rear changed to IRS, Oct 2026)',
       ],
     },
     {
@@ -505,7 +506,8 @@ export const roadmap: Roadmap = {
       kind: 'decision',
       status: 'planning',
       deferrable: 'Can be settled once the trans is physically mocked up; reserve tunnel space upfront.',
-      summary: 'Native shifter vs remote linkage. Driven by engine placement and transmission choice.',
+      summary: 'Native shifter vs remote linkage. Driven by engine placement and transmission choice. In the design-overview CAD the native CD009 lever lands behind the driver\'s hip, so a remote shifter is expected.',
+      posts: ['design-overview'],
     },
     {
       id: 't-shifter-design',
@@ -568,7 +570,7 @@ export const roadmap: Roadmap = {
         'Initial design lock first, then a separate finalization pass (t-design-finalization)',
         'Trigger to flip complete: build-ready — all major clearances + gotchas checked',
         'No formal BOM — cut list will be the authoritative output',
-        'Cut list waits on: trans choice, tub/fender choice, body interaction',
+        'Cut list waits on: SA V2 outputs, donor rear measurements (t-measure-donor-rear), body-mounting decision. Trans (CD009 or Z32) and fenders (widen, no tubs) are decided',
         'Engine mounts: frame includes pads for stock SR20 mounts (no custom-mount fab task)',
       ],
     },
@@ -586,10 +588,10 @@ export const roadmap: Roadmap = {
       epic: 'design',
       status: 'planning',
       posts: ['design-finalization'],
-      summary: 'Final pass after SA V2 + donor scan + trans + tub/fender choice land. Output: cut list ready to order metal from. No separate BOM.',
+      summary: 'Final pass after SA V2 + donor front scan + donor rear measurements land. Output: cut list ready to order metal from. No separate BOM.',
       notes: [
         'Done = cut list signed off, ready for t-buy-metal',
-        'Inputs that must be locked first: SA V2 outputs, donor scan, trans choice, tub/fender choice',
+        'Inputs that must be locked first: SA V2 outputs, donor front scan confirmed, donor rear measured, rear pickup approach (frame vs narrowed subframe), RX-8 diff on hand for mount design',
       ],
     },
     {
@@ -665,7 +667,7 @@ export const roadmap: Roadmap = {
       epic: 'fabrication',
       status: 'complete',
       posts: ['frame-jig'],
-      summary: 'Welding fixture / surface plate to build the frame on.',
+      summary: 'Welding fixture to build the frame on. Re-check flatness (string line / laser / straightedge) and diagonals (within 1–2 mm) before the frame rails go on.',
     },
     {
       id: 't-jig-reference-points',
@@ -885,7 +887,8 @@ export const roadmap: Roadmap = {
       title: 'Frame Fabrication',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Cut, fit, and weld the ladder frame on the jig.',
+      summary: 'Cut, fit, and weld the ladder frame on the jig: rails, then crossmembers, then brackets located with the real parts bolted in; weld out on the jig with alternating stitched passes, re-checking pickups and diagonals as it goes (sequence in design-finalization).',
+      posts: ['design-finalization'],
     },
     {
       id: 't-firewall-build',
@@ -1418,7 +1421,7 @@ export const roadmap: Roadmap = {
       title: 'Transmission Crossmember Fab',
       epic: 'fabrication',
       status: 'planning',
-      summary: 'Crossmember and trans mount tied into the frame at the right node.',
+      summary: 'Bolt-in crossmember and trans mount tied into the frame at the right node. The trans drops out from below without lifting the body or cutting the frame (driveshaft out first).',
     },
 
     /* ─────────── Cooling extras ─────────── */

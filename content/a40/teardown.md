@@ -15,7 +15,7 @@ The frame is only being kept for measurements. All the body mount locations, bol
 
 ## Body condition
 
-With the body up on the hoists I went over the whole thing. Visible condition is decent overall — one rocker panel has obvious rust that needs cutting out and patching, and there's surface rust in the usual A40 spots, but nothing has fallen through. Before any final scope is set, the shell is going to be media-blasted to expose what's actually under the paint and seam sealer (floors, sills, A-pillar bases, dogleg, boot floor, inner fender / wheelhouse seams). Mk1-era unibodies tend to hide rust in those areas, so I'm assuming there's more than what's visible until proven otherwise.
+With the body up on the hoists I went over the whole thing. Visible condition is decent overall — one rocker panel has obvious rust that needs cutting out and patching, and there's surface rust in the usual A40 spots, but nothing has fallen through. Before any final scope is set, the shell is going to be media-blasted to expose what's actually under the paint and seam sealer (floors, sills, A-pillar bases, dogleg, boot floor, inner fender / wheelhouse seams). Separate-chassis cars of this era tend to hide rust in those areas, so I'm assuming there's more than what's visible until proven otherwise.
 
 The rubber seals and gaskets are all shot. Decades old, melted and cracked. Finding replacements for A40-specific rubbers is going to be a challenge since most of this stuff isn't reproduced anymore. That'll be its own project.
 

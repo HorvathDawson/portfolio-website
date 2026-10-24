@@ -7,46 +7,50 @@ kind: log
 tags: [frame, cad, fabrication]
 ---
 
-The frame is being designed from scratch in CAD. It's a ladder frame — two main rails with crossmembers — built around all the suspension and drivetrain mounting points instead of trying to splice modern subframes into the original A40 chassis. Why a custom frame at all is covered in [front suspension options](./suspension-options); this post is about how the frame itself is laid out.
+The frame is a ladder (two main rails plus crossmembers) designed from scratch in CAD around the suspension and drivetrain mounting points, instead of splicing modern subframes into the original A40 chassis. Why a custom frame at all is in [front suspension options](./suspension-options). Numbers come from [build constants](./build-constants).
 
-> Numbers in this post pull from the [build constants](./build-constants) reference. Where those drift, the constants page is the source of truth.
+## Inputs
 
-## Inputs the frame has to satisfy
-
-The frame is the integration point for everything else. Before any tube is drawn it has to commit to a coherent set of inputs:
-
-- **Wheelbase 2350 mm** — locked, matches the stock A40 body so the wheel openings sit where the original sheet metal expects them.
-- **Front track 1230 mm locked / rear track 1340 mm locked** — sets where the front pickup brackets and rear axle perches sit relative to centreline. See [narrowing](./narrowing-analysis) for the front-track derivation.
-- **Front pickup geometry** — LCA inner mounts 240.5 mm from CL, UCA inner mounts 290.5 mm from CL, with fore/aft span and heights preserved from the donor Miata. Full table in the [geometry design reference](./geometry-design-reference).
-- **Rear four-link brackets** — Welder Series 318500 (Horton Hot Rod) kit. Lower bar mounts 5" below axle CL, 27‑1/8" forward; upper bar mounts 2‑1/8" above axle CL. Detail in the [four-link rear post](./four-link-rear).
-- **Engine + trans envelope** — SR20DET with the trans tunnel sized to the larger CD009 case so either OEM 5‑speed or CD009 fits without rework.
-- **Steering rack mount** — narrowed Miata rack, position drives Ackermann + bump steer (covered in [steering](./steering)). Vertical adjustment of at least ±15 mm built into the rack mount per the geometry reference.
-- **Body mount locations** — measured off the original A40 frame so the shell can be set on the new chassis at the correct height and fore/aft position. Whether the body is welded, rubber-mounted, or hybrid is still TBD; the frame is being designed so either approach is possible.
+| Input | Value | Source |
+|---|---|---|
+| Wheelbase | 2350 mm (locked, stock A40) | [constants](./build-constants) |
+| Front track | ~1230 mm: hub face 655 mm from CL (95 mm/side narrowing) | [narrowing](./narrowing-analysis) |
+| Rear track | 1340 mm: hub face 708 mm from CL | [rear suspension](./rear-suspension) |
+| Front inner pivots | LCA 234.5 mm, UCA 273 mm from CL; fore/aft spacing and heights kept from the donor | [donor dimensions](./donor-geometry-dimensions) |
+| Rear inner pivots | Every Miata rear inboard pickup (toe links included) moved inboard by ~42–47 mm/side (measure the donor) | [rear suspension](./rear-suspension) |
+| Diff | RX-8, on custom frame mounts, pinion parallel to the gearbox | [rear suspension](./rear-suspension) |
+| Engine + gearbox | SR20DET, CD009 or Z32; tunnel sized to the CD009; 3° tail-down | [motor selection](./motor-selection) |
+| Steering rack | Narrowed Miata rack, mount with at least ±15 mm vertical adjustment (bump steer) | [steering](./steering) |
+| Body mounts | Measured off the original A40 frame. Welded / rubber / hybrid still open, so the rails must accept either. | [teardown](./teardown) |
 
 ## Layout
 
-Two main rails run the full length, parallel and at constant height for the centre section to make the body land flat. The rails kick up over the rear axle to clear the housing at full bump. Crossmembers tie the rails at:
+The two rails run full length, parallel and at constant height through the centre section so the body sits flat. Crossmembers, front to back:
 
-- Front, just behind the bumper, carrying the radiator core support and the front body mounts.
-- Front suspension, integrated with the LCA and UCA pickup brackets and the lower shock-tower base.
-- Firewall plane, structural box that ties into the shock towers and carries the upper steering column mount.
-- Trans crossmember — removable, so the trans can come out without unbolting body or driveshaft.
-- Mid floor, mostly for body support and torsional stiffness.
-- Forward four-link upper bar mount, well-triangulated into the rails.
-- Rear, behind the axle, carrying the rear body mounts and bumper.
+1. **Front:** behind the bumper; radiator support and front body mounts.
+2. **Front suspension:** carries the LCA and UCA pickup brackets and the base of the shock towers.
+3. **Firewall:** structural box tying into the shock towers; carries the upper steering column mount.
+4. **Gearbox:** bolt-in and removable. The gearbox drops out from below without lifting the body or cutting the frame (the driveshaft has to come out first).
+5. **Mid floor:** body support and torsional stiffness.
+6. **Rear suspension:** carries the narrowed Miata rear pickups (or a narrowed Miata rear subframe, whichever CAD settles on) and the RX-8 diff mounts.
+7. **Rear:** behind the rear suspension; rear body mounts and bumper.
 
-Shock towers are part of the frame (not bolted plates). The front towers tie into both the upper LCA mount and the firewall crossmember so the LCA load path and the shock load path share the same structure rather than splitting through a bolted joint.
+The rear rails have to leave room for the diff and for the half-shafts through full bump and droop, and for the rear coilover towers.
 
-## Loads driving tube selection
+Shock towers are part of the frame, not bolted plates. The front towers tie into both the UCA mount and the firewall crossmember, so the UCA load path and the shock load path share one structure instead of splitting through a bolted joint.
 
-Headline numbers from [geometry design reference](./geometry-design-reference): ~43% higher peak weight transfer than the donor Miata at 0.8 G, driven mostly by the higher CG (~575 mm vs ~460 mm). That hits the upper LCA mount, the shock tower top, and the four-link upper bar bracket hardest. Tube sizes for the rails and crossmembers are still being sized; the cut list lands in [design finalization](./design-finalization).
+## Loads
 
-## What is still open
+From the [geometry reference](./geometry-design-reference): peak weight transfer at 0.8 g is ~43% higher than the donor Miata, mostly because the CG is higher (~575 mm vs ~460 mm). That loads the UCA mount, the shock tower tops and the rear pickups hardest. Rail and crossmember sizes go in the cut list in [design finalization](./design-finalization).
 
-- **Body mounting decision** — welded vs rubber vs hybrid. Affects whether the frame needs sprung/damped body bushings or weldable tabs at each body-mount location.
-- **Final shock tower position** — sets the front motion ratio (0.58–0.64 across the practical 65–85° shock band, see geometry reference). Locked once the shock supplier and stroke are committed.
-- **Trans choice** — tunnel is sized to CD009; if SR20 5‑speed is chosen instead the tunnel is conservative.
-- **Body scan** — until the A40 shell is laser-scanned, body-to-frame clearance checks rely on conservative manual measurements off the original frame.
+## Still open
 
-CAD screenshots and final tube/wall callouts will land here as the design firms up. The companion [design overview](./design-overview) is the cross-system integration view; this post is about the frame structure itself.
+| Item | What it affects |
+|---|---|
+| Body mounting (welded / rubber / hybrid) | Weld tabs vs bushing pockets at each body mount. |
+| Rear pickups: built into the frame vs narrowed Miata subframe | Rear crossmember layout. Needs the donor rear measured first. |
+| Front shock tower position | Shock angle. Front motion ratio is ≈0.68 (see the [geometry reference](./geometry-design-reference)); confirm once the shock and stroke are chosen. |
+| Rear shock towers | Rear motion ratio, to be measured on the donor. |
+| Gearbox (CD009 vs Z32) | Only the crossmember position and shifter hole; the tunnel fits either. |
 
+Body-to-frame clearance is checked against the laser scan of the shell. The [design overview](./design-overview) has the cross-system clearance list.

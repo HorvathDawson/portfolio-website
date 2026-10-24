@@ -7,52 +7,54 @@ kind: log
 tags: [frame, planning, materials]
 ---
 
-This post collects the final design pass: the cut list, material spec, tube sizes and wall thicknesses, and the order in which the frame goes onto the [jig](./frame-jig). It runs after [frame design](./frame-design) and the [design overview](./design-overview) integration checks, and lands the inputs needed before any metal is bought.
+The last design pass before buying metal: cut list, material spec, and the order the frame goes together on the [jig](./frame-jig). It follows [frame design](./frame-design) and the [design overview](./design-overview) clearance checks. Numbers come from [build constants](./build-constants).
 
-> Headline values referenced here live in [build constants](./build-constants). If something here disagrees, the constants page wins.
+## Done means
 
-## What "done" means
+A signed-off cut list I can order from. The cut list **is** the BOM. Each line has:
 
-The trigger to flip this post to complete is a cut list that's signed off and ready to order metal from. There is no separate BOM document — the cut list **is** the BOM. Each line item:
-
-- Material grade (DOM mild steel for rails and crossmembers; 4130 only where it earns its keep, e.g. four-link bar tabs).
-- Tube OD and wall thickness.
-- Length (cut length, including weld allowance and miter allowance).
-- Quantity.
-- Cut/notch profile reference (CAD callout number).
+- material grade and section (tube OD or rectangle size, wall thickness)
+- cut length including weld and mitre allowance
+- quantity
+- CAD callout number for the cut/notch profile
 
 ## Inputs that must be locked first
 
-The cut list cannot be ordered until each of these has a number, not a placeholder:
+| Input | Status |
+|---|---|
+| SA V2 outputs: front roll centre, camber curve, motion ratio at the chosen shock angle, anti-dive/squat, ARB stiffness split | in progress, see the [geometry reference](./geometry-design-reference) |
+| Front donor pickups confirmed against the actual donor, not only the scan (everything marked "verify") | in progress |
+| Rear donor measured: hub-face half-width (sets the ~42–47 mm/side narrowing), every inboard pickup incl. toe links, rear motion ratio | to do, see [rear suspension](./rear-suspension) |
+| Rear pickups built into the frame vs a narrowed Miata rear subframe | open |
+| RX-8 diff on hand, for the mount design | to buy |
+| Gearbox: CD009 or Z32. The tunnel fits either; only the crossmember position moves with case length. | decided: either, whichever turns up first |
+| Body mounting: welded, rubber or hybrid. Sets weld tabs vs bushing pockets. | open |
+| Rear fenders: widened by shrinking, no tubs | decided |
 
-- **SA V2 outputs.** Front roll center, camber curve, motion ratio at the chosen shock-tower position, anti-dive/squat at the A40 wheelbase, ARB stiffness split. See [geometry design reference](./geometry-design-reference) for what's expected.
-- **Donor Miata measurements.** Pickup coordinates and ball-joint heights confirmed against the actual donor, not just the photogrammetric scan. Anything tagged "verify" in the geometry table needs to flip to "confirmed".
-- **Trans choice.** OEM SR20 5-speed vs CD009 6-speed. Tunnel is being sized to CD009 either way, but the trans crossmember position depends on the case length.
-- **Tub/fender choice.** Stock A40 fender envelope vs subtle flares. Drives the upper limit on tire width and changes the body-to-frame clearance numbers.
-- **Body mounting decision.** Welded, rubber-mounted, or hybrid. Affects which weldable tabs (or sprung bushings) get built into the rails at each body-mount location.
+## Materials
 
-## Material strategy
+| Part | Spec |
+|---|---|
+| Main rails | Rectangular mild-steel tube (A500 or A513). Size waits on the SA V2 loads and a check of the UCA mount. |
+| Crossmembers | Round DOM or rectangular A500/A513, depending on packaging. Round where bend access matters (around the tunnel). |
+| Suspension brackets and diff mounts | Thick mild-steel plate, gusseted into the rails, with turned-steel or DOM tube inserts at each pivot ([geometry reference](./geometry-design-reference#structural-loads-and-compliance)). Not 4130: on mild-steel rails it adds cost and weld-procedure risk and gains nothing. |
+| Shock towers | Plate, tied into the firewall crossmember and the UCA mount. No bolted joints in the main load path. |
+| Body mount tabs | Positions from the stock body mounts; type (weld-in stud, threaded boss, bushing pocket) waits on the body-mounting decision. |
 
-- **Main rails:** rectangular DOM, large enough to take the bending and torsion loads from the higher-CG package without playing wall-thickness games. Final size waits on the SA V2 numbers and FEA on the upper LCA mount.
-- **Crossmembers:** round or rectangular DOM depending on packaging. Round where bend access matters (around the trans tunnel, around the four-link upper bar mount).
-- **Suspension brackets:** plate steel, gusseted into the rails. Frame brackets get turned-steel or DOM tube inserts at each pickup location for load distribution per the [geometry design reference](./geometry-design-reference) fabrication notes.
-- **Shock towers:** plate, fully tied into the firewall crossmember and the upper LCA mount. No bolted joints in the primary load path.
-- **Body mount tabs:** location set by stock body-mount measurements, type (weld-in stud, threaded boss, sprung bushing pocket) deferred until the body-mounting decision is made.
+## Engine, gearbox and diff mounting
 
-## Engine + trans mounting
+- Frame pads for the **stock SR20 engine mounts**; no custom engine mounts.
+- Gearbox crossmember bolt-in, sized for the CD009 envelope.
+- Engine/gearbox **3° down at the rear (tail-down)**; RX-8 pinion set parallel (3° nose-up). Shaft angle 5.4°, both joints 2.4°. Detail in [rear suspension](./rear-suspension#driveshaft-and-u-joint-angles).
 
-The frame includes pads for the **stock SR20 engine mounts** so no custom-mount fabrication is in scope. Trans crossmember is removable, sized for the CD009 envelope. Motor sits at ~3° nose-down per the driveshaft angle established in the [rear axle post](./rear-axle).
+## Build sequence
 
-## Sequence into fabrication
+1. Sign off the cut list and order metal.
+2. Cut and notch tubes to the CAD callouts.
+3. Set the rails in the jig and tack them.
+4. Fit and tack the crossmembers. Check the frame diagonals and flatness before going on.
+5. Locate the brackets with the real parts bolted in: front arms and knuckles, rear arms, toe links and uprights, RX-8 diff, rack. Measure from centreline to each pickup and check left-right symmetry (pickups ±1 mm, UCA inner mounts ±0.5 mm), then tack.
+6. Weld out **on the jig**: short stitched passes, alternating left/right and top/bottom so the heat is balanced; let it cool between passes. Re-check the pickups and diagonals after each stage.
+7. Scan the finished frame and compare it to CAD before it comes off the jig.
 
-The cut list and the [frame jig](./frame-jig) together feed straight into the build:
-
-1. Cut list signed off → metal ordered.
-2. Tubes cut and notched per the CAD callouts.
-3. Rails laid into the jig, tacked.
-4. Suspension and four-link brackets bolted to actual control arms / axle on the jig, measured for left/right symmetry, then tacked.
-5. Crossmembers fitted, tacked.
-6. Full weld-out off the jig in a controlled sequence to manage distortion.
-
-Photos, the actual cut list as it firms up, and any deviations between the CAD and the metal end up in this post.
-
+Photos, the actual cut list and any differences between CAD and metal go in this post as they happen.
