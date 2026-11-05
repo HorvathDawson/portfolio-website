@@ -1,7 +1,7 @@
 ---
 id: GAR-013
 title: Industrial garage look (service station / warehouse) and tap-to-light on phones
-status: review
+status: in-progress
 owner: implementation agent
 reviewer: (independent agent, then Dawson on the preview)
 blocked_by:
@@ -31,10 +31,10 @@ Same visual language as today: white 2 px line art, night palette, neon, gradien
 - [x] Gloomy and bloomy: vignette, fog, dim rest line art, grime; neon/lamp/headlight/car-glow bloom; plates still AA; reduced motion keeps the look without animation
 - [x] Hover/focus/click behaviour on desktop unchanged; morph to car home and Back still work on both
 - [x] Car-home hero and mini bays match the new look
-- [x] Project info shown as signs mounted on the building (enamel plates, stamped chip tags, smaller "Latest" plate) on phone and desktop; name is still the bay link's accessible label
+- [x] Project info shown as signs mounted on the building on phone and desktop (round 3 supersedes the chip tags / "Latest" plate: neon name + one-line enamel plate, description as a quiet note); name is still the bay link's accessible label
 - [x] Text ≥ 11 px, AA contrast, one h1, keyboard focus visible, reduced motion respected, tokens only (no stray hex/sizes)
 - [x] Owner picks a sign treatment: **D** (neon name over a small enamel plate on chains); the `?signs=` switch, treatments A/B/C and their tokens are removed
-- [x] Third car still renders (bay 03 / floor 03); on desktop 3 bays share one roof, a 4th gets its own roofed row
+- [ ] Third car still renders (bay 03 / floor 03); on desktop 3 bays share one roof, a 4th gets its own roofed row; signs fit their bay at every desktop width (fails 601–~760 px, see Failed checks)
 - [x] build, lint, check-constants, check-roadmap-plan pass
 
 ## Files
@@ -76,4 +76,39 @@ Checked for round 2 (Chromium, `vite preview` on 5229): 390/360/414 touch: on lo
 Screenshots: `/tmp/claude-0/-home-user/c87f3b61-444e-51a8-bee1-fcced4861d9c/scratchpad/industrial/` — `before-*.png`; `after-1440-{rest,hover,driveout,back-mid,focus,reduced-hover,hero}.png`, `after-1024-{rest,hover,driveout,back-mid,focus}.png`, `after-{390,360}-{rest,tap02,driveout,carhome,back-mid,back-end}.png`, `after-390-{focus,hero,reduced-rest,reduced-tap02}.png`, `after-{414,600}-rest.png`, `after-shopbar.png`, `after-third-{1440,390-floor03}.png`, `after-three-{1440,1024,700}.png`, `after-four-{1440,1024,700}.png`.
 
 ## Verification
-_Filled by the reviewer._
+Independent reviewer (did not implement), 2026-11-05. `npm run build` + `npx vite preview --port 5233`; Playwright `chromium.launch()`; desktop contexts 1440×900, 1024×768, 700×900; touch contexts (isMobile, hasTouch, DPR 2) 390×844, 360×740, 414×896, 600×900 and a touch tablet 1024×768. Screenshots: `/tmp/claude-0/-home-user/c87f3b61-444e-51a8-bee1-fcced4861d9c/scratchpad/industrial-review2/` (all looked at). Scripts: `…/scratchpad/rv/{desk,touch,misc,contrast2,contrast3,cars,ov,props}.cjs`.
+
+**Visual** (`d{1440,1024,700}-{rest,hover,focus,driveout,back-mid,back-end}.png`, `t{390,360,414,600,1024}-*.png`, `hero-1440-4s.png`, `hero-390.png`, `minibays.png`, `props-1440.png`):
+- No gable anywhere: /garage (flat parapet + cap flashing, rooftop unit), car-home hero /garage/a40 (flat roof, lattice billboard "BAY 01"), shop-bar mini bays (flat cap strip, hazard jambs, window strip). `[class*=gable]` count 0.
+- Signs: neon name over a one-line enamel plate on short chains, every bay/floor; `?signs=b` renders the same (`d1440-signsb.png`). Grep for `signs|SignStyle|signStyle|--gs-sign-enamel|--gs-sign-paint|sign-[abcd]` in `src/`: no hits (only an unrelated comment).
+- Props: three stacked tyres with tread/face ring, a fourth leaning on the post, ribbed drum with bung/vent caps and stencil — they read as tyres and a drum, pink-tinged rims.
+- Gloomy/bloomy: vignette to near-black, dim rest line art, fog/reflections at the deck; lit bay gets lamp cone, strip light, headlight beams, car-colour floor glow, neon bloom; Enter glows. Still legible. It looks cool, especially the tower with the freight cage.
+- Minor (not a failure): the pole sign, tower billboard and hero "BAY 01" are unlit for ~1.5–2 s after load (flicker-on), so a quick first look shows them dark red.
+
+**Touch** (`touch.cjs`, `misc.cjs`):
+- 390/360/414/600: on load floor 01 open + elevator at 01 + Enter visible (107×44 px, the hidden one `visibility:hidden`). Scroll 35 % → 01, 60 % → 02, 100 % → 02 (`is-here` follows each time); stage centres vs probe line logged and the nearest one wins.
+- Tap a closed floor (02): URL stays `/garage`, 02 opens, page scrolls it into place. Tap the open car → drive-out → `/garage/autozam`. Back → `/garage` with 02 open (reverses in, `t360-back-mid.png`). Tap Enter → `/garage/autozam`.
+- Touch tablet 1024×768: `gs--touch`, bay 01 open on load; tap bay 02 → 02 opens, URL unchanged; tap its car → car home; Back → 02 open; Enter → car home.
+- Desktop (mouse) context receiving a dispatched `pointerdown` with `pointerType:'touch'`: `gs` → `gs gs--touch`, bay 01 opens (the scroll pick decides which, as implemented).
+- Reduced motion (390 touch): no running animations on load or after Back; on scroll only opacity/box-shadow/visibility transitions (fades), the cab's `transition-duration` is 0 s; Enter → car home in 103 ms. Desktop reduced-motion hover: fades only.
+
+**Desktop** (`desk.cjs`): 1440/1024/700 hover lights only the hovered bay; Tab → `/garage/a40` with the gold focus frame (`d1440-focus.png`); ArrowRight → `/garage/autozam`; ctrl+click opens a new tab (`/garage/a40`) and stays on `/garage`; click → drive-out → `/garage/a40`; Back → reverse-in (`d1440-back-mid.png`), both bays `is-rest` afterwards.
+
+**Readability** (`contrast2/3.cjs`: computed text colour vs the pixels behind the glyphs with the text hidden, screenshot-sampled; median / 10th percentile / min):
+- Neon name unlit (`--ink-3` 163,171,201): 1440 8.4 / 7.5 / 7.0; 390 8.3 / 7.2 / 7.0.
+- Neon name lit (both copies hidden, real bloom behind): 1440 14.9 / 12.7 / 5.4; 390 15.1 / 13.2 / 10.2.
+- Plate text 13 px: rest A40 7.85 / 7.3 / 6.9, AZ-1 8.85 / 8.35 / 7.9; lit A40 6.5 / 5.6 / 4.6, lit AZ-1 7.05 / 6.1 / 5.1.
+- Description line 13 px: 1440 8.8 / 8.7 / 8.7; 390 8.3 / 7.1 / 5.7.
+- Enter button 12 px (bold caps) dark on gold: 12.9 throughout.
+- Stencils (decorative, inside the `aria-hidden` stage; `--ink` at 70 %): 8.9 / 8.0 / 8.0.
+- All ≥ 4.5 everywhere. No visible text < 11 px at any size tested; one h1 everywhere; accessible names "Austin A40 Devon" / "Autozam AZ-1" (aria snapshot), the lit copy is `aria-hidden`; pole/roof signs inside `aria-hidden`.
+- Tokens: no hex or px literals in `garageScene.css` apart from `--gs-slab: 0px`; `components.css` mini bays clean; `selector.css:13` `max-width: 1100px` (optional, below).
+
+**3 and 4 cars** (scratch copies with `content/third`, `content/fourth`, previews on 5234/5235; `cars{3,4}-{1440,1024,700}.png`, `cars{3,4}-390-*.png`): desktop 3 bays under one parapet; a 4th bay starts a second row with its own parapet (`roof=true`), centred. Phone floors 01–04 stencilled, scroll 0/33/66/100 % opens 01/02/03/04 (3 cars: 01/01/02/03) with the elevator following; tap on closed floor 03 opens it without navigating. No horizontal scroll, no errors. **But** names/plates are clipped with 3 cars at 601–~760 px (below).
+
+**Build/other:** `npm run build`, `npm run lint`, `npm run check-constants`, `node scripts/check-roadmap-plan.mjs` (0 FAIL) pass. No console or page errors in any run. `scrollWidth == clientWidth` in every context (also hero at 390).
+
+### Failed checks
+1. **Required — 3 bays on narrow desktop clip the signs.** With 3 cars at 601–~760 px wide each bay is ~140–173 px, but the neon name keeps its 19 px minimum (`--gs-sign-neon: clamp(19px, 2vw, 30px)`, tokens.css:185) and both lines are `white-space: nowrap` (`src/blog/garageScene.css:772`, `:775`), so "Austin A40 Devon" runs into bay 02 and the plates ("Build log · 18 sheets", "Garage log · 2 sheets") are cut by the next bay (`cars3-700-signs.png`, `cars3-700.png`, `cars4-700.png`; measured: at 700 px a40 bay 45–218, name 71–226, plate 63–235). Fix (pick one): (a) after `garageScene.css:790` add container-sized type for 3-up rows, e.g. `.gs-bays--3 .gs-bay-name { font-size: min(var(--gs-sign-neon), 9.5cqi); padding-inline: var(--s-1); }` and `.gs-bays--3 .gs-sign-line { font-size: max(var(--t-meta), min(<plate size token>, 7cqi)); padding-inline: var(--s-2); }` (the bay is already an inline-size container, `garageScene.css:373`; keep ≥ 11 px); or (b) use 2 bays per row below ~800 px (`ROW_BAYS` from a media query in `GarageScene.tsx`, `--gs-cols` = min(n, 2)), so a 3rd car starts the second roofed row. Re-check 601/700/760 px with 3 and 4 cars.
+2. Optional — `src/blog/styles/selector.css:13` `max-width: 1100px` is a px literal; use a token (e.g. `var(--gs-max)` so the header lines up with the 1160 px scene).
+3. Optional — the Implementer notes still describe round-1 tap-to-light and the enamel plate with chips/"Latest"; mark them historical or trim so the ticket matches what shipped.
