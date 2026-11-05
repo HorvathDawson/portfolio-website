@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { SlimeLoader } from '../components/SlimeLoader';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { loadPost, type BlogPost } from './blogData';
 import { carPath, getCar, postPath, roadmapPath, type Car, type Epic } from './cars';
@@ -388,7 +389,7 @@ const PostContent: React.FC<{
           {decorated ? (
             <div className="blog-article-body" ref={bodyRef} onClick={onBodyClick} dangerouslySetInnerHTML={{ __html: decorated.html }} />
           ) : (
-            <p className="blog-loading" role="status">Loading…</p>
+            <SlimeLoader size={72} label="Loading post…" className="blog-loading" />
           )}
 
           <nav className="blog-article-nav" aria-label="Previous and next posts">

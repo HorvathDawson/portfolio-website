@@ -355,7 +355,7 @@
 .garage-mobile-home { padding: 4px 8px 8px; }
 .garage-mobile-home .garage-service h2 { font-size: 18px; }
 
-.blog-loading { opacity: 0.6; font-size: 13px; }
+.blog-loading { display: flex; justify-content: center; padding: 48px 0; }
 
 /* ── Reduced motion ──────────────────────────────── */
 

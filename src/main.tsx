@@ -6,6 +6,7 @@ import App from './App.tsx'
 import { NotFound } from './components/NotFound.tsx'
 import { LegacyRedirect } from './components/LegacyRedirect.tsx'
 import { RouteErrorBoundary } from './components/RouteErrorBoundary.tsx'
+import { PageLoader } from './components/SlimeLoader.tsx'
 
 // The garage pulls in marked, KaTeX and the roadmap data, so each page
 // is split into its own chunk and only downloaded when a garage route is
@@ -18,7 +19,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <RouteErrorBoundary>
-        <Suspense fallback={null}>
+        <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/garage" element={<GarageSelector />} />
