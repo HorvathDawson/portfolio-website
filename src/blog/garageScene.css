@@ -528,6 +528,229 @@
   .gs-bay-name { font-size: 20px; }
 }
 
+/* ── Phone: the garage tower ────────────────────────
+   .gs--tower is set by GarageScene at ≤ 600 px. One building:
+   roof and sign, then one floor per car (short wide bay, its
+   number plate, a reflective deck and a compact label band),
+   and an elevator shaft down the right whose cab and lit floor
+   number follow the floor in view. Everything below is scoped
+   to .gs--tower, so the desktop scene is untouched. */
+
+.gs--tower {
+  --gs-shaft-w: calc(var(--s-6h) + var(--s-1));
+  --gs-wall-w: var(--bw-3);
+}
+
+.gs--tower .gs-building { padding: 0 var(--s-2h); }
+.gs--tower .gs-top { height: calc(var(--gs-roof-h) + var(--s-7h)); }
+
+/* The storeys and the shaft share one set of outer walls. */
+.gs--tower .gs-floors {
+  position: relative;
+  z-index: 2;
+  border: var(--gs-wall-w) solid var(--gs-line);
+  border-top: 0;
+  background: var(--night-1);
+}
+/* Ground line, a little wider than the building. */
+.gs--tower .gs-floors::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: calc(-1 * var(--s-2h));
+  right: calc(-1 * var(--s-2h));
+  border-top: var(--bw-3) solid var(--gs-line);
+}
+
+.gs--tower .gs-bays { display: block; }
+.gs.gs--tower .gs-bay {
+  padding: 0 var(--gs-shaft-w) 0 0;
+}
+/* Floor slab between storeys. */
+.gs.gs--tower .gs-bay + .gs-bay { border-top: var(--bw-3) solid var(--gs-line); }
+
+/* A short, wide bay; a faint curb line where the deck meets the label band. */
+.gs--tower .gs-stage { aspect-ratio: 3 / 2; border-bottom: var(--bw) solid var(--line); }
+.gs.gs--tower .gs-bays .gs-facade { inset: 0 0 13%; border: 0; }
+.gs--tower .gs-frame { inset: 14% 7% 13%; }
+.gs--tower .gs-opening { inset: 18.5% 10.5% 13%; }
+.gs--tower .gs-floor {
+  inset: 87% 0 0;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--g3) 9%, var(--night-1)), var(--night-1));
+}
+.gs--tower .gs-car,
+.gs--tower .gs-reflect { width: min(86cqw, calc(82cqh * var(--ar))); }
+/* The deck is shallow: a shorter reflection. */
+.gs--tower .gs-reflect {
+  -webkit-mask-image: linear-gradient(to top, black, transparent 24%);
+  mask-image: linear-gradient(to top, black, transparent 24%);
+}
+
+/* Floor number plate, over the door like a parking garage. */
+.gs-plate {
+  position: absolute;
+  top: 3%;
+  left: 7%;
+  z-index: 1;
+  padding: 0 var(--s-1h);
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: var(--t-micro);
+  line-height: 1.6;
+  letter-spacing: var(--track-label);
+  color: var(--ink);
+  border: var(--bw-2) solid var(--gs-line);
+  border-radius: var(--r-1);
+  background: var(--night-0);
+}
+
+/* ── Elevator shaft ── */
+
+.gs-shaft {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--gs-shaft-w);
+  overflow: hidden;
+  pointer-events: none;
+  border-left: var(--bw-3) solid var(--gs-line);
+  box-sizing: border-box;
+  background: var(--night-0);
+}
+/* Guide rails. */
+.gs-shaft::before {
+  content: '';
+  position: absolute;
+  inset: 0 calc(50% - var(--s-3));
+  border-left: var(--bw) solid var(--line-2);
+  border-right: var(--bw) solid var(--line-2);
+}
+
+/* Each floor's landing: a lit floor number over the shaft doors (drawn in the floor, so it lines up). */
+.gs-landing {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  bottom: 13%;
+  z-index: 3;
+  width: var(--gs-shaft-w);
+  pointer-events: none;
+}
+.gs-call {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  display: grid;
+  transform: translateX(-50%);
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: var(--t-micro);
+  line-height: 1.5;
+}
+.gs-call > span { grid-area: 1 / 1; }
+.gs-call-off { color: var(--ink-4); }
+.gs-call-on {
+  color: var(--neon-ink);
+  text-shadow: var(--neon-glow);
+  opacity: 0;
+  transition: opacity var(--dur-2) ease;
+}
+.is-here .gs-call-on { opacity: 1; transition-delay: var(--dur-3); }
+
+/* Landing doors: the cab shows through when it's at this floor. */
+.gs-landing-door {
+  position: absolute;
+  top: 21.3%; /* the bay opening's top (18.5 % of the stage) */
+  bottom: 0;
+  left: var(--s-1h);
+  right: var(--s-1h);
+  border: var(--bw-2) solid var(--line-3);
+  border-bottom: 0;
+}
+.gs-landing-door::before {
+  content: '';
+  position: absolute;
+  inset: 0 50% 0 auto;
+  border-right: var(--bw) solid var(--line-3);
+}
+
+/* The cab: lit, on its cables; moved with a transform by GarageScene. */
+.gs-cab {
+  position: absolute;
+  top: 0;
+  left: var(--s-1h);
+  right: var(--s-1h);
+  box-sizing: border-box;
+  border: var(--bw-3) solid var(--gs-line);
+  border-bottom: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in srgb, var(--lamp) 40%, transparent), transparent 75%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--g2) 35%, var(--night-0)), color-mix(in srgb, var(--g3) 25%, var(--night-0)));
+  box-shadow: 0 0 var(--s-4h) var(--s-0) color-mix(in srgb, var(--g2) 45%, transparent);
+  will-change: transform;
+}
+.gs-cab.is-ready { transition: transform var(--dur-4) cubic-bezier(0.55, 0, 0.25, 1); }
+/* Cables up to the machine room. */
+.gs-cab::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 35%;
+  right: 35%;
+  height: 400vh;
+  border-left: var(--bw) solid var(--line-3);
+  border-right: var(--bw) solid var(--line-3);
+}
+/* Cab ceiling light. */
+.gs-cab-lamp {
+  position: absolute;
+  top: var(--s-1);
+  left: 25%;
+  right: 25%;
+  height: var(--s-0);
+  border-radius: var(--r-1);
+  background: var(--lamp);
+  box-shadow: 0 0 var(--s-1h) var(--bw) var(--lamp);
+}
+
+/* ── Labels: a compact band under each deck ── */
+
+.gs--tower .gs-bay-name {
+  margin: 0;
+  padding: var(--s-2h) var(--s-3) 0;
+  font-size: var(--t-h4);
+  line-height: var(--lh-tight);
+  text-align: left;
+}
+.gs--tower .gs-bay-sub {
+  margin: var(--s-1) 0 0;
+  padding: 0 var(--s-3);
+  font-size: var(--t-micro);
+  text-align: left;
+}
+.gs--tower .gs-bay-desc {
+  max-width: none;
+  margin: var(--s-1h) 0 0;
+  padding: 0 var(--s-3);
+  font-size: var(--t-ui);
+  line-height: var(--lh-ui);
+  text-align: left;
+  color: var(--ink-2);
+  opacity: 1;
+}
+.gs--tower .garage-tile-meta {
+  justify-content: flex-start;
+  gap: var(--s-1);
+  margin: var(--s-2) 0 0;
+  padding: 0 var(--s-3);
+}
+.gs--tower .garage-tile-stats { margin-top: var(--s-1h); padding: 0 var(--s-3); text-align: left; }
+.gs--tower .garage-tile-latest { margin-top: var(--s-0); text-align: left; }
+.gs--tower .gs-bay > :last-child { padding-bottom: var(--s-3); }
+
+.gs--tower .gs-bay-link:focus-visible .gs-frame { outline-offset: var(--s-1); }
+
 /* ── Reduced motion: no driving, rolling or flicker; states fade. ── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -541,6 +764,8 @@
   .gs-art--outline,
   .gs-art--colored { transition-duration: 0.2s !important; transition-delay: 0s !important; }
   ::view-transition-group(*) { animation-duration: 0.2s; }
+  /* Tower: the elevator cab jumps to its floor. */
+  .gs-cab.is-ready { transition: none; }
 }
 
 /* ── Hero: one bay held lit on a car's home page ── */

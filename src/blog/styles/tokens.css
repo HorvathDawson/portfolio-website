@@ -153,6 +153,7 @@
   --dur-1: 120ms;
   --dur-2: 220ms;
   --dur-3: 450ms;
+  --dur-4: 700ms;      /* long moves: the garage tower's elevator */
   --ease: cubic-bezier(0.3, 0.7, 0.2, 1);
 
   /* ── Layout ── */
