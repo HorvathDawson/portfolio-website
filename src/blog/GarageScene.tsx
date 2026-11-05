@@ -5,23 +5,31 @@ import { carTransitionName, clearReturningCar, rememberEnteredCar } from './gara
 import './garageScene.css';
 
 /* ============================================================
-   GarageScene — the /garage page as a two-bay (N-bay) garage
+   GarageScene — the /garage page as an industrial garage
    ------------------------------------------------------------
-   One bay per car. Hover / focus a bay: its strip light
-   flickers on, the roll-up door goes up, the car fills with the
-   gradient and its headlights glow. Click / Enter: the car rolls
-   out toward the viewer, then onEnter(carId) runs (inside a view
-   transition when the browser has them, so the car art can morph
-   into the log's sidebar thumbnail). `returning` plays the
-   reverse on mount: the car backs into its bay, the door comes
-   down. Only transforms and opacity are animated.
+   One bay per car, in a flat-roofed 1950s service station:
+   parapet and cap flashing, corrugated walls, steel roll-up
+   doors with a window strip, stencilled bay numbers, hazard-
+   striped jambs, a wall lamp per bay and a gas-station pole
+   sign beside the building.
+
+   Hover / keyboard focus a bay: its lights flicker on, the door
+   goes up, the car fills with the gradient and its headlights
+   glow. Click / Enter: the car rolls out toward the viewer, then
+   onEnter(carId) runs (inside a view transition when the browser
+   has them, so the car art can morph into the log's thumbnail).
+   `returning` plays the reverse on mount. Only transforms and
+   opacity are animated.
+
+   Touch has no hover, so a tap lights a bay first (and shows an
+   "Enter ›" button on it); tapping the lit bay's car again, or
+   Enter, drives it out. Tapping outside or Esc turns it off.
+   Scrolling alone never opens anything.
 
    Phones (≤ 600 px, TOWER_QUERY) get the "garage tower": the
-   same building stacked one floor per car, with an elevator
-   shaft down the right side whose cab and lit floor number
-   follow the floor in view (scroll-driven). The tower only adds
-   classes and a few decorative elements; desktop markup and
-   styles are unchanged.
+   same building stacked one floor per car on steel I-beam
+   slabs, the sign on a rooftop billboard, and a freight
+   elevator (open cage, scissor gate) that rides to the lit floor.
    ============================================================ */
 
 /** Headlight centres as fractions of the art box, and which way the car faces (1 = right, -1 = left). */
@@ -57,6 +65,7 @@ export interface GarageSceneProps {
 
 /** Viewports that get the tower layout (keep in step with the 600 px phone breakpoint in garageScene.css). */
 const TOWER_QUERY = '(max-width: 600px)';
+const TOUCH_QUERY = '(hover: none)';
 
 /** Live matchMedia result (false outside the browser). */
 function useMedia(query: string) {
@@ -71,10 +80,12 @@ function useMedia(query: string) {
   );
 }
 
+const matches = (query: string) => typeof window !== 'undefined' && window.matchMedia(query).matches;
+
 /** "01", "02", … */
 const floorNo = (i: number) => String(i + 1).padStart(2, '0');
 
-const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotion = () => matches('(prefers-reduced-motion: reduce)');
 
 /** Resolves when `done()` is true (checked each frame) or after `ms`. */
 const until = (done: () => boolean, ms: number) =>
@@ -95,15 +106,99 @@ const Art: React.FC<{ car: Car; onMissing?: () => void }> = ({ car, onMissing })
   </>
 );
 
+/* ── Signs ─────────────────────────────────────────── */
+
+/** Neon tube lettering: an unlit outline under a lit copy that flickers on. */
+const Neon: React.FC<{ text: string; className?: string }> = ({ text, className }) => {
+  const words = text.split(' ').map((w, i) => (
+    <React.Fragment key={i}>{i > 0 && ' '}<span className="gs-sign-word">{w}</span></React.Fragment>
+  ));
+  return (
+    <div className={['gs-sign', className].filter(Boolean).join(' ')}>
+      <span className="gs-sign-text gs-sign-text--off">{words}</span>
+      <span className="gs-sign-text gs-sign-text--on">{words}</span>
+    </div>
+  );
+};
+
+/** Desktop: a tall gas-station pole sign beside the building, with a SERVICE panel, an oil drum and tyres at its foot. */
+const PoleSign: React.FC<{ sign: string }> = ({ sign }) => (
+  <div className="gs-pole">
+    <span className="gs-pole-post" />
+    <Neon text={sign} className="gs-sign--pole" />
+    <span className="gs-pole-sub">Service</span>
+    <svg className="gs-yard" viewBox="0 0 120 44">
+      {/* Tyre stack */}
+      <rect x="4" y="31" width="40" height="12" rx="6" />
+      <rect x="6" y="19" width="36" height="12" rx="6" />
+      <rect x="8" y="7" width="32" height="12" rx="6" />
+      <path className="gs-yard-detail" d="M14 37 H34 M15 25 H33 M16 13 H32" />
+      {/* Oil drum */}
+      <path d="M84 43 V12 H112 V43" />
+      <path className="gs-yard-detail" d="M84 21 H112 M84 33 H112 M90 16 H96" />
+    </svg>
+  </div>
+);
+
+/** A steel lattice billboard frame on the roof, carrying the neon sign (tower and the car-home hero). */
+const Billboard: React.FC<{ sign: string }> = ({ sign }) => (
+  <div className="gs-billboard">
+    <Neon text={sign} />
+    <svg className="gs-lattice" viewBox="0 0 120 24" preserveAspectRatio="none">
+      <path d="M2 1 H118 M6 1 V24 M42 1 V24 M78 1 V24 M114 1 V24" />
+      <path className="gs-lattice-brace" d="M6 1 L42 24 M42 1 L6 24 M42 1 L78 24 M78 1 L42 24 M78 1 L114 24 M114 1 L78 24 M2 9 H118" />
+    </svg>
+  </div>
+);
+
+/** Flat roof: parapet wall with cap flashing; a rooftop unit (desktop) or the sign billboard; the hoist over the tower's elevator. */
+const Roof: React.FC<{ sign?: string; hoist?: boolean }> = ({ sign, hoist }) => (
+  <div className="gs-top" aria-hidden="true">
+    {sign ? <Billboard sign={sign} /> : (
+      <svg className="gs-rooftop" viewBox="0 0 96 30">
+        <path d="M2 30 V6 H62 V30 M70 30 V14 H94 V30 M78 14 V2 H86 V14" />
+        <path className="gs-rooftop-detail" d="M10 12 H54 M10 17 H54 M10 22 H54" />
+      </svg>
+    )}
+    {hoist && (
+      <svg className="gs-hoist" viewBox="0 0 44 40">
+        <path d="M6 40 L18 9 M38 40 L26 9 M11 27 H33" />
+        <circle cx="22" cy="11" r="8" />
+        <path className="gs-hoist-detail" d="M22 11 m-2 0 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0 M29 13 V40" />
+      </svg>
+    )}
+    <div className="gs-parapet" />
+  </div>
+);
+
 /* ── Bay ───────────────────────────────────────────── */
 
-/** A bay's drawing: siding, door frame, lit interior, the car (+ reflection and lamps) and the roll-up door. */
-const BayStage: React.FC<{ car: Car; carRef?: (el: HTMLDivElement | null) => void; floor?: string }> = ({ car, carRef, floor }) => {
+interface StageProps {
+  car: Car;
+  carRef?: (el: HTMLDivElement | null) => void;
+  /** Stencilled number ("01"); the tower also draws the elevator landing for it. */
+  number?: string;
+  tower?: boolean;
+  /** Desktop: the pole sign stands beside this bay. */
+  pole?: string;
+}
+
+/** A bay's drawing: corrugated wall, wall lamp, hazard-striped door frame, lit interior, the car (+ reflection and lamps) and the roll-up door. */
+const BayStage: React.FC<StageProps> = ({ car, carRef, number, tower, pole }) => {
   const [missing, setMissing] = useState(false);
   const rig = RIGS[car.id] ?? DEFAULT_RIG;
   return (
     <div className="gs-stage" aria-hidden="true">
       <div className="gs-facade" />
+      {number && <span className="gs-stencil"><span className="gs-stencil-word">Bay </span>{number}</span>}
+      <span className="gs-walllamp">
+        <span className="gs-walllamp-glow" />
+        <svg viewBox="0 0 48 30">
+          <path d="M18 1 H30 M24 1 V11" />
+          <path d="M7 24 C9 13 39 13 41 24 Z" />
+          <path className="gs-walllamp-bulb" d="M20 24 A4 4 0 0 0 28 24" />
+        </svg>
+      </span>
       <div className="gs-frame" />
       <div className="gs-opening">
         <svg className="gs-interior" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -131,46 +226,29 @@ const BayStage: React.FC<{ car: Car; carRef?: (el: HTMLDivElement | null) => voi
           </div>
         </div>
         <div className="gs-door-clip">
-          <div className="gs-door"><span className="gs-door-handle" /></div>
+          <div className="gs-door">
+            <span className="gs-door-windows">{[0, 1, 2, 3, 4, 5].map((i) => <span key={i} />)}</span>
+            <span className="gs-door-handle" />
+          </div>
         </div>
       </div>
       <div className="gs-floor">
         <div className="gs-spill" />
       </div>
-      {floor && (
-        <>
-          {/* Tower only: the floor's number plate, and its landing in the elevator shaft. */}
-          <span className="gs-plate">{floor}</span>
-          <span className="gs-landing">
-            <span className="gs-call">
-              <span className="gs-call-off">{floor}</span>
-              <span className="gs-call-on">{floor}</span>
-            </span>
-            <span className="gs-landing-door" />
+      {tower && number && (
+        /* Tower only: this floor's landing on the freight elevator (lit floor number, cross-braced hoistway). */
+        <span className="gs-landing">
+          <span className="gs-call">
+            <span className="gs-call-off">{number}</span>
+            <span className="gs-call-on">{number}</span>
           </span>
-        </>
+          <span className="gs-landing-door" />
+        </span>
       )}
+      {pole && <PoleSign sign={pole} />}
     </div>
   );
 };
-
-/** Roof, vent and the neon sign over the bays. */
-const Roof: React.FC<{ sign: string }> = ({ sign }) => (
-  <div className="gs-top" aria-hidden="true">
-    <div className="gs-sign">
-      <span className="gs-sign-text gs-sign-text--off">{sign}</span>
-      <span className="gs-sign-text gs-sign-text--on">{sign}</span>
-    </div>
-    <svg className="gs-roof" viewBox="0 0 1000 100" preserveAspectRatio="none">
-      <path className="gs-roof-gable" d="M0 100 L500 14 L1000 100 Z" />
-      <path className="gs-roof-board" d="M-26 94 L500 3 L1026 94 L1026 102 L500 12 L-26 102 Z" />
-    </svg>
-    <svg className="gs-vent" viewBox="0 0 40 40">
-      <circle cx="20" cy="20" r="17" />
-      <path d="M8 13 H32 M5 20 H35 M8 27 H32" />
-    </svg>
-  </div>
-);
 
 const bayStyle = (car: Car) => ({
   '--car-accent': car.accent,
@@ -182,37 +260,46 @@ interface BayProps {
   car: Car;
   href: string;
   state: 'rest' | 'leaving' | 'returning' | 'dim';
-  /** Tower only: the floor number, and whether the elevator is at this floor / it is open because it's in view. */
-  floor?: string;
-  here?: boolean;
-  open?: boolean;
+  number: string;
+  tower: boolean;
+  pole?: string;
+  /** The elevator is at this floor (tower). */
+  here: boolean;
+  /** Lit by a tap or keyboard focus (touch and tower). */
+  on: boolean;
   carRef: (el: HTMLDivElement | null) => void;
-  onActivate: (e: React.MouseEvent<HTMLAnchorElement>, car: Car) => void;
-  /** Tower only: keyboard focus moves the elevator to this floor. */
-  onFocus?: () => void;
+  onActivate: (e: React.MouseEvent<HTMLAnchorElement>, car: Car, direct: boolean) => void;
+  onLight: (e: React.SyntheticEvent) => void;
   renderMeta?: (car: Car) => React.ReactNode;
 }
 
-const Bay: React.FC<BayProps> = ({ car, href, state, floor, here, open, carRef, onActivate, onFocus, renderMeta }) => {
+const Bay: React.FC<BayProps> = ({ car, href, state, number, tower, pole, here, on, carRef, onActivate, onLight, renderMeta }) => {
   const nameId = `gs-bay-${car.id}`;
-  const cls = ['gs-bay', `is-${state}`, here && 'is-here', open && 'is-inview'].filter(Boolean).join(' ');
+  const cls = ['gs-bay', `is-${state}`, here && 'is-here', on && 'is-on'].filter(Boolean).join(' ');
   return (
-    <li className={cls} style={bayStyle(car)} data-bay={car.id}>
-      <a href={href} className="gs-bay-link" aria-labelledby={nameId} data-bay-link onClick={(e) => onActivate(e, car)} onFocus={onFocus}>
-        <BayStage car={car} carRef={carRef} floor={floor} />
+    <li className={cls} style={bayStyle(car)} data-bay={car.id} onFocus={onLight} onClick={onLight}>
+      <a href={href} className="gs-bay-link" aria-labelledby={nameId} data-bay-link onClick={(e) => onActivate(e, car, false)}>
+        <BayStage car={car} carRef={carRef} number={number} tower={tower} pole={pole} />
         <span className="gs-bay-name" id={nameId}>{car.name}</span>
       </a>
-      <p className="gs-bay-sub">{car.year} · {car.make} {car.model}</p>
-      <p className="gs-bay-desc">{car.description}</p>
-      {renderMeta?.(car)}
+      {/* Shown on the lit bay for touch: the "second action" that drives the car out. */}
+      <a href={href} className="gs-enter" aria-label={`Enter ${car.name}`} tabIndex={on ? undefined : -1}
+        onClick={(e) => onActivate(e, car, true)}>
+        Enter <span aria-hidden="true">›</span>
+      </a>
+      <div className="gs-bay-plate">
+        <p className="gs-bay-sub">{car.year} · {car.make} {car.model}</p>
+        <p className="gs-bay-desc">{car.description}</p>
+        {renderMeta?.(car)}
+      </div>
     </li>
   );
 };
 
 /**
  * One lit bay, held open (door up, lights on, car in colour): the hero of a
- * car's home page. Same markup and CSS as the /garage scene; decorative.
- * - `sign`: text on the neon sign, e.g. "Bay 01"
+ * car's home page. Same industrial parts as the /garage scene; decorative.
+ * - `sign`: text on the rooftop neon sign, e.g. "Bay 01"
  */
 export const BayHero: React.FC<{ car: Car; sign: string }> = ({ car, sign }) => (
   <div className="gs gs--hero" aria-hidden="true">
@@ -243,13 +330,23 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   const cabRef = useRef<HTMLDivElement>(null);
   const carEls = useRef(new Map<string, HTMLDivElement>());
   const tower = useMedia(TOWER_QUERY);
-  const touch = useMedia('(hover: none)');
-  // Tower: the floor the elevator is at (the one in view).
-  const [floor, setFloor] = useState(() => Math.max(0, cars.findIndex((c) => c.id === returning)));
+  const touch = useMedia(TOUCH_QUERY);
+  const back = cars.findIndex((c) => c.id === returning);
+  // The lit bay (tap / keyboard focus; null = none). Coming back on a touch screen, the returning car's bay stays lit.
+  const [lit, setLit] = useState<number | null>(() => (back >= 0 && matches(TOUCH_QUERY) ? back : null));
+  // Tower: the floor the elevator is at (it stays where it was when the light goes off).
+  const [floor, setFloor] = useState(() => Math.max(0, back));
   const [leaving, setLeaving] = useState<string | null>(null);
   const [parking, setParking] = useState<string | null>(() =>
-    returning && cars.some((c) => c.id === returning) && !reducedMotion() ? returning : null,
+    returning && back >= 0 && !reducedMotion() ? returning : null,
   );
+  // How the current press started, and what was lit before it (a tap focuses the link before its click).
+  const press = useRef<{ type: string; lit: number | null }>({ type: '', lit: null });
+
+  const light = (i: number | null) => {
+    setLit(i);
+    if (i !== null) setFloor(i);
+  };
 
   // Reverse in: the returning car carries the transition name while it parks
   // (so a view transition on the way back can morph the thumbnail into it).
@@ -273,17 +370,6 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
     return () => window.clearTimeout(t);
   }, [returning]);
 
-  // Touch screens have no hover: open the bay that is in view (the tower opens the elevator's floor instead).
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root || tower || !window.matchMedia('(hover: none)').matches) return;
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) e.target.classList.toggle('is-inview', e.intersectionRatio >= 0.6);
-    }, { threshold: [0, 0.6, 1] });
-    root.querySelectorAll('.gs-bay').forEach((b) => io.observe(b));
-    return () => io.disconnect();
-  }, [cars, tower]);
-
   // Tower, coming back from a log: put the returning car's floor in view before the first paint.
   useLayoutEffect(() => {
     if (!tower || !returning) return;
@@ -295,39 +381,29 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tower]);
 
-  // Tower: the elevator follows the floor in view. The probe line slides from 30 % to 75 % of the
-  // viewport as the page scrolls, so the last floor is reachable even when it can't reach the middle.
+  // A lit bay goes dark on a tap / click outside the bays, or Esc.
   useEffect(() => {
-    const wrap = floorsRef.current;
-    // While a car drives out the elevator stays at its floor.
-    if (!tower || !wrap || leaving) return;
-    let raf = 0;
-    const pick = () => {
-      raf = 0;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-      const probe = window.innerHeight * (0.3 + 0.45 * progress);
-      let best = 0;
-      let bestD = Infinity;
-      wrap.querySelectorAll('.gs-stage').forEach((s, i) => {
-        const r = s.getBoundingClientRect();
-        const d = Math.abs(r.top + r.height / 2 - probe);
-        if (d < bestD) [best, bestD] = [i, d];
-      });
-      setFloor(best);
+    if (lit === null || leaving) return;
+    const root = rootRef.current;
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Element | null;
+      if (!t?.closest || !root?.contains(t) || !t.closest('.gs-bay')) setLit(null);
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(pick); };
-    pick();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setLit(null);
+      const a = document.activeElement;
+      if (a instanceof HTMLElement && root?.contains(a)) a.blur();
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
     };
-  }, [tower, cars, leaving]);
+  }, [lit, leaving]);
 
-  // Tower: move the cab to its floor (a transform), sized to that floor's landing door.
+  // Tower: move the cab to its floor (a transform), sized to that floor's landing.
   useLayoutEffect(() => {
     const wrap = floorsRef.current;
     const cab = cabRef.current;
@@ -371,18 +447,36 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
     });
   };
 
-  const onActivate = (e: React.MouseEvent<HTMLAnchorElement>, car: Car) => {
+  /** A press on a bay's link (`direct`: its Enter button). A first tap only lights the bay. */
+  const onActivate = (e: React.MouseEvent<HTMLAnchorElement>, car: Car, direct: boolean) => {
     // New tab / window: leave it to the browser.
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const i = cars.indexOf(car);
+    const pt = (e.nativeEvent as PointerEvent).pointerType;
+    const tap = pt !== undefined ? pt === 'touch' : e.detail > 0 && press.current.type === 'touch';
+    const litBefore = press.current.type ? press.current.lit : lit;
+    press.current = { type: '', lit: null };
     e.preventDefault();
     if (leaving) return;
-    if (tower) setFloor(cars.indexOf(car));
+    if (tap && !direct && litBefore !== i) {
+      light(i);
+      return;
+    }
+    if (tower) setFloor(i);
     if (reducedMotion()) {
       enter(car, false);
       return;
     }
+    setLit(i);
     setLeaving(car.id);
     window.setTimeout(() => enter(car, true), ROLL_OUT_MS);
+  };
+
+  /** Focus (keyboard) or a tap on a bay's labels lights it, on touch screens and in the tower. */
+  const onLight = (car: Car) => (e: React.SyntheticEvent) => {
+    if (leaving || !(tower || touch)) return;
+    if (e.type === 'click' && (press.current.type !== 'touch' || (e.target as Element).closest('a'))) return;
+    light(cars.indexOf(car));
   };
 
   // Arrow keys move between bays (same as the old tile grid).
@@ -397,35 +491,52 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
     links[to].focus();
   };
 
+  // Keyboard focus leaving the bays turns the light off.
+  const onBlur = (e: React.FocusEvent<HTMLUListElement>) => {
+    if (!leaving && e.relatedTarget && !e.currentTarget.contains(e.relatedTarget as Node)) setLit(null);
+  };
+
   const stateOf = (id: string): BayProps['state'] =>
     leaving === id ? 'leaving' : leaving ? 'dim' : parking === id ? 'returning' : 'rest';
 
+  // Desktop: the pole sign stands beside the last bay of the first row.
+  const poleAt = Math.min(cars.length, 2) - 1;
+
   return (
-    <div ref={rootRef} className={['gs', tower && 'gs--tower', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
+    <div ref={rootRef} className={['gs', tower && 'gs--tower', touch && 'gs--touch', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
       <div className="gs-building">
-        <Roof sign="The Garage" />
+        <Roof sign={tower ? 'The Garage' : undefined} hoist={tower} />
         <div className="gs-floors" ref={floorsRef}>
-          <ul className={`gs-bays gs-bays--${Math.min(cars.length, 2)}`} aria-label="Cars" onKeyDown={onKeyDown}>
+          <ul className={`gs-bays gs-bays--${Math.min(cars.length, 2)}`} aria-label="Cars" onKeyDown={onKeyDown}
+            onBlur={onBlur} onPointerDown={(e) => { press.current = { type: e.pointerType, lit }; }}>
             {cars.map((car, i) => (
               <Bay
-                // Rebuild bays when the layout switches, so in-view marks from the side-by-side scene don't carry over.
+                // Rebuild bays when the layout switches, so nothing set for one layout carries over.
                 key={tower ? `tower-${car.id}` : car.id}
                 car={car}
                 href={hrefFor(car)}
                 state={stateOf(car.id)}
-                floor={tower ? floorNo(i) : undefined}
+                number={floorNo(i)}
+                tower={tower}
+                pole={!tower && i === poleAt ? 'The Garage' : undefined}
                 here={tower && floor === i}
-                open={tower && touch && floor === i}
+                on={lit === i}
                 carRef={(el) => { if (el) carEls.current.set(car.id, el); else carEls.current.delete(car.id); }}
                 onActivate={onActivate}
-                onFocus={tower ? () => setFloor(i) : undefined}
+                onLight={onLight(car)}
                 renderMeta={renderMeta}
               />
             ))}
           </ul>
           {tower && (
             <div className="gs-shaft" aria-hidden="true">
-              <div className="gs-cab" ref={cabRef}><span className="gs-cab-lamp" /></div>
+              <div className="gs-cab" ref={cabRef}>
+                <span className="gs-cab-lamp" />
+                <svg className="gs-gate" viewBox="0 0 24 48" preserveAspectRatio="none">
+                  <path d="M0 0 L12 12 L24 0 M0 12 L12 0 L24 12 M0 12 L12 24 L24 12 M0 24 L12 12 L24 24 M0 24 L12 36 L24 24 M0 36 L12 24 L24 36 M0 36 L12 48 L24 36 M0 48 L12 36 L24 48" />
+                  <path d="M12 0 V48" />
+                </svg>
+              </div>
             </div>
           )}
         </div>

@@ -1,27 +1,43 @@
 /* ==========================================================
-   GarageScene — night-time garage, one bay per car.
-   White line art (2 px, same weight as the car outlines at
-   bay size) over the dark page; the site gradient
-   var(--g1) → var(--g2) → var(--g3) for lit things.
+   GarageScene — an industrial garage at night, one bay per car.
+   Desktop: a flat-roofed 1950s service station with a pole
+   sign. Phones (.gs--tower): a multi-storey garage on steel
+   I-beams with a freight elevator. White line art (2 px
+   outlines, 1.5 px details) over the dark page; the site
+   gradient var(--g1) → var(--g2) → var(--g3) for lit things.
    Animated properties: transform and opacity only.
+   Sizes and colours come from styles/tokens.css.
    ========================================================== */
 
 .gs {
   --gs-line: var(--line-art);
   --gs-line-soft: color-mix(in srgb, var(--ink) 16%, transparent);
   --gs-wall: var(--wall);
-  --gs-roof-h: clamp(52px, 8.5vw, 88px);
   --gs-out: 820ms;   /* ROLL_OUT_MS in GarageScene.tsx */
   --gs-in: 850ms;    /* car part of ROLL_IN_MS */
   --gs-ease-door: cubic-bezier(0.6, 0.05, 0.25, 1);
+  /* Stage height / width, and where (fraction of the stage height) the touch Enter button sits. */
+  --gs-stage-k: 0.8;
+  --gs-enter-y: 0.89;
+  --gs-slab: 0px;    /* tower: the I-beam above the stage */
+  /* Corrugated steel: a highlight, a shadow, every 8 px. */
+  --gs-corrugated: repeating-linear-gradient(90deg,
+    var(--tint-2) 0 var(--bw),
+    transparent var(--bw) var(--s-1),
+    color-mix(in srgb, var(--night-0) 45%, transparent) var(--s-1) var(--s-1h),
+    transparent var(--s-1h) var(--s-2));
+  --gs-hazard: repeating-linear-gradient(-45deg,
+    color-mix(in srgb, var(--hazard) 82%, var(--wall)) 0 var(--s-1h),
+    var(--hazard-dark) var(--s-1h) var(--s-3));
+  --gs-bolt: radial-gradient(circle closest-side, var(--steel) 0 38%, var(--steel-2) 52% 72%, transparent 86%);
 
   position: relative;
   isolation: isolate;
   box-sizing: border-box;
   width: 100%;
-  max-width: 1040px;
+  max-width: var(--gs-max);
   margin: 0 auto;
-  padding: 4px 0 8px;
+  padding: var(--s-1) 0 var(--s-2);
   overflow-x: clip;
   color: var(--ink);
 }
@@ -34,83 +50,89 @@
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 45% at 50% 30%, color-mix(in srgb, var(--haze) 55%, transparent), transparent 70%),
-    radial-gradient(ellipse 30% 18% at 50% 6%, color-mix(in srgb, var(--g1) 8%, transparent), transparent 70%);
+    radial-gradient(ellipse 55% 45% at 45% 30%, color-mix(in srgb, var(--haze) 55%, transparent), transparent 70%);
 }
 
+/* Desktop: the pole sign stands in the column on the right. */
 .gs-building {
   position: relative;
-  padding: 0 clamp(10px, 3vw, 30px);
+  padding: 0 calc(var(--gs-pole-w) + var(--s-2)) 0 clamp(var(--s-2h), 3vw, var(--s-6));
 }
 
-/* ── Roof and sign ──────────────────────────────── */
+/* ── Roof: parapet with cap flashing ────────────── */
 
 .gs-top {
   position: relative;
-  height: calc(var(--gs-roof-h) + clamp(52px, 7vw, 70px));
+  z-index: 3;
+  height: var(--gs-rise);
+  pointer-events: none;
 }
 
-.gs-roof {
+.gs-parapet {
   position: absolute;
   left: 0;
-  bottom: -1px;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  height: var(--gs-roof-h);
-  overflow: visible;
+  right: 0;
+  bottom: 0;
+  height: var(--gs-parapet-h);
+  box-sizing: border-box;
+  border: var(--bw-3) solid var(--gs-line);
+  border-bottom: 0;
+  /* Brick coursing. */
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 calc(var(--s-1h) - var(--bw)), var(--tint-2) calc(var(--s-1h) - var(--bw)) var(--s-1h)),
+    var(--gs-wall);
 }
-.gs-roof-gable { fill: var(--gs-wall); }
-.gs-roof-board {
-  fill: var(--night-1);
-  stroke: var(--gs-line);
-  stroke-width: 2;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+/* Cap flashing: a steel coping a little wider than the wall. */
+.gs-parapet::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--s-1h));
+  right: calc(-1 * var(--s-1h));
+  bottom: 100%;
+  height: var(--s-1h);
+  box-sizing: border-box;
+  border: var(--bw-3) solid var(--gs-line);
+  border-radius: var(--r-1) var(--r-1) 0 0;
+  background: var(--night-1);
+}
+/* Where the parapet meets the wall. */
+.gs-parapet::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-bottom: var(--bw-2) solid var(--line-3);
 }
 
-.gs-vent {
+/* Desktop: a rooftop unit and vent stack behind the parapet. */
+.gs-rooftop {
   position: absolute;
-  left: 50%;
-  bottom: calc(var(--gs-roof-h) * 0.12);
-  z-index: 2;
-  width: calc(var(--gs-roof-h) * 0.34);
-  height: calc(var(--gs-roof-h) * 0.34);
-  transform: translateX(-50%);
-  fill: none;
-  stroke: color-mix(in srgb, var(--ink) 50%, transparent);
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
+  left: 10%;
+  bottom: calc(var(--gs-parapet-h) + var(--s-1h));
+  width: clamp(var(--s-7h), 8%, var(--s-8) + var(--s-5));
+  overflow: visible;
+  fill: var(--night-1);
+  stroke: var(--line-3);
+  stroke-width: var(--bw-3);
+  stroke-linejoin: round;
 }
-.gs-vent path, .gs-vent circle { vector-effect: non-scaling-stroke; }
+.gs-rooftop path { vector-effect: non-scaling-stroke; }
+.gs-rooftop-detail { stroke: var(--line-2); stroke-width: var(--bw-2); }
+
+/* ── Neon sign ──────────────────────────────────── */
 
 .gs-sign {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--gs-roof-h) + 8px);
-  z-index: 0;
+  position: relative;
   display: grid;
   padding: 0.45em 1.1em 0.5em;
   font-family: var(--f-mono);
   font-weight: 700;
-  font-size: clamp(14px, 2.2vw, 22px);
+  font-size: var(--gs-neon);
   line-height: 1.2;
-  border: 2px solid var(--gs-line);
-  border-radius: 8px;
+  border: var(--bw-3) solid var(--gs-line);
+  border-radius: var(--r-2);
   background: var(--night-0);
-  transform: translateX(-50%);
-}
-/* Posts down to the ridge (hidden behind the roof below it). */
-.gs-sign::before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 18%;
-  right: 18%;
-  height: 60px;
-  z-index: -1;
-  border-left: 2px solid var(--gs-line);
-  border-right: 2px solid var(--gs-line);
 }
 /* Halo on the night sky once lit. */
 .gs-sign::after {
@@ -131,7 +153,7 @@
 }
 .gs-sign-text--off {
   color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--g1) 40%, transparent);
+  -webkit-text-stroke: var(--bw) color-mix(in srgb, var(--g1) 40%, transparent);
 }
 .gs-sign-text--on {
   color: var(--neon-ink);
@@ -158,6 +180,136 @@
   100% { opacity: 1; }
 }
 
+/* ── Desktop: the gas-station pole sign ─────────── */
+
+.gs-pole {
+  position: absolute;
+  top: calc(-1 * var(--gs-rise));
+  bottom: 22%;
+  left: 100%;
+  z-index: 3;
+  width: var(--gs-pole-w);
+  padding-left: var(--s-2);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+/* Ground line under the pole and the yard. */
+.gs-pole::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: calc(-1 * var(--s-2));
+  bottom: calc(-1 * var(--bw-3));
+  border-top: var(--bw-3) solid var(--gs-line);
+}
+/* Steel post, down to a base plate. */
+.gs-pole-post {
+  position: absolute;
+  top: var(--s-6);
+  bottom: 0;
+  left: calc(50% + var(--s-1));
+  width: var(--s-2h);
+  box-sizing: border-box;
+  transform: translateX(-50%);
+  border-inline: var(--bw-3) solid var(--gs-line);
+  background: var(--night-1);
+}
+.gs-pole-post::after {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--s-2h));
+  right: calc(-1 * var(--s-2h));
+  bottom: 0;
+  height: var(--s-1h);
+  box-sizing: border-box;
+  border: var(--bw-3) solid var(--gs-line);
+  border-bottom: 0;
+  background: var(--night-1);
+}
+.gs-sign--pole {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--s-2h) var(--s-1) var(--s-3);
+  font-size: var(--gs-neon-pole);
+  line-height: 1.15;
+  text-align: center;
+  border-radius: var(--r-3);
+  /* An inner trim line, like an enamel gas-station panel. */
+  outline: var(--bw-2) solid var(--line-2);
+  outline-offset: calc(-1 * var(--s-1h));
+}
+.gs-sign--pole .gs-sign-word { display: block; }
+.gs-sign--pole .gs-sign-word:first-child { font-size: max(var(--t-micro), 0.62em); letter-spacing: 0.5em; }
+.gs-sign--pole::after { inset: -30% -50%; }
+.gs-pole-sub {
+  position: relative;
+  margin-top: var(--s-2h);
+  padding: var(--s-1) var(--s-2h);
+  border: var(--bw-3) solid var(--gs-line);
+  border-radius: var(--r-1);
+  background: var(--night-0);
+  color: var(--ink-2);
+  font: 700 var(--t-micro) / 1.4 var(--f-mono);
+  letter-spacing: 0.3em;
+  padding-left: calc(var(--s-2h) + 0.3em);
+  text-transform: uppercase;
+}
+/* Oil drum and a stack of tyres at the foot of the pole. */
+.gs-yard {
+  position: absolute;
+  left: var(--s-2);
+  right: 0;
+  bottom: 0;
+  width: calc(100% - var(--s-2));
+  overflow: visible;
+  fill: var(--night-1);
+  stroke: var(--gs-line);
+  stroke-width: var(--bw-3);
+  stroke-linejoin: round;
+}
+.gs-yard :is(path, rect) { vector-effect: non-scaling-stroke; }
+.gs-yard-detail { fill: none; stroke: var(--line-3); stroke-width: var(--bw-2); }
+
+/* ── Phones and the car-home hero: billboard on a steel lattice ── */
+
+.gs-billboard {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--gs-parapet-h) + var(--s-1h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+.gs-lattice {
+  display: block;
+  width: calc(100% - var(--s-5));
+  height: var(--s-6);
+  overflow: visible;
+  fill: none;
+  stroke: var(--gs-line);
+  stroke-width: var(--bw-3);
+}
+.gs-lattice path { vector-effect: non-scaling-stroke; }
+.gs-lattice-brace { stroke: var(--line-3); stroke-width: var(--bw-2); }
+
+/* Tower: the hoist over the freight elevator. */
+.gs-hoist {
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--gs-parapet-h) + var(--s-1h));
+  width: var(--gs-shaft-w);
+  overflow: visible;
+  fill: var(--night-0);
+  stroke: var(--gs-line);
+  stroke-width: var(--bw-3);
+}
+.gs-hoist :is(path, circle) { vector-effect: non-scaling-stroke; }
+.gs-hoist-detail { fill: none; stroke: var(--line-3); stroke-width: var(--bw-2); }
+
 /* ── Bays ───────────────────────────────────────── */
 
 .gs-bays {
@@ -176,9 +328,11 @@
   flex: 0 0 50%;
   min-width: 0;
   box-sizing: border-box;
-  padding-bottom: 30px;
+  padding-bottom: var(--s-6);
+  /* The Enter button is placed in stage units (100cqw = the stage's width). */
+  container-type: inline-size;
 }
-.gs-bays--1 .gs-bay { flex-basis: min(100%, 560px); }
+.gs-bays--1 .gs-bay { flex-basis: min(100%, var(--gs-bay-solo)); }
 
 .gs-bay-link {
   display: block;
@@ -193,37 +347,92 @@
   aspect-ratio: 10 / 8;
 }
 
-/* Wall: board siding, walls drawn on the outer edges only. */
+/* Wall: corrugated steel; walls drawn on the outer edges only. */
 .gs-facade {
   position: absolute;
   inset: 0 0 22%;
   box-sizing: border-box;
-  border-left: 2px solid var(--gs-line);
-  background:
-    repeating-linear-gradient(to bottom, transparent 0 13px, color-mix(in srgb, var(--ink) 3.5%, transparent) 13px 14px),
-    var(--gs-wall);
+  border-left: var(--bw-3) solid var(--gs-line);
+  background: var(--gs-corrugated), var(--gs-wall);
 }
 .gs-bay:nth-child(2n) .gs-facade,
-.gs-bay:last-child .gs-facade { border-right: 2px solid var(--gs-line); }
-.gs-bay:nth-child(n + 3) .gs-facade { border-top: 2px solid var(--gs-line); }
+.gs-bay:last-child .gs-facade { border-right: var(--bw-3) solid var(--gs-line); }
+.gs-bay:nth-child(n + 3) .gs-facade { border-top: var(--bw-3) solid var(--gs-line); }
 
-/* Door trim (outer line); the opening draws the inner line. */
+/* Stencilled bay number, painted on the wall. */
+.gs-stencil {
+  position: absolute;
+  top: 5%;
+  left: 7%;
+  z-index: 1;
+  color: color-mix(in srgb, var(--ink) 70%, transparent);
+  font: 700 var(--gs-stencil) / 1 var(--f-mono);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* The stencil's bridges: a thin break through every letter. */
+  -webkit-mask-image: linear-gradient(to bottom, black 0 48%, transparent 48% 54%, black 54%);
+  mask-image: linear-gradient(to bottom, black 0 48%, transparent 48% 54%, black 54%);
+}
+
+/* Gooseneck wall lamp over the door. */
+.gs-walllamp {
+  position: absolute;
+  left: 50%;
+  top: 1.5%;
+  z-index: 2; /* over the frame; the opening (later, same level) covers the glow below */
+  width: 11%;
+  aspect-ratio: 48 / 30;
+  transform: translateX(-50%);
+}
+.gs-walllamp svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: var(--night-1);
+  stroke: var(--gs-line);
+  stroke-width: var(--bw-3);
+  stroke-linejoin: round;
+}
+.gs-walllamp path { vector-effect: non-scaling-stroke; }
+.gs-walllamp-bulb { fill: var(--night-0); stroke-width: var(--bw-2); transition: fill 0.2s ease; }
+.gs-walllamp-glow {
+  position: absolute;
+  left: -110%;
+  right: -110%;
+  top: 55%;
+  height: 380%;
+  pointer-events: none;
+  background: radial-gradient(ellipse 50% 70% at 50% 8%, color-mix(in srgb, var(--lamp) 34%, transparent), color-mix(in srgb, var(--car-accent) 10%, transparent) 45%, transparent 72%);
+  /* Fade in under the shade, so the glow has no top edge. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%);
+  mask-image: linear-gradient(to bottom, transparent, black 30%);
+  opacity: 0;
+  transition: opacity 0.2s ease 0.55s;
+}
+
+/* Door frame: steel jambs with hazard stripes, and the door's coil housing across the top. */
 .gs-frame {
   position: absolute;
-  inset: 10% 6.5% 22%;
-  border: 2px solid var(--gs-line);
+  inset: 15% 6.5% 22%;
+  box-sizing: border-box;
+  border: var(--bw-3) solid var(--gs-line);
   border-bottom: 0;
-  border-radius: 3px 3px 0 0;
   pointer-events: none;
+  background:
+    linear-gradient(to bottom, var(--surface), var(--gs-wall)) top / 100% 6.4% no-repeat,
+    var(--gs-hazard);
 }
 
 .gs-opening {
   position: absolute;
-  inset: 13.5% 9% 22%;
+  inset: 19% 9.5% 22%;
   z-index: 2;
   container-type: size;
   box-sizing: border-box;
-  border: 2px solid var(--gs-line);
+  border: var(--bw-3) solid var(--gs-line);
   border-bottom: 0;
   background: linear-gradient(to bottom, var(--night-0), var(--night-0) 70%, var(--bench));
 }
@@ -235,7 +444,7 @@
   height: 100%;
   fill: none;
   stroke: var(--gs-line-soft);
-  stroke-width: 1;
+  stroke-width: var(--bw);
 }
 .gs-interior path { vector-effect: non-scaling-stroke; }
 .gs-interior-shelf { stroke: color-mix(in srgb, var(--ink) 10%, transparent); }
@@ -247,16 +456,16 @@
   top: 7cqh;
   left: 31%;
   right: 31%;
-  height: 4px;
-  border-radius: 3px;
+  height: var(--s-1);
+  border-radius: var(--r-1);
   box-sizing: border-box;
 }
-.gs-tube { border: 1.5px solid color-mix(in srgb, var(--ink) 40%, transparent); }
+.gs-tube { border: var(--bw-2) solid color-mix(in srgb, var(--ink) 40%, transparent); }
 .gs-tube-glow {
   background: var(--lamp);
   box-shadow:
-    0 0 4px 1px var(--ink),
-    0 0 16px 4px color-mix(in srgb, var(--car-accent) 55%, var(--ink));
+    0 0 var(--s-1) var(--bw) var(--ink),
+    0 0 var(--s-4) var(--s-1) color-mix(in srgb, var(--car-accent) 55%, var(--ink));
 }
 
 .gs-light {
@@ -310,8 +519,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px dashed color-mix(in srgb, var(--ink) 40%, transparent);
-  font-size: 13px;
+  border: var(--bw) dashed color-mix(in srgb, var(--ink) 40%, transparent);
+  font-size: var(--t-ui);
 }
 .gs-art-missing small { opacity: 0.6; }
 
@@ -345,7 +554,7 @@
   transition: opacity 0.3s ease;
 }
 
-/* Roll-up door, clipped by the opening. Rest: half up. */
+/* Steel roll-up door with a strip of windows, clipped by the opening. Rest: half up. */
 .gs-door-clip {
   position: absolute;
   inset: 0;
@@ -358,16 +567,32 @@
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  border-bottom: 2px solid var(--gs-line);
+  border-bottom: var(--bw-3) solid var(--gs-line);
   background:
     repeating-linear-gradient(to bottom,
-      color-mix(in srgb, var(--ink) 50%, transparent) 0 1.5px,
-      color-mix(in srgb, var(--ink) 7%, transparent) 1.5px 5px,
-      transparent 5px var(--slat)),
+      color-mix(in srgb, var(--ink) 50%, transparent) 0 var(--bw-2),
+      color-mix(in srgb, var(--ink) 7%, transparent) var(--bw-2) var(--s-1h),
+      transparent var(--s-1h) var(--slat)),
     linear-gradient(to bottom, var(--surface), var(--wall));
   background-position: 0 100%;
   transform: translateY(-56%);
   transition: transform 0.95s var(--gs-ease-door) 0.15s;
+}
+.gs-door-windows {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  bottom: 18cqh;
+  height: 9cqh;
+  display: flex;
+  gap: 3cqw;
+}
+.gs-door-windows > span {
+  flex: 1;
+  box-sizing: border-box;
+  border: var(--bw-2) solid var(--line-art);
+  border-radius: var(--bw);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--cyan) 22%, var(--night-0)), var(--night-0) 60%);
 }
 .gs-door-handle {
   position: absolute;
@@ -376,8 +601,8 @@
   width: 10cqw;
   height: 2.6cqh;
   box-sizing: border-box;
-  border: 1.5px solid color-mix(in srgb, var(--ink) 70%, transparent);
-  border-radius: 2px;
+  border: var(--bw-2) solid color-mix(in srgb, var(--ink) 70%, transparent);
+  border-radius: var(--s-0);
   transform: translateX(-50%);
 }
 
@@ -385,7 +610,7 @@
   position: absolute;
   inset: 78% 0 0;
   z-index: 1;
-  border-top: 2px solid var(--gs-line);
+  border-top: var(--bw-3) solid var(--gs-line);
   background: linear-gradient(to bottom, color-mix(in srgb, var(--g3) 6%, transparent), transparent 75%);
 }
 .gs-spill {
@@ -397,49 +622,156 @@
   transition: opacity 0.3s ease 0.5s;
 }
 
-/* Labels under the bay. */
+/* ── Sign plates: the bay's name and info on an enamel plate ──
+   Two stacked pieces drawn as one plate: the name (inside the
+   bay link) on top, .gs-bay-plate under it. Bolts in the corners. */
+
+.gs-bay-name,
+.gs-bay-plate {
+  box-sizing: border-box;
+  width: min(100% - var(--s-6), var(--gs-plate-w));
+  margin-inline: auto;
+  border: var(--bw-3) solid var(--gs-line);
+  background-color: var(--surface);
+  background-repeat: no-repeat;
+  background-size: var(--s-2) var(--s-2);
+}
 .gs-bay-name {
   display: block;
-  margin-top: 8px;
+  margin-top: var(--s-4);
+  padding: var(--s-3) var(--s-5) var(--s-1);
+  border-bottom: 0;
+  border-radius: var(--r-2) var(--r-2) 0 0;
+  background-image: var(--gs-bolt), var(--gs-bolt);
+  background-position: var(--s-1h) var(--s-1h), right var(--s-1h) top var(--s-1h);
   font-family: var(--f-display);
-  font-size: 22px;
+  font-size: var(--t-stat);
   line-height: 1.3;
   text-align: center;
 }
-.gs-bay-sub {
-  margin: 4px 0 6px;
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  color: var(--cyan);
+.gs-bay-plate {
+  display: flow-root; /* keep the first line's margin inside the plate */
+  padding: 0 var(--s-5) var(--s-3);
+  border-top: 0;
+  border-radius: 0 0 var(--r-2) var(--r-2);
+  background-image: var(--gs-bolt), var(--gs-bolt);
+  background-position: left var(--s-1h) bottom var(--s-1h), right var(--s-1h) bottom var(--s-1h);
   text-align: center;
+}
+.gs-bay-sub {
+  margin: var(--s-0) 0 0;
+  padding-bottom: var(--s-2);
+  border-bottom: var(--bw-2) solid var(--line-2);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  color: var(--cyan);
 }
 .gs-bay-desc {
   max-width: 40ch;
-  margin: 0 auto;
-  padding: 0 12px;
+  margin: var(--s-2) auto 0;
   font-family: var(--f-body);
-  font-size: 14.5px;
+  font-size: var(--t-small);
   line-height: 1.5;
-  text-align: center;
-  opacity: 0.85;
+  color: var(--ink-2);
 }
+
+/* Status chips as stamped tags, with a punched hole. */
+.gs-bay-plate .garage-tile-meta { margin-top: var(--s-2h); }
+.gs-bay-plate .chip {
+  padding: var(--s-1) var(--s-1h);
+  border-radius: var(--r-1);
+  background: color-mix(in srgb, var(--st) 10%, var(--night-0));
+  box-shadow: inset 0 0 0 var(--bw-2) color-mix(in srgb, var(--st) 55%, transparent);
+}
+.gs-bay-plate .chip::before {
+  width: var(--s-1h);
+  height: var(--s-1h);
+  box-sizing: border-box;
+  border: var(--bw-2) solid currentColor;
+  background: var(--surface);
+}
+.gs-bay-plate .garage-tile-stats { margin-top: var(--s-2); }
+/* The latest post on a smaller plate, bolted at both ends. */
+.gs-bay-plate .garage-tile-latest {
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: var(--s-2) auto 0;
+  padding: var(--s-1) var(--s-5);
+  border: var(--bw-2) solid var(--line-3);
+  border-radius: var(--r-1);
+  background: var(--gs-bolt) left var(--s-1h) center / var(--s-1h) var(--s-1h) no-repeat,
+    var(--gs-bolt) right var(--s-1h) center / var(--s-1h) var(--s-1h) no-repeat,
+    var(--night-0);
+  color: var(--ink-2);
+}
+
 .gs-bay-name,
-.gs-bay-sub,
-.gs-bay-desc { transition: opacity 0.3s ease, color 0.2s ease; }
+.gs-bay-plate { transition: opacity 0.3s ease; }
+.gs-bay-name { transition: opacity 0.3s ease, color 0.2s ease; }
 
-/* ── Open state: hover, keyboard focus, in view (touch), driving ── */
+/* ── Touch: the Enter button on the lit bay ─────── */
 
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-light {
+.gs-enter {
+  position: absolute;
+  left: 50cqw;
+  top: calc(var(--gs-slab) + 100cqw * var(--gs-stage-k) * var(--gs-enter-y));
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1h);
+  min-height: var(--touch);
+  padding: 0 var(--s-4h);
+  box-sizing: border-box;
+  border: var(--bw-3) solid var(--accent-ink);
+  border-radius: var(--r-1);
+  background: var(--accent);
+  box-shadow: var(--shadow-hard);
+  color: var(--accent-ink);
+  font: 700 var(--t-meta) / 1 var(--f-mono);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur-2) ease, visibility 0s linear var(--dur-2);
+}
+.gs-enter span { font-size: var(--t-callout); line-height: 0; }
+.gs-bay.is-on:not(.is-leaving, .is-dim) .gs-enter {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--dur-2) ease var(--dur-2), visibility 0s;
+}
+.gs--tower .gs-enter { transform: translate(-50%, var(--s-1)); }
+.gs-enter:focus-visible { outline: var(--bw-3) solid var(--ink); outline-offset: var(--s-0); }
+
+/* ── Open state: hover / focus (mouse and keyboard), lit (touch), driving ── */
+
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-light,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-light {
   opacity: 1;
   transition-delay: 0s;
   animation: gs-flicker 0.75s step-end both;
 }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-door { transform: translateY(-100%); transition-delay: 0.1s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-art--colored { opacity: 1; transition-delay: 0.3s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-art--outline { opacity: 0; transition-delay: 0.45s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-lamp { opacity: 0.9; transition-delay: 0.6s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-spill { opacity: 1; transition-delay: 0.15s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-bay-name { color: var(--accent); }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-door,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-door { transform: translateY(-100%); transition-delay: 0.1s; }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-art--colored,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-art--colored { opacity: 1; transition-delay: 0.3s; }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-art--outline,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-art--outline { opacity: 0; transition-delay: 0.45s; }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-lamp,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-lamp { opacity: 0.9; transition-delay: 0.6s; }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-spill,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-spill { opacity: 1; transition-delay: 0.15s; }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-walllamp-glow,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-walllamp-glow { opacity: 1; transition-delay: 0s; animation: gs-flicker 0.6s step-end both; }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-walllamp-bulb,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-walllamp-bulb { fill: var(--lamp); }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-bay-name,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-bay-name { color: var(--accent); }
 
 @keyframes gs-flicker {
   0% { opacity: 0; }
@@ -455,17 +787,17 @@
 
 .gs-bay-link:focus-visible { outline: none; }
 .gs-bay-link:focus-visible .gs-frame {
-  outline: 2px solid var(--accent);
-  outline-offset: 6px;
+  outline: var(--bw-3) solid var(--accent);
+  outline-offset: var(--s-1h);
 }
-.gs-bay-link:focus-visible .gs-bay-name { text-decoration: underline; text-underline-offset: 4px; }
+.gs-bay-link:focus-visible .gs-bay-name { text-decoration: underline; text-underline-offset: var(--s-1); }
 
 /* ── Drive out ──────────────────────────────────── */
 
 .gs-bay.is-leaving { z-index: 5; }
-.gs-bay.is-dim :is(.gs-car, .gs-reflect, .gs-bay-name, .gs-bay-sub, .gs-bay-desc) { opacity: 0.3; }
+.gs-bay.is-dim :is(.gs-car, .gs-reflect, .gs-bay-name, .gs-bay-plate) { opacity: 0.3; }
 .gs-bay.is-dim .gs-car { transition: opacity 0.4s ease; }
-.is-leaving :is(.gs-bay-name, .gs-bay-sub, .gs-bay-desc) { opacity: 0; }
+.is-leaving :is(.gs-bay-name, .gs-bay-plate) { opacity: 0; }
 .is-leaving .gs-reflect { opacity: 0; }
 .is-leaving .gs-car { animation: gs-roll-out var(--gs-out) cubic-bezier(0.5, 0, 0.2, 1) both; }
 .is-leaving .gs-car-body { animation: gs-pull-away var(--gs-out) linear both; }
@@ -501,6 +833,7 @@
 .is-returning .gs-reflect { opacity: 0; transition-delay: 0.6s; }
 .is-returning .gs-car { animation: gs-roll-in var(--gs-in) cubic-bezier(0.35, 0.1, 0.25, 1) both; }
 .is-returning .gs-car-body { animation: gs-back-in var(--gs-in) linear both; }
+.is-returning .gs-walllamp-glow { animation: none; }
 
 @keyframes gs-roll-in {
   from { transform: translate(calc(var(--drive) * 7%), 60%) scale(1.42); }
@@ -519,38 +852,32 @@
   animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
 }
 
-/* ── Phone: one bay per row, full width ─────────── */
-
-@media (max-width: 600px) {
-  .gs-bay { flex-basis: 100%; }
-  .gs-bay .gs-facade { border-right: 2px solid var(--gs-line); }
-  .gs-bay + .gs-bay .gs-facade { border-top: 2px solid var(--gs-line); }
-  .gs-bay-name { font-size: 20px; }
-}
-
 /* ── Phone: the garage tower ────────────────────────
    .gs--tower is set by GarageScene at ≤ 600 px. One building:
-   roof and sign, then one floor per car (short wide bay, its
-   number plate, a reflective deck and a compact label band),
-   and an elevator shaft down the right whose cab and lit floor
-   number follow the floor in view. Everything below is scoped
-   to .gs--tower, so the desktop scene is untouched. */
+   flat roof with the neon sign on a billboard frame, then one
+   floor per car on a riveted I-beam slab (short wide bay, its
+   stencilled number, a deck and its sign plate on the wall), and
+   a freight elevator down the right whose cage rides to the lit
+   floor. Everything below is scoped to .gs--tower. */
 
 .gs--tower {
-  --gs-shaft-w: calc(var(--s-6h) + var(--s-1));
-  --gs-wall-w: var(--bw-3);
+  --gs-stage-k: 0.7;
+  --gs-enter-y: 0.87;  /* top edge on the deck, just in front of the door */
+  --gs-slab: var(--gs-slab-h);
+  --gs-rise: var(--gs-rise-tower);
+  --gs-parapet-h: var(--s-5);
 }
 
 .gs--tower .gs-building { padding: 0 var(--s-2h); }
-.gs--tower .gs-top { height: calc(var(--gs-roof-h) + var(--s-7h)); }
+.gs--tower .gs-billboard { left: calc((100% - var(--gs-shaft-w)) / 2); }
 
-/* The storeys and the shaft share one set of outer walls. */
+/* The storeys and the elevator share one set of outer walls. */
 .gs--tower .gs-floors {
   position: relative;
   z-index: 2;
-  border: var(--gs-wall-w) solid var(--gs-line);
+  border: var(--bw-3) solid var(--gs-line);
   border-top: 0;
-  background: var(--night-1);
+  background: var(--gs-corrugated), var(--gs-wall);
 }
 /* Ground line, a little wider than the building. */
 .gs--tower .gs-floors::after {
@@ -563,17 +890,28 @@
 }
 
 .gs--tower .gs-bays { display: block; }
-.gs.gs--tower .gs-bay {
-  padding: 0 var(--gs-shaft-w) 0 0;
-}
-/* Floor slab between storeys. */
-.gs.gs--tower .gs-bay + .gs-bay { border-top: var(--bw-3) solid var(--gs-line); }
+.gs.gs--tower .gs-bay { padding: 0 var(--gs-shaft-w) var(--s-4) 0; }
 
-/* A short, wide bay; a faint curb line where the deck meets the label band. */
-.gs--tower .gs-stage { aspect-ratio: 3 / 2; border-bottom: var(--bw) solid var(--line); }
-.gs.gs--tower .gs-bays .gs-facade { inset: 0 0 13%; border: 0; }
-.gs--tower .gs-frame { inset: 14% 7% 13%; }
-.gs--tower .gs-opening { inset: 18.5% 10.5% 13%; }
+/* Steel I-beam slab on top of each storey: flanges, a row of rivets, hazard stripes on its lower edge. */
+.gs--tower .gs-bay::before {
+  content: '';
+  display: block;
+  height: var(--gs-slab-h);
+  margin-right: calc(-1 * var(--gs-shaft-w));
+  box-sizing: border-box;
+  border-block: var(--bw-3) solid var(--gs-line);
+  background:
+    linear-gradient(var(--line-3), var(--line-3)) 0 calc(100% - var(--s-1h)) / 100% var(--bw-2) no-repeat,
+    var(--gs-hazard) 0 100% / 100% var(--s-1h) no-repeat,
+    radial-gradient(circle closest-side, var(--steel) 0 30%, var(--steel-2) 45% 60%, transparent 75%) var(--s-1h) var(--s-0) / var(--s-4) var(--s-1h) repeat-x,
+    linear-gradient(to bottom, var(--surface), var(--night-1));
+}
+
+/* A short, wide bay; the walls behind it are the building's. */
+.gs--tower .gs-stage { aspect-ratio: 10 / 7; }
+.gs.gs--tower .gs-bays .gs-facade { inset: 0 0 13%; border: 0; background: none; }
+.gs--tower .gs-frame { inset: 17% 7% 13%; }
+.gs--tower .gs-opening { inset: 21.5% 10.5% 13%; }
 .gs--tower .gs-floor {
   inset: 87% 0 0;
   background: linear-gradient(to bottom, color-mix(in srgb, var(--g3) 9%, var(--night-1)), var(--night-1));
@@ -585,26 +923,19 @@
   -webkit-mask-image: linear-gradient(to top, black, transparent 24%);
   mask-image: linear-gradient(to top, black, transparent 24%);
 }
+.gs--tower .gs-door-windows > span:nth-child(n + 6) { display: none; }
 
-/* Floor number plate, over the door like a parking garage. */
-.gs-plate {
-  position: absolute;
-  top: 3%;
+/* Stencilled floor number, big, on the wall over the door. */
+.gs--tower .gs-stencil {
+  top: 3.5%;
   left: 7%;
-  z-index: 1;
-  padding: 0 var(--s-1h);
-  font-family: var(--f-mono);
-  font-weight: 700;
-  font-size: var(--t-micro);
-  line-height: 1.6;
-  letter-spacing: var(--track-label);
-  color: var(--ink);
-  border: var(--bw-2) solid var(--gs-line);
-  border-radius: var(--r-1);
-  background: var(--night-0);
+  font-size: var(--t-h3);
+  letter-spacing: 0.12em;
 }
+.gs--tower .gs-stencil-word { display: none; }
+.gs--tower .gs-walllamp { top: 1%; width: 12%; }
 
-/* ── Elevator shaft ── */
+/* ── Freight elevator ── */
 
 .gs-shaft {
   position: absolute;
@@ -616,18 +947,17 @@
   pointer-events: none;
   border-left: var(--bw-3) solid var(--gs-line);
   box-sizing: border-box;
-  background: var(--night-0);
+  background: color-mix(in srgb, var(--night-0) 72%, transparent);
 }
-/* Guide rails. */
+/* Guide rails either side of the cage. */
 .gs-shaft::before {
   content: '';
   position: absolute;
-  inset: 0 calc(50% - var(--s-3));
-  border-left: var(--bw) solid var(--line-2);
-  border-right: var(--bw) solid var(--line-2);
+  inset: 0 var(--s-1);
+  border-inline: var(--bw-2) solid var(--line-3);
 }
 
-/* Each floor's landing: a lit floor number over the shaft doors (drawn in the floor, so it lines up). */
+/* Each floor's landing: a lit floor number over the cross-braced hoistway (drawn in the floor, so it lines up). */
 .gs-landing {
   position: absolute;
   left: 100%;
@@ -639,7 +969,7 @@
 }
 .gs-call {
   position: absolute;
-  top: 4%;
+  top: 5%;
   left: 50%;
   display: grid;
   transform: translateX(-50%);
@@ -658,32 +988,28 @@
 }
 .is-here .gs-call-on { opacity: 1; transition-delay: var(--dur-3); }
 
-/* Landing doors: the cab shows through when it's at this floor. */
+/* The hoistway at this floor (the cage is sized to it): X-bracing and a landing sill. */
 .gs-landing-door {
   position: absolute;
-  top: 21.3%; /* the bay opening's top (18.5 % of the stage) */
+  top: 24.7%; /* the bay opening's top (21.5 % of the stage) */
   bottom: 0;
-  left: var(--s-1h);
-  right: var(--s-1h);
-  border: var(--bw-2) solid var(--line-3);
-  border-bottom: 0;
-}
-.gs-landing-door::before {
-  content: '';
-  position: absolute;
-  inset: 0 50% 0 auto;
-  border-right: var(--bw) solid var(--line-3);
+  left: var(--s-1);
+  right: var(--s-1);
+  border-bottom: var(--bw-3) solid var(--gs-line);
+  background:
+    linear-gradient(to top right, transparent calc(50% - var(--bw)), var(--line-2) calc(50% - var(--bw)) calc(50% + var(--bw)), transparent calc(50% + var(--bw))),
+    linear-gradient(to top left, transparent calc(50% - var(--bw)), var(--line-2) calc(50% - var(--bw)) calc(50% + var(--bw)), transparent calc(50% + var(--bw)));
 }
 
-/* The cab: lit, on its cables; moved with a transform by GarageScene. */
+/* The cage: an open steel frame with a scissor gate, lit inside; moved with a transform by GarageScene. */
 .gs-cab {
   position: absolute;
   top: 0;
-  left: var(--s-1h);
-  right: var(--s-1h);
+  left: var(--s-1);
+  right: var(--s-1);
   box-sizing: border-box;
   border: var(--bw-3) solid var(--gs-line);
-  border-bottom: 0;
+  border-top-width: var(--s-1);
   background:
     radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in srgb, var(--lamp) 40%, transparent), transparent 75%),
     linear-gradient(to bottom, color-mix(in srgb, var(--g2) 35%, var(--night-0)), color-mix(in srgb, var(--g3) 25%, var(--night-0)));
@@ -691,7 +1017,7 @@
   will-change: transform;
 }
 .gs-cab.is-ready { transition: transform var(--dur-4) cubic-bezier(0.55, 0, 0.25, 1); }
-/* Cables up to the machine room. */
+/* Hoist cables. */
 .gs-cab::before {
   content: '';
   position: absolute;
@@ -702,7 +1028,7 @@
   border-left: var(--bw) solid var(--line-3);
   border-right: var(--bw) solid var(--line-3);
 }
-/* Cab ceiling light. */
+/* Cage light. */
 .gs-cab-lamp {
   position: absolute;
   top: var(--s-1);
@@ -713,43 +1039,42 @@
   background: var(--lamp);
   box-shadow: 0 0 var(--s-1h) var(--bw) var(--lamp);
 }
+.gs-gate {
+  position: absolute;
+  inset: var(--s-2h) var(--s-0) 0;
+  width: calc(100% - var(--s-1));
+  height: calc(100% - var(--s-2h));
+  fill: none;
+  stroke: var(--line-art);
+  stroke-width: var(--bw-2);
+}
+.gs-gate path { vector-effect: non-scaling-stroke; }
 
-/* ── Labels: a compact band under each deck ── */
+/* ── Plates on the tower's wall: left-aligned, full width ── */
 
+.gs--tower .gs-bay-name,
+.gs--tower .gs-bay-plate {
+  width: auto;
+  margin-inline: var(--s-2);
+  text-align: left;
+}
 .gs--tower .gs-bay-name {
-  margin: 0;
-  padding: var(--s-2h) var(--s-3) 0;
+  margin-top: var(--s-5);
+  padding: var(--s-3) var(--s-3) var(--s-0);
   font-size: var(--t-h4);
   line-height: var(--lh-tight);
-  text-align: left;
 }
-.gs--tower .gs-bay-sub {
-  margin: var(--s-1) 0 0;
-  padding: 0 var(--s-3);
-  font-size: var(--t-micro);
-  text-align: left;
-}
+.gs--tower .gs-bay-plate { padding: 0 var(--s-3) var(--s-3); }
+.gs--tower .gs-bay-sub { margin-top: var(--s-1); }
 .gs--tower .gs-bay-desc {
   max-width: none;
   margin: var(--s-1h) 0 0;
-  padding: 0 var(--s-3);
   font-size: var(--t-ui);
   line-height: var(--lh-ui);
-  text-align: left;
-  color: var(--ink-2);
-  opacity: 1;
 }
-/* The rule above outranks the shared fade, so fade the leaving floor's description here. */
-.gs--tower .is-leaving .gs-bay-desc { opacity: 0; }
-.gs--tower .garage-tile-meta {
-  justify-content: flex-start;
-  gap: var(--s-1);
-  margin: var(--s-2) 0 0;
-  padding: 0 var(--s-3);
-}
-.gs--tower .garage-tile-stats { margin-top: var(--s-1h); padding: 0 var(--s-3); text-align: left; }
-.gs--tower .garage-tile-latest { margin-top: var(--s-0); text-align: left; }
-.gs--tower .gs-bay > :last-child { padding-bottom: var(--s-3); }
+.gs--tower .garage-tile-meta { justify-content: flex-start; gap: var(--s-1); margin-top: var(--s-2); }
+.gs--tower .garage-tile-stats { margin-top: var(--s-1h); padding: 0; text-align: left; }
+.gs--tower .gs-bay-plate .garage-tile-latest { margin: var(--s-1h) 0 0; padding: var(--s-1) var(--s-4); text-align: left; }
 
 .gs--tower .gs-bay-link:focus-visible .gs-frame { outline-offset: var(--s-1); }
 
@@ -763,13 +1088,16 @@
   .gs-light,
   .gs-lamp,
   .gs-spill,
+  .gs-walllamp-glow,
   .gs-art--outline,
   .gs-art--colored { transition-duration: 0.2s !important; transition-delay: 0s !important; }
   ::view-transition-group(*) { animation-duration: 0.2s; }
-  /* Tower: the elevator cab jumps to its floor. */
+  /* Tower: the elevator cage jumps to its floor. */
   .gs-cab.is-ready { transition: none; }
 }
 
-/* ── Hero: one bay held lit on a car's home page ── */
+/* ── Hero: one bay held lit on a car's home page, with the billboard roof ── */
+.gs--hero { --gs-rise: var(--gs-rise-tower); }
+.gs--hero .gs-building { padding: 0 var(--s-2h); }
 .gs--hero .gs-bay { padding-bottom: 0; }
-.gs--hero .gs-bay .gs-facade { border-right: 2px solid var(--gs-line); }
+.gs--hero .gs-bay .gs-facade { border-right: var(--bw-3) solid var(--gs-line); }

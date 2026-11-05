@@ -69,6 +69,7 @@
   --st-purchase: #ffb45a;                 /* roadmap: things to buy */
   --st-upstream: #ff4dd2;                 /* roadmap map: upstream highlight */
   --st-blocker: #ff5a5a;                  /* roadmap map: top blockers */
+  --hazard: var(--st-safety);             /* hazard stripes (door jambs, slab edges) */
   --hazard-dark: #14110a;
 
   /* ── Paper (work orders, tags, plots) ── */
@@ -158,8 +159,24 @@
 
   /* ── Layout ── */
   --bar-h: 60px;
+  --minibay-w: 58px;     /* shop-bar mini bay (46px on phones, layout.css) */
   --rail-h: 36px;
   --page-max: 1240px;
+  --touch: 44px;         /* minimum touch target */
+
+  /* ── Garage scene (../garageScene.css) ── */
+  --gs-max: 1160px;                          /* scene width */
+  --gs-rise: clamp(96px, 9.5vw, 136px);      /* sky over the bays: rooftop unit, pole sign */
+  --gs-rise-tower: 116px;                    /* phones and the car-home hero: billboard on the roof */
+  --gs-parapet-h: clamp(20px, 2.2vw, 30px);
+  --gs-pole-w: clamp(104px, 13vw, 176px);    /* desktop pole sign column */
+  --gs-plate-w: 420px;                       /* desktop bay sign plate */
+  --gs-bay-solo: 560px;                      /* a lone bay (one car, the car-home hero) */
+  --gs-shaft-w: 44px;                        /* phone: freight elevator */
+  --gs-slab-h: 18px;                         /* phone: I-beam floor slab (borders included) */
+  --gs-neon: clamp(14px, 2.2vw, 22px);       /* rooftop neon sign */
+  --gs-neon-pole: clamp(14px, 1.6vw, 22px);  /* pole sign */
+  --gs-stencil: clamp(11px, 1.15vw, 16px);   /* stencilled BAY 01 */
 
   /* ── Layers ── */
   --z-raise: 1;
