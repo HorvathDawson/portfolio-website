@@ -1,37 +1,7 @@
-import { marked } from 'marked';
-import markedKatex from 'marked-katex-extension';
 import { parseFrontmatter, toPostMeta, type PostMeta } from './frontmatter';
 import { loadPostRaw, postPath } from './cars';
 import { substitutePostBody } from './a40Constants';
-
-marked.use(markedKatex({ throwOnError: false, nonStandard: true }));
-
-const ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
-const decodeEntities = (s: string) => s.replace(/&(amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e]);
-
-/** Heading ids already used in the post being parsed (reset per post). */
-const usedHeadingIds = new Map<string, number>();
-
-/** GitHub-style heading slug, so `./post#some-heading` links resolve. */
-function headingId(html: string): string {
-  const base = decodeEntities(html.replace(/<[^>]+>/g, ''))
-    .trim()
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s_-]/gu, '')
-    .replace(/\s/g, '-');
-  const n = usedHeadingIds.get(base) ?? 0;
-  usedHeadingIds.set(base, n + 1);
-  return n === 0 ? base : `${base}-${n}`;
-}
-
-marked.use({
-  renderer: {
-    heading({ tokens, depth }) {
-      const inner = this.parser.parseInline(tokens);
-      return `<h${depth} id="${headingId(inner)}">${inner}</h${depth}>\n`;
-    },
-  },
-});
+import { decodeEntities, renderMarkdown } from './markdown';
 
 export type { Status, PostKind, PostMeta } from './frontmatter';
 
@@ -55,8 +25,7 @@ export function parsePost(raw: string, car: string, slug: string): BlogPost {
   const { meta, body: md } = parseFrontmatter(raw);
   // A40 posts write numbers as {{constant}} (content/a40/constants.yaml); unknown names throw.
   const body = substitutePostBody(car, slug, md);
-  usedHeadingIds.clear();
-  const html = (marked.parse(body, { async: false }) as string)
+  const html = renderMarkdown(body)
     // Lazy-load post images so long posts don't download every plot up front.
     .replace(/<img /g, '<img loading="lazy" decoding="async" ')
     // Post-to-post links are written relative (./slug). Make them absolute so

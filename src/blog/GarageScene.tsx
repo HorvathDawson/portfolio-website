@@ -71,6 +71,74 @@ const Art: React.FC<{ car: Car; onMissing?: () => void }> = ({ car, onMissing })
 
 /* ── Bay ───────────────────────────────────────────── */
 
+/** A bay's drawing: siding, door frame, lit interior, the car (+ reflection and lamps) and the roll-up door. */
+const BayStage: React.FC<{ car: Car; carRef?: (el: HTMLDivElement | null) => void }> = ({ car, carRef }) => {
+  const [missing, setMissing] = useState(false);
+  const rig = RIGS[car.id] ?? DEFAULT_RIG;
+  return (
+    <div className="gs-stage" aria-hidden="true">
+      <div className="gs-facade" />
+      <div className="gs-frame" />
+      <div className="gs-opening">
+        <svg className="gs-interior" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M0 0 L14 16 L86 16 L100 0 M14 16 L14 74 L86 74 L86 16 M14 74 L0 100 M86 74 L100 100" />
+          <path className="gs-interior-shelf" d="M18 44 L34 44 M18 52 L34 52 M70 40 L82 40 L82 60 L70 60 Z" />
+        </svg>
+        <div className="gs-light">
+          <div className="gs-wash" />
+          <div className="gs-tube-glow" />
+        </div>
+        <div className="gs-tube" />
+        <div className="gs-reflect">
+          {!missing && <Art car={car} />}
+        </div>
+        <div className="gs-car" ref={carRef}>
+          <div className="gs-car-body">
+            {missing ? (
+              <div className="gs-art-missing"><span>{car.model}</span><small>art coming soon</small></div>
+            ) : (
+              <Art car={car} onMissing={() => setMissing(true)} />
+            )}
+            {!missing && rig.lamps.map(([x, y], i) => (
+              <span key={i} className="gs-lamp" style={{ left: `${x * 100}%`, top: `${y * 100}%` }} />
+            ))}
+          </div>
+        </div>
+        <div className="gs-door-clip">
+          <div className="gs-door"><span className="gs-door-handle" /></div>
+        </div>
+      </div>
+      <div className="gs-floor">
+        <div className="gs-spill" />
+      </div>
+    </div>
+  );
+};
+
+/** Roof, vent and the neon sign over the bays. */
+const Roof: React.FC<{ sign: string }> = ({ sign }) => (
+  <div className="gs-top" aria-hidden="true">
+    <div className="gs-sign">
+      <span className="gs-sign-text gs-sign-text--off">{sign}</span>
+      <span className="gs-sign-text gs-sign-text--on">{sign}</span>
+    </div>
+    <svg className="gs-roof" viewBox="0 0 1000 100" preserveAspectRatio="none">
+      <path className="gs-roof-gable" d="M0 100 L500 14 L1000 100 Z" />
+      <path className="gs-roof-board" d="M-26 94 L500 3 L1026 94 L1026 102 L500 12 L-26 102 Z" />
+    </svg>
+    <svg className="gs-vent" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="17" />
+      <path d="M8 13 H32 M5 20 H35 M8 27 H32" />
+    </svg>
+  </div>
+);
+
+const bayStyle = (car: Car) => ({
+  '--car-accent': car.accent,
+  '--ar': `${car.art.width} / ${car.art.height}`,
+  '--drive': (RIGS[car.id] ?? DEFAULT_RIG).drive,
+} as React.CSSProperties);
+
 interface BayProps {
   car: Car;
   href: string;
@@ -81,54 +149,11 @@ interface BayProps {
 }
 
 const Bay: React.FC<BayProps> = ({ car, href, state, carRef, onActivate, renderMeta }) => {
-  const [missing, setMissing] = useState(false);
-  const rig = RIGS[car.id] ?? DEFAULT_RIG;
   const nameId = `gs-bay-${car.id}`;
-  const style = {
-    '--car-accent': car.accent,
-    '--ar': `${car.art.width} / ${car.art.height}`,
-    '--drive': rig.drive,
-  } as React.CSSProperties;
-
   return (
-    <li className={`gs-bay is-${state}`} style={style} data-bay={car.id}>
+    <li className={`gs-bay is-${state}`} style={bayStyle(car)} data-bay={car.id}>
       <a href={href} className="gs-bay-link" aria-labelledby={nameId} data-bay-link onClick={(e) => onActivate(e, car)}>
-        <div className="gs-stage" aria-hidden="true">
-          <div className="gs-facade" />
-          <div className="gs-frame" />
-          <div className="gs-opening">
-            <svg className="gs-interior" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <path d="M0 0 L14 16 L86 16 L100 0 M14 16 L14 74 L86 74 L86 16 M14 74 L0 100 M86 74 L100 100" />
-              <path className="gs-interior-shelf" d="M18 44 L34 44 M18 52 L34 52 M70 40 L82 40 L82 60 L70 60 Z" />
-            </svg>
-            <div className="gs-light">
-              <div className="gs-wash" />
-              <div className="gs-tube-glow" />
-            </div>
-            <div className="gs-tube" />
-            <div className="gs-reflect">
-              {!missing && <Art car={car} />}
-            </div>
-            <div className="gs-car" ref={carRef}>
-              <div className="gs-car-body">
-                {missing ? (
-                  <div className="gs-art-missing"><span>{car.model}</span><small>art coming soon</small></div>
-                ) : (
-                  <Art car={car} onMissing={() => setMissing(true)} />
-                )}
-                {!missing && rig.lamps.map(([x, y], i) => (
-                  <span key={i} className="gs-lamp" style={{ left: `${x * 100}%`, top: `${y * 100}%` }} />
-                ))}
-              </div>
-            </div>
-            <div className="gs-door-clip">
-              <div className="gs-door"><span className="gs-door-handle" /></div>
-            </div>
-          </div>
-          <div className="gs-floor">
-            <div className="gs-spill" />
-          </div>
-        </div>
+        <BayStage car={car} carRef={carRef} />
         <span className="gs-bay-name" id={nameId}>{car.name}</span>
       </a>
       <p className="gs-bay-sub">{car.year} · {car.make} {car.model}</p>
@@ -137,6 +162,24 @@ const Bay: React.FC<BayProps> = ({ car, href, state, carRef, onActivate, renderM
     </li>
   );
 };
+
+/**
+ * One lit bay, held open (door up, lights on, car in colour): the hero of a
+ * car's home page. Same markup and CSS as the /garage scene; decorative.
+ * - `sign`: text on the neon sign, e.g. "Bay 01"
+ */
+export const BayHero: React.FC<{ car: Car; sign: string }> = ({ car, sign }) => (
+  <div className="gs gs--hero" aria-hidden="true">
+    <div className="gs-building">
+      <Roof sign={sign} />
+      <ul className="gs-bays gs-bays--1">
+        <li className="gs-bay is-lit" style={bayStyle(car)}>
+          <BayStage car={car} />
+        </li>
+      </ul>
+    </div>
+  </div>
+);
 
 /* ── Scene ─────────────────────────────────────────── */
 
@@ -240,20 +283,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   return (
     <div ref={rootRef} className={['gs', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
       <div className="gs-building">
-        <div className="gs-top" aria-hidden="true">
-          <div className="gs-sign">
-            <span className="gs-sign-text gs-sign-text--off">The Garage</span>
-            <span className="gs-sign-text gs-sign-text--on">The Garage</span>
-          </div>
-          <svg className="gs-roof" viewBox="0 0 1000 100" preserveAspectRatio="none">
-            <path className="gs-roof-gable" d="M0 100 L500 14 L1000 100 Z" />
-            <path className="gs-roof-board" d="M-26 94 L500 3 L1026 94 L1026 102 L500 12 L-26 102 Z" />
-          </svg>
-          <svg className="gs-vent" viewBox="0 0 40 40">
-            <circle cx="20" cy="20" r="17" />
-            <path d="M8 13 H32 M5 20 H35 M8 27 H32" />
-          </svg>
-        </div>
+        <Roof sign="The Garage" />
         <ul className={`gs-bays gs-bays--${Math.min(cars.length, 2)}`} aria-label="Cars" onKeyDown={onKeyDown}>
           {cars.map((car) => (
             <Bay

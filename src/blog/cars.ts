@@ -42,11 +42,25 @@ interface CarFile {
   roadmap?: boolean;
   /** Build cars: top-level threads of the build, in order. */
   epics?: Epic[];
+  /** Short code for drawing numbers (`A40-FAB-02`). Defaults to the folder name in capitals. */
+  code?: string;
+  /** Car home "Key numbers": each cell joins the named constants (content/<car>/constants.yaml) with " / ". */
+  keyNumbers?: KeyNumber[];
+  /** Slug of the post that lists every constant (linked from Key numbers). */
+  constantsPost?: string;
+  /** Text of the car's 88x31 footer badge, e.g. "SR20 powered" (first word bold). */
+  badge?: string;
+}
+
+export interface KeyNumber {
+  label: string;
+  constants: string[];
 }
 
 export interface Car extends CarFile {
   /** Folder name, used in URLs: /garage/<id>. */
   id: string;
+  code: string;
   epics: Epic[];
   roadmap: boolean;
 }
@@ -57,6 +71,7 @@ export const cars: Car[] = Object.entries(carFiles)
   .map(([path, c]) => ({
     ...c,
     id: path.split('/').slice(-2)[0],
+    code: c.code ?? path.split('/').slice(-2)[0].toUpperCase(),
     epics: [...(c.epics ?? [])].sort((a, b) => a.order - b.order),
     roadmap: Boolean(c.roadmap),
   }))

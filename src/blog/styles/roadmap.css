@@ -1,0 +1,1569 @@
+/* ==========================================================
+   Roadmap pages: the map (.rm-*) and the Next up / Tree views
+   (.rv-*). Colours, type, spacing from tokens.css.
+   ========================================================== */
+
+.rm-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ── Top bar ─────────────────────────────────────── */
+
+.rm-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-4h);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  background: var(--night-1);
+  flex-shrink: 0;
+}
+
+.rm-topbar-title {
+  margin: 0;
+  font-size: var(--t-body);
+  letter-spacing: 1px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.rm-legend {
+  display: flex;
+  gap: var(--s-3);
+  font-size: var(--t-micro);
+  color: var(--ink);
+  opacity: 0.8;
+}
+.rm-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.rm-legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.rm-legend-swatch--up   { background: color-mix(in srgb, var(--st-working) 85%, transparent); }
+.rm-legend-swatch--down { background: color-mix(in srgb, var(--st-crit) 85%, transparent); }
+
+.rm-filters {
+  display: flex;
+  gap: var(--s-1h);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+.rm-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1h);
+  padding: var(--s-1) var(--s-2h);
+  border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: var(--t-micro);
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+.rm-filter--on {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+.rm-filter:hover {
+  opacity: 1;
+}
+
+/* Zoom controls (topbar). */
+.rm-zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin-left: var(--s-2);
+  border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+  border-radius: var(--r-pill);
+  padding: var(--s-0);
+}
+.rm-zoom-btn {
+  min-width: 28px;
+  height: 24px;
+  padding: 0 var(--s-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: var(--t-ui);
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.rm-zoom-btn:hover { background: color-mix(in srgb, var(--ink) 10%, transparent); }
+.rm-zoom-btn--reset { font-size: var(--t-micro); min-width: 44px; font-weight: 500; }
+
+/* Sizer wrapper around the transformed inner so the scroll container knows
+   the post-scale visual extent and scrollbars track the zoom level. */
+.rm-zoom-sizer {
+  position: relative;
+}
+
+/* \u2500\u2500 Scrollable canvas \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+
+.rm-scroll {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  cursor: grab;
+  background:
+    linear-gradient(color-mix(in srgb, var(--ink) 2%, transparent), color-mix(in srgb, var(--ink) 2%, transparent)),
+    var(--night-1);
+}
+.rm-scroll--dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+.rm-scroll--dragging * {
+  pointer-events: none;
+}
+
+/* Reserve space for the desktop drawer so the canvas remains scrollable
+   and nothing important hides under it. */
+.rm-page--drawer-open .rm-scroll {
+  padding-right: min(420px, 92vw);
+}
+
+/* Floating exit-isolation pill — pinned to the top-left of the canvas
+   in both scroll axes, like the sticky lane headers. */
+.rm-isolate-controls {
+  position: sticky;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+  width: max-content;
+  margin: var(--s-3) 0 0 0;
+}
+.rm-exit-isolate {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--s-1h) var(--s-3);
+  background: var(--accent);
+  color: var(--night-1);
+  border: none;
+  border-radius: var(--r-pill);
+  font-family: var(--f-mono);
+  font-size: var(--t-meta);
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--night-0) 50%, transparent);
+  transition: background 0.15s, transform 0.1s;
+}
+.rm-exit-isolate:hover { background: var(--ink); }
+.rm-exit-isolate:active { transform: translateY(1px); }
+
+/* Compact toggle button (always visible while isolated) — lets the user
+   collapse the chip(s) out of the way without exiting isolation. */
+.rm-isolate-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: color-mix(in srgb, var(--night-0) 55%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--night-0) 50%, transparent);
+  transition: background 0.15s, transform 0.1s;
+}
+.rm-isolate-toggle:hover { background: color-mix(in srgb, var(--night-0) 80%, transparent); }
+.rm-isolate-toggle:active { transform: translateY(1px); }
+.rm-isolate-controls--collapsed { gap: 0; }
+
+/* Mobile variant: lives inside the header bar, not floating over the canvas.
+   Removes the sticky positioning and tightens chip padding so all three
+   controls fit alongside the legend / filters / zoom row. */
+.rm-isolate-controls--header {
+  position: static;
+  margin: 0;
+  gap: var(--s-1h);
+}
+.rm-isolate-controls--header .rm-exit-isolate,
+.rm-isolate-controls--header .rm-toggle-downstream {
+  padding: var(--s-1) var(--s-2h);
+  font-size: var(--t-micro);
+  letter-spacing: 0.3px;
+}
+.rm-isolate-controls--header .rm-isolate-toggle {
+  width: 24px;
+  height: 24px;
+  font-size: var(--t-ui);
+}
+
+.rm-toggle-downstream {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--s-1h) var(--s-3);
+  background: color-mix(in srgb, var(--st-working) 18%, transparent);
+  color: color-mix(in srgb, var(--st-working) 30%, var(--ink));
+  border: 1px solid color-mix(in srgb, var(--st-working) 55%, transparent);
+  border-radius: var(--r-pill);
+  font-family: var(--f-mono);
+  font-size: var(--t-meta);
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--night-0) 50%, transparent);
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.rm-toggle-downstream:hover {
+  background: color-mix(in srgb, var(--st-working) 32%, transparent);
+  color: var(--ink);
+}
+.rm-toggle-downstream:active { transform: translateY(1px); }
+
+/* Inline +N stub for collapsed downstream cone — sits in the graph,
+   reached by a synthetic arrow from the focused card. */
+.rm-downstream-stub {
+  position: absolute;
+  transform: translate(0, -50%);
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 36px;
+  padding: 0 var(--s-3);
+  background: color-mix(in srgb, var(--st-decided) 18%, transparent);
+  color: color-mix(in srgb, var(--st-decided) 40%, var(--ink));
+  border: 2px dashed color-mix(in srgb, var(--st-decided) 70%, transparent);
+  border-radius: 18px;
+  font-family: var(--f-mono);
+  font-size: var(--t-small);
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--st-decided) 25%, transparent);
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+}
+.rm-downstream-stub:hover {
+  background: color-mix(in srgb, var(--st-decided) 32%, transparent);
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--st-decided) 45%, var(--ink));
+}
+.rm-downstream-stub:active { transform: translate(0, -50%) scale(0.97); }
+
+.rm-inner {
+  /* grid styles applied inline so col count is dynamic */
+}
+
+/* ── Lane headers + stripes ──────────────────────── */
+
+.rm-lane-header {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-3);
+  background: var(--night-1);
+  border-right: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
+  font-size: var(--t-micro);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  align-self: stretch;
+  width: 160px;
+  box-sizing: border-box;
+}
+
+.rm-lane-title {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.25;
+  flex: 1;
+  min-width: 0;
+}
+
+.rm-lane-stripe {
+  /* sit behind cards/edges */
+  z-index: 0;
+  border-radius: 4px;
+  margin: calc(-1 * var(--s-1)) calc(-1 * var(--s-3));
+  pointer-events: none;
+}
+.rm-lane-stripe--0 { background: color-mix(in srgb, var(--ink) 1.5%, transparent); }
+.rm-lane-stripe--1 { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+
+/* ── Task cells / cards ──────────────────────────── */
+
+.rm-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2h);
+  z-index: 2;
+  position: relative;
+}
+
+.rm-card {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  color: var(--ink);
+  padding: var(--s-2h) var(--s-3);
+  font-family: var(--f-mono);
+  font-size: var(--t-ui);
+  cursor: pointer;
+  /* No transform-based hover effect: it moves the card under the cursor and
+     causes mouseenter/leave flicker, especially on dense graphs.
+     IMPORTANT: opacity is intentionally NOT transitioned here. When a hover
+     cone activates, ~50 non-cone cards would otherwise cross-fade opacity
+     simultaneously, which stutters the compositor on the no-hover → hover
+     transition (hover → hover is fine because most cards stay in state).
+     The dim snaps instantly; the cone members still animate
+     border-color/box-shadow smoothly. */
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1h);
+  min-width: 0;
+  /* GPU compositing prewarm: each card gets its own compositor layer up
+     front (translateZ(0) is a guaranteed layer trigger). Once layered,
+     opacity and box-shadow changes are GPU composite operations rather
+     than CPU repaints, so the no-hover → hover dim of ~50 cards is
+     essentially free regardless of cone size. Memory cost: a few MB. */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.rm-card:hover:not(.rm-card--upstream):not(.rm-card--downstream):not(.rm-card--focused) {
+  border-color: var(--accent);
+}
+.rm-card--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 8px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+/* Specificity bump (.rm-card.rm-card--*) so highlight cone always wins over
+   bottleneck-tier glows defined later in the file. */
+.rm-card.rm-card--focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent), 0 0 8px color-mix(in srgb, var(--accent) 45%, transparent);
+  z-index: 4;
+}
+.rm-card.rm-card--upstream {
+  border-color: color-mix(in srgb, var(--st-working) 85%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-working) 60%, transparent), 0 0 6px color-mix(in srgb, var(--st-working) 30%, transparent);
+}
+.rm-card.rm-card--downstream {
+  border-color: color-mix(in srgb, var(--st-crit) 85%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-crit) 60%, transparent), 0 0 6px color-mix(in srgb, var(--st-crit) 30%, transparent);
+}
+/* When any card is focused, fade the rest. Faded state is now a direct
+   per-card class (set by React when focusedId is set and the card isn't a
+   cone member). Avoids `.rm-inner--focused .rm-card:not(...)` descendant
+   selectors which force style invalidation on every descendant whenever
+   the parent class flips. */
+.rm-card--faded {
+  opacity: 0.32;
+}
+.rm-card--dimmed {
+  opacity: 0.25;
+}
+.rm-card--planning    { border-left-color: var(--accent); }
+.rm-card--in-progress { border-left-color: var(--st-working); }
+.rm-card--decided     {
+  border-left-color: var(--icg, var(--st-complete));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--st-decided) 16%, var(--surface)) 0%, color-mix(in srgb, var(--st-complete) 24%, var(--surface)) 100%);
+  border-color: color-mix(in srgb, var(--st-complete) 70%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--st-complete) 25%, transparent);
+}
+.rm-card--complete    {
+  border-left-color: var(--icg, var(--st-complete));
+  background: linear-gradient(180deg, var(--surface) 0%, color-mix(in srgb, var(--st-complete) 14%, var(--surface)) 100%);
+  border-color: color-mix(in srgb, var(--st-complete) 45%, transparent);
+}
+.rm-card--complete .rm-card-title {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--st-complete) 60%, transparent);
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+}
+.rm-card--complete .rm-card-meta { color: var(--ink-3); }
+.rm-card--decided .rm-card-title {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--st-complete) 60%, transparent);
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+}
+.rm-card--decided .rm-card-check {
+  background: var(--icg, var(--st-complete));
+  color: color-mix(in srgb, var(--st-complete) 10%, var(--night-0));
+}
+.rm-card-decision {
+  margin-top: var(--s-1);
+  padding: var(--s-1) var(--s-2);
+  border-left: 2px solid var(--st-decided);
+  background: color-mix(in srgb, var(--st-decided) 8%, transparent);
+  color: color-mix(in srgb, var(--st-decided) 40%, var(--ink));
+  font-size: var(--t-meta);
+  font-weight: 600;
+  line-height: 1.35;
+  border-radius: 0 4px 4px 0;
+  white-space: normal;
+  text-decoration: none;
+}
+.rm-card--complete .rm-card-decision {
+  border-left-color: var(--icg, var(--st-complete));
+  background: color-mix(in srgb, var(--st-complete) 8%, transparent);
+  color: color-mix(in srgb, var(--st-complete) 40%, var(--ink));
+}
+.rm-card-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--icg, var(--st-complete));
+  color: color-mix(in srgb, var(--st-complete) 10%, var(--night-0));
+  font-size: var(--t-meta);
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+/* Kind: purchase — warm hatched tint */
+.rm-card--kind-purchase {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 8%, transparent) 0 8px,
+      transparent 8px 16px
+    ),
+    color-mix(in srgb, var(--st-complete) 18%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+/* Kind: decision — distinct cool-blue tint with dashed border */
+.rm-card--kind-decision {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--st-working) 7%, transparent) 0 8px,
+      transparent 8px 16px
+    ),
+    var(--surface-2);
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--st-working) 55%, transparent);
+}
+/* Completed decisions/purchases keep their kind tint but get the green stripe */
+.rm-card--complete.rm-card--kind-decision,
+.rm-card--complete.rm-card--kind-purchase {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--st-complete) 12%, transparent) 0%, color-mix(in srgb, var(--st-complete) 14%, var(--surface)) 100%);
+}
+/* Decided items: green diagonal stripes over a dark base — reads as "done" while
+   staying distinct from the solid-green complete look */
+.rm-card--decided.rm-card--kind-decision,
+.rm-card--decided.rm-card--kind-purchase {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--st-complete) 5%, transparent) 0 10px,
+      transparent 10px 20px
+    ),
+    color-mix(in srgb, var(--st-complete) 14%, var(--surface));
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--st-complete) 70%, transparent);
+}
+
+.rm-card-kind {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  font-size: var(--t-micro);
+  font-weight: bold;
+  flex-shrink: 0;
+}
+.rm-card-kind--purchase {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.rm-card-kind--decision {
+  border: 1px solid var(--st-working);
+  color: var(--st-working);
+  border-radius: 50%;
+}
+.rm-drawer-kind {
+  display: inline-block;
+  padding: 1px var(--s-2);
+  border-radius: var(--r-pill);
+  font-size: var(--t-micro);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.rm-drawer-kind--purchase { border: 1px solid var(--accent); color: var(--accent); }
+.rm-drawer-kind--decision { border: 1px solid var(--st-working); color: var(--st-working); }
+
+/* Isolate-this-path button in the drawer */
+.rm-isolate-btn {
+  display: block;
+  width: 100%;
+  margin: var(--s-2) 0 0;
+  padding: var(--s-2) var(--s-3);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 4px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--t-meta);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.rm-isolate-btn:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+}
+.rm-isolate-btn--on {
+  background: var(--accent);
+  color: var(--night-1);
+  border-color: var(--accent);
+}
+
+/* Isolate mode: hide non-path cards (preserves grid layout). */
+.rm-card--hidden { visibility: hidden; pointer-events: none; }
+
+.rm-card-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.rm-card-title {
+  flex: 1;
+  font-weight: bold;
+  line-height: 1.25;
+  word-break: break-word;
+}
+.rm-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--t-micro);
+  flex-wrap: wrap;
+}
+.rm-card-posts,
+.rm-card-soft {
+  font-size: var(--t-micro);
+  color: var(--ink);
+  opacity: 0.7;
+}
+.rm-card-soft {
+  border: 1px dashed color-mix(in srgb, var(--ink) 45%, transparent);
+  border-radius: 3px;
+  padding: 0 var(--s-1);
+}
+.rm-card-defer {
+  font-size: var(--t-micro);
+  color: color-mix(in srgb, var(--st-purchase) 60%, var(--ink));
+  background: color-mix(in srgb, var(--st-purchase) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--st-purchase) 40%, transparent);
+  border-radius: 3px;
+  padding: 1px var(--s-1);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Bottleneck-purchase chips: tier 1 (low) → tier 3 (critical).
+   Tier reflects how many downstream tasks the purchase gates via hard deps. */
+.rm-card-blocks {
+  font-size: var(--t-micro);
+  border-radius: 3px;
+  padding: 1px var(--s-1);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.rm-card-blocks--t1 {
+  color: color-mix(in srgb, var(--st-working) 30%, var(--ink));
+  background: color-mix(in srgb, var(--st-working) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--st-working) 45%, transparent);
+}
+.rm-card-blocks--t2 {
+  color: color-mix(in srgb, var(--st-purchase) 40%, var(--ink));
+  background: color-mix(in srgb, var(--st-purchase) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--st-purchase) 55%, transparent);
+}
+.rm-card-blocks--t3 {
+  color: color-mix(in srgb, var(--st-blocker) 30%, var(--ink));
+  background: color-mix(in srgb, var(--st-blocker) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--st-blocker) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-blocker) 25%, transparent) inset;
+}
+
+/* Subtle outer glow on the card for top-tier bottleneck purchases so they
+   pop visually in the graph without needing the user to read every chip.
+   Kept low-radius so they don't add to per-frame paint cost during the
+   highlight-cone cross-fade. */
+.rm-card--bottleneck-2 {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-purchase) 35%, transparent), 0 1px 6px color-mix(in srgb, var(--st-purchase) 18%, transparent);
+}
+.rm-card--bottleneck-3 {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-blocker) 55%, transparent), 0 1px 8px color-mix(in srgb, var(--st-blocker) 28%, transparent);
+}
+
+/* Top-N actionable blockers — most-blocking tasks whose hard upstream deps
+   are all complete. Vivid magenta border + glow so they're impossible to
+   miss in the graph. Higher specificity than status border-left so the
+   blocker color wins on all four edges, but still loses to focus / cone
+   highlights (those use .rm-card.rm-card--focused etc., same specificity
+   but defined later in the cascade — see the focus block above for the
+   ordering rule). */
+.rm-card.rm-card--top-blocker {
+  position: relative;
+  border-color: var(--st-upstream);
+  border-left-color: var(--st-upstream);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--st-upstream) 65%, transparent),
+    0 0 14px color-mix(in srgb, var(--st-upstream) 35%, transparent);
+}
+.rm-card.rm-card--top-blocker:hover {
+  border-color: color-mix(in srgb, var(--st-upstream) 50%, var(--ink));
+  border-left-color: color-mix(in srgb, var(--st-upstream) 50%, var(--ink));
+}
+.rm-card-blocker-rank {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 var(--s-1h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--st-upstream) 10%, var(--night-0));
+  background: var(--st-upstream);
+  border: 1px solid color-mix(in srgb, var(--st-upstream) 50%, var(--ink));
+  border-radius: 11px;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--st-upstream) 55%, transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Focus / cone classes win over the blocker glow when active — match the
+   existing pattern (.rm-card.rm-card--focused etc. defined earlier in the
+   file). The blocker glow is intentionally a steady-state cue; cone glows
+   are interaction cues. */
+.rm-card.rm-card--focused.rm-card--top-blocker,
+.rm-card.rm-card--upstream.rm-card--top-blocker,
+.rm-card.rm-card--downstream.rm-card--top-blocker {
+  /* fall back to the cone color set by the cone class above */
+}
+
+.rm-drawer-blocks {
+  font-size: var(--t-micro);
+  border-radius: 3px;
+  padding: var(--s-0) var(--s-1h);
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.rm-drawer-blocks--t1 {
+  color: color-mix(in srgb, var(--st-working) 30%, var(--ink));
+  background: color-mix(in srgb, var(--st-working) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--st-working) 55%, transparent);
+}
+.rm-drawer-blocks--t2 {
+  color: color-mix(in srgb, var(--st-purchase) 40%, var(--ink));
+  background: color-mix(in srgb, var(--st-purchase) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--st-purchase) 65%, transparent);
+}
+.rm-drawer-blocks--t3 {
+  color: color-mix(in srgb, var(--st-blocker) 30%, var(--ink));
+  background: color-mix(in srgb, var(--st-blocker) 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--st-blocker) 80%, transparent);
+}
+
+/* ── SVG edge overlay ────────────────────────────── */
+
+.rm-edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rm-edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 55%, transparent);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.32;
+  /* No transition. With ~80 edges flipping opacity simultaneously on first
+     hover, the cross-fade was the dominant cause of the perceived
+     "multiple opacities" stutter. Snapping is instant and visually
+     unambiguous. Cone cards still animate box-shadow (only a handful). */
+}
+.rm-edge--hard {
+  stroke-width: 1.5;
+}
+.rm-edge--soft {
+  stroke-dasharray: 5 4;
+}
+.rm-edge--dimmed {
+  opacity: 0.06;
+}
+
+/* When something is focused, push everything else further back, */
+/* and bring the highlighted edges forward. */
+.rm-edges--focused .rm-edge--background {
+  opacity: 0.06;
+}
+/* No SVG drop-shadow filter — too expensive on large cones and causes
+   visible per-frame stutter. Brighter stroke + thicker width carries the
+   "highlighted" signal cheaply. */
+.rm-edge--highlighted {
+  opacity: 1 !important;
+  stroke-width: 2.5;
+}
+
+/* ── Drawer ──────────────────────────────────────── */
+
+.rm-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--night-0) 45%, transparent);
+  z-index: 50;
+}
+
+.rm-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(420px, 92vw);
+  background: var(--night-1);
+  border-left: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  box-shadow: -4px 0 18px color-mix(in srgb, var(--night-0) 45%, transparent);
+  z-index: 51;
+  overflow-y: auto;
+  padding: var(--s-4) var(--s-4h) var(--s-5);
+  font-family: var(--f-mono);
+  color: var(--ink);
+}
+.rm-drawer--mobile {
+  top: auto;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  width: 100vw;
+  height: 78vh;
+  border-left: none;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  box-shadow: 0 -4px 18px color-mix(in srgb, var(--night-0) 45%, transparent);
+}
+
+.rm-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2h);
+  margin-bottom: var(--s-2);
+}
+.rm-drawer-title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--t-body);
+  color: var(--accent);
+  word-break: break-word;
+}
+.rm-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  color: var(--ink);
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  padding: 0;
+  border-radius: 4px;
+  font-size: var(--t-stat);
+  line-height: 1;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  cursor: pointer;
+}
+.rm-drawer-close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.rm-drawer-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2h);
+  font-size: var(--t-micro);
+  margin-bottom: var(--s-3);
+  flex-wrap: wrap;
+}
+.rm-drawer-epic {
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.rm-drawer-summary {
+  font-size: var(--t-ui);
+  line-height: 1.55;
+  margin: 0 0 var(--s-4);
+}
+
+.rm-drawer-decision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding: var(--s-2h) var(--s-3);
+  margin: 0 0 var(--s-3);
+  border-left: 3px solid var(--st-decided);
+  background: color-mix(in srgb, var(--st-decided) 8%, transparent);
+  border-radius: 0 4px 4px 0;
+}
+.rm-drawer-decision-label {
+  font-size: var(--t-micro);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--st-decided);
+  font-weight: 700;
+}
+.rm-drawer-decision-value {
+  font-size: var(--t-ui);
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--st-decided) 20%, var(--ink));
+}
+.rm-drawer-defer-note {
+  font-size: var(--t-meta);
+  line-height: 1.45;
+  margin: 0 0 var(--s-3);
+  padding: var(--s-2) var(--s-2h);
+  border-left: 3px solid color-mix(in srgb, var(--st-purchase) 60%, transparent);
+  background: color-mix(in srgb, var(--st-purchase) 8%, transparent);
+  color: color-mix(in srgb, var(--st-purchase) 60%, var(--ink));
+  border-radius: 0 4px 4px 0;
+}
+.rm-drawer-defer-note strong {
+  color: var(--st-purchase);
+  margin-right: var(--s-1);
+}
+
+.rm-drawer-h3 {
+  font-size: var(--t-micro);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: var(--s-3) 0 var(--s-1h);
+}
+
+.rm-drawer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1h);
+  font-size: var(--t-meta);
+  line-height: 1.45;
+}
+.rm-drawer-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1h);
+}
+
+.rm-drawer-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rm-drawer-link:hover { color: var(--accent); }
+
+.rm-drawer-tasklink {
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1h);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rm-drawer-tasklink:hover { color: var(--accent); }
+
+.rm-edge-pill {
+  display: inline-block;
+  font-size: var(--t-micro);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 1px var(--s-1h);
+  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in srgb, var(--ink) 40%, transparent);
+  opacity: 0.85;
+}
+.rm-edge-pill--hard { border-style: solid;  }
+.rm-edge-pill--soft { border-style: dashed; }
+
+.rm-edge-note {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Mobile tweaks */
+@media (max-width: 991px) {
+  .rm-topbar {
+    padding: var(--s-2) var(--s-2h);
+    gap: var(--s-2);
+  }
+  .rm-topbar-title { font-size: var(--t-ui); letter-spacing: 0.5px; }
+  /* Show every legend chip but make them tiny so they fit one row alongside
+     the filters / zoom / isolate controls. */
+  .rm-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-1h) var(--s-2);
+    font-size: var(--t-micro);
+    opacity: 0.85;
+  }
+  .rm-legend-item { gap: var(--s-0); }
+  .rm-legend-swatch { width: 7px; height: 7px; }
+  /* Drop the longer hint labels on mobile to save row real estate. */
+  .rm-legend-hint { display: none; }
+  .rm-filters { width: auto; margin-left: 0; gap: var(--s-1); }
+  .rm-filter { padding: var(--s-0) var(--s-1h); font-size: var(--t-micro); gap: var(--s-1); }
+  .rm-filter .dot { width: 6px; height: 6px; }
+  .rm-zoom-btn { padding: var(--s-0) var(--s-1h); font-size: var(--t-micro); min-width: 26px; }
+  .rm-lane-header { font-size: var(--t-micro); padding: var(--s-2) var(--s-2h); }
+}
+
+/* ==========================================================
+   Post usability (GAR-005): links, scroll boxes, heading
+.rv-root {
+  --rv-planning: var(--accent);
+  --rv-in-progress: var(--st-working);
+  --rv-decided: var(--st-decided);
+  --rv-complete: var(--st-complete);
+  --rv-card-bg: var(--surface);
+  --rv-line: color-mix(in srgb, var(--ink) 18%, transparent);
+  --rv-crit: var(--st-crit);
+}
+
+/* Visible keyboard focus for everything interactive in the new views. */
+.rv-root :is(a, button, input, select, [tabindex]):focus-visible,
+.rv-switch-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── View switcher ───────────────────────────────── */
+
+.rv-switch {
+  display: inline-flex;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border-radius: var(--r-pill);
+  padding: var(--s-0);
+  gap: var(--s-0);
+}
+.rv-switch-btn {
+  padding: var(--s-0) var(--s-3);
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: var(--t-meta);
+  text-decoration: none;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+.rv-switch-btn:hover { opacity: 1; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.rv-switch-btn--on {
+  opacity: 1;
+  background: var(--accent);
+  color: var(--night-1);
+  font-weight: bold;
+}
+.rv-switch-btn--on:hover { background: var(--accent); }
+
+/* ── Shared ──────────────────────────────────────── */
+
+.rv-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.rm-page--drawer-open .rv-scroll,
+.rm-page--drawer-open .rv-tree {
+  padding-right: min(420px, 92vw);
+}
+
+.rv-h2 {
+  margin: 0 0 var(--s-1);
+  font-size: var(--t-ui);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+}
+.rv-h3 {
+  margin: 0 0 var(--s-2);
+  font-size: var(--t-meta);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1h);
+}
+.rv-h3-hint {
+  font-size: var(--t-micro);
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.55;
+}
+.rv-count {
+  font-size: var(--t-micro);
+  color: var(--ink);
+  opacity: 0.6;
+  letter-spacing: 0;
+}
+.rv-sub {
+  margin: 0 0 var(--s-3);
+  font-size: var(--t-meta);
+  opacity: 0.7;
+  line-height: 1.5;
+}
+.rv-dim { opacity: 0.6; }
+.rv-empty { font-size: var(--t-meta); margin: 0; }
+
+.rv-crit-badge {
+  font-size: var(--t-micro);
+  color: color-mix(in srgb, var(--st-crit) 35%, var(--ink));
+  background: color-mix(in srgb, var(--st-crit) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--st-crit) 60%, transparent);
+  border-radius: 3px;
+  padding: 1px var(--s-1);
+  white-space: nowrap;
+}
+
+.rv-more {
+  margin-top: var(--s-2);
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent);
+  border-radius: 4px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--t-micro);
+  padding: var(--s-1) var(--s-2h);
+  cursor: pointer;
+}
+.rv-more:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Next up ─────────────────────────────────────── */
+
+.rv-next {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--s-4) var(--s-4h) var(--s-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  box-sizing: border-box;
+}
+
+.rv-progress {
+  border: 1px solid var(--rv-line);
+  background: color-mix(in srgb, var(--ink) 2.5%, transparent);
+  padding: var(--s-3) var(--s-3);
+}
+.rv-progress-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1h) var(--s-4);
+  margin-bottom: var(--s-2h);
+}
+.rv-progress-head .rv-h2 { margin: 0; }
+.rv-progress-big {
+  font-size: var(--t-body);
+  font-weight: bold;
+  color: var(--ink);
+}
+.rv-progress-big span { font-size: var(--t-meta); font-weight: normal; opacity: 0.7; }
+.rv-progress-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-3);
+  font-size: var(--t-micro);
+  opacity: 0.75;
+}
+.rv-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--s-1h) var(--s-5);
+}
+.rv-bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 44px;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--t-micro);
+}
+.rv-bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.85; }
+.rv-bar {
+  height: 4px;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+.rv-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--st-complete);
+}
+.rv-bar-num { text-align: right; opacity: 0.7; font-variant-numeric: tabular-nums; }
+
+.rv-groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4);
+  align-items: start;
+}
+.rv-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2h);
+}
+
+.rv-card {
+  background: var(--rv-card-bg);
+  border: 1px solid var(--rv-line);
+  border-left: 3px solid var(--rv-planning);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.rv-card--in-progress { border-left-color: var(--rv-in-progress); }
+.rv-card--crit { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--st-crit) 45%, transparent); }
+.rv-card--active { border-color: var(--accent); }
+.rv-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  font-family: inherit;
+  padding: var(--s-2h) var(--s-3) var(--s-1h);
+  cursor: pointer;
+}
+.rv-card-main:hover .rv-card-title { color: var(--accent); }
+.rv-card-title {
+  display: flex;
+  gap: var(--s-1h);
+  align-items: flex-start;
+  font-size: var(--t-ui);
+  font-weight: bold;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.rv-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1h);
+  font-size: var(--t-micro);
+}
+.rv-card-body { padding: 0 var(--s-3) var(--s-2h); display: flex; flex-direction: column; gap: var(--s-1h); }
+.rv-card-unlocks { margin: 0; font-size: var(--t-micro); line-height: 1.45; opacity: 0.9; }
+.rv-card-unlocks strong { color: color-mix(in srgb, var(--st-crit) 35%, var(--ink)); }
+.rv-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1h);
+  font-size: var(--t-micro);
+}
+.rv-post-link {
+  color: var(--ink);
+  opacity: 0.8;
+  font-size: var(--t-micro);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rv-post-link:hover { opacity: 1; color: var(--accent); }
+.rv-tree-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: var(--t-micro);
+  padding: 1px var(--s-1h);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rv-tree-btn:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* Critical path chain */
+.rv-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-1);
+}
+.rv-chain-item { display: inline-flex; align-items: center; gap: var(--s-1); min-width: 0; max-width: 100%; }
+.rv-chain-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1h);
+  max-width: 100%;
+  background: var(--rv-card-bg);
+  border: 1px solid color-mix(in srgb, var(--st-crit) 55%, transparent);
+  border-left: 3px solid var(--rv-planning);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--t-micro);
+  padding: var(--s-0) var(--s-2);
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.3;
+}
+.rv-chain-btn--in-progress { border-left-color: var(--rv-in-progress); }
+.rv-chain-btn:hover,
+.rv-chain-btn--active { border-color: var(--accent); }
+.rv-chain-n { font-size: var(--t-micro); opacity: 0.6; }
+.rv-chain-arrow { color: var(--rv-crit); font-size: var(--t-meta); }
+
+/* Almost ready */
+.rv-near {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-1h) var(--s-5);
+}
+.rv-near-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2h);
+  padding: var(--s-1h) 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+  font-size: var(--t-meta);
+  min-width: 0;
+}
+.rv-near-row--crit .rv-near-task { color: color-mix(in srgb, var(--st-crit) 35%, var(--ink)); }
+.rv-near-task,
+.rv-near-blocker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1h);
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--t-meta);
+  cursor: pointer;
+  text-align: left;
+  min-width: 0;
+}
+.rv-near-task { font-weight: bold; }
+.rv-near-task .rm-card-kind { width: 15px; height: 15px; font-size: var(--t-micro); }
+.rv-near-task:hover,
+.rv-near-blocker:hover { color: var(--accent); text-decoration: underline; }
+.rv-near-wait { display: inline-flex; align-items: center; gap: var(--s-1h); font-size: var(--t-micro); min-width: 0; }
+.rv-near-blocker { font-size: var(--t-micro); }
+
+/* ── Tree ────────────────────────────────────────── */
+
+.rv-tree {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.rv-tree-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-2h) var(--s-4h);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.rv-picker { position: relative; display: flex; align-items: center; gap: var(--s-2); min-width: 0; flex: 0 1 380px; }
+.rv-picker-label {
+  font-size: var(--t-micro);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.rv-picker-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--night-0);
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border-radius: 4px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--t-meta);
+  padding: var(--s-1) var(--s-2);
+}
+.rv-picker-input::placeholder { color: var(--ink); opacity: 0.85; }
+.rv-picker-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  list-style: none;
+  margin: 0;
+  padding: var(--s-1);
+  max-height: 50vh;
+  overflow-y: auto;
+  background: var(--night-1);
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--night-0) 50%, transparent);
+}
+.rv-picker-none { padding: var(--s-1h) var(--s-2); font-size: var(--t-meta); }
+.rv-picker-opt {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--s-2);
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--t-meta);
+  padding: var(--s-1) var(--s-1h);
+  text-align: left;
+  cursor: pointer;
+}
+.rv-picker-opt:hover,
+.rv-picker-opt:focus-visible { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.rv-picker-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-picker-id { grid-column: 2; font-size: var(--t-micro); opacity: 0.5; }
+.rv-toggles { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1h); }
+.rv-toggle.rm-filter--on {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.rv-toggle-box { font-size: var(--t-micro); width: 10px; display: inline-block; }
+.rv-depth { display: inline-flex; align-items: center; gap: var(--s-1h); font-size: var(--t-micro); }
+.rv-depth select {
+  background: var(--night-0);
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: var(--t-micro);
+  padding: var(--s-0) var(--s-1);
+}
+.rv-tree-summary { margin: 0; font-size: var(--t-micro); flex-basis: 100%; }
+
+.rv-tree-box {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+  background: color-mix(in srgb, var(--ink) 2%, transparent);
+}
+.rv-tree-canvas {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--s-8);
+  padding: var(--s-4h) var(--s-5) var(--s-6);
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+}
+.rv-tree-edges {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.rv-edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 40%, transparent);
+  stroke-width: 1.4;
+}
+.rv-edge--soft { stroke-dasharray: 5 4; stroke: color-mix(in srgb, var(--ink) 30%, transparent); }
+.rv-edge--near { stroke: color-mix(in srgb, var(--accent) 75%, transparent); }
+
+.rv-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2h);
+  width: 200px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.rv-col--empty { justify-content: center; font-size: var(--t-micro); }
+.rv-col-head {
+  font-size: var(--t-micro);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.75;
+}
+.rv-col-nodes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s-3);
+}
+
+.rv-node {
+  display: flex;
+  align-items: stretch;
+  background: var(--rv-card-bg);
+  border: 1px solid var(--rv-line);
+  border-left: 3px solid var(--rv-planning);
+}
+.rv-node--in-progress { border-left-color: var(--rv-in-progress); }
+.rv-node--decided { border-left-color: var(--rv-decided); }
+.rv-node--complete { border-left-color: var(--rv-complete); }
+.rv-node--done { opacity: 0.6; }
+.rv-node--focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.rv-node--active:not(.rv-node--focus) { border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
+.rv-node-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-0);
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  font-family: inherit;
+  padding: var(--s-1h) var(--s-1) var(--s-1h) var(--s-2);
+  text-align: left;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.rv-node-main:hover .rv-node-title { color: var(--accent); }
+.rv-node-title {
+  display: flex;
+  gap: var(--s-1);
+  align-items: flex-start;
+  font-size: var(--t-meta);
+  font-weight: bold;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.rv-node-title .rm-card-kind { width: 15px; height: 15px; font-size: var(--t-micro); }
+.rv-node--focus .rv-node-title { font-size: var(--t-ui); }
+.rv-node-check { color: var(--st-complete); }
+.rv-node-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1);
+  font-size: var(--t-micro);
+}
+.rv-node-tags { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.rv-node-tags .rv-crit-badge,
+.rv-node-tags .rm-card-defer { font-size: var(--t-micro); padding: 0 var(--s-1); }
+.rv-node-more { font-size: var(--t-micro); opacity: 0.7; border: 1px dashed color-mix(in srgb, var(--ink) 40%, transparent); padding: 0 var(--s-1); border-radius: 3px; }
+.rv-node-info {
+  flex-shrink: 0;
+  width: 26px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  color: var(--accent);
+  font-size: var(--t-ui);
+  cursor: pointer;
+  padding: 0;
+}
+.rv-node-info:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+/* ── Small screens ───────────────────────────────── */
+
+@media (max-width: 991px) {
+  .rv-groups { grid-template-columns: minmax(0, 1fr); }
+  .rv-near { grid-template-columns: minmax(0, 1fr); }
+  .rv-switch-btn { padding: var(--s-0) var(--s-2); font-size: var(--t-micro); }
+}
+@media (max-width: 600px) {
+  .rv-next { padding: var(--s-3) var(--s-4) var(--s-6h); gap: var(--s-4h); }
+  .rv-bars { grid-template-columns: minmax(0, 1fr); }
+  .rv-bar-row { grid-template-columns: minmax(0, 1fr) 70px 40px; }
+  .rv-tree-controls { padding: var(--s-2) var(--s-4); gap: var(--s-2); }
+  .rv-picker { flex-basis: 100%; }
+  .rv-tree-canvas { gap: var(--s-6h); padding: var(--s-3) var(--s-4) var(--s-5); }
+  .rv-col { width: 170px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-root .dot--in-progress { animation: none; }
+  .rv-root *, .rv-switch-btn { transition: none !important; }
+}
+
+/* Chips on map cards sit on tinted, gradient cards: give them an opaque base so the text stays AA. */
+.rm-card .chip, .rm-drawer .chip { background: color-mix(in srgb, var(--st) 14%, var(--night-0)); }

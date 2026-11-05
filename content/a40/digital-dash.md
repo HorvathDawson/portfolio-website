@@ -306,7 +306,7 @@ sudo usermod -aG video,render,input,tty sr20
 
 2. Create `~/.config/sway/config`:
 
-```text
+```text title="~/.config/sway/config"
 output * transform 270          # portrait-native panel → landscape
 seat * hide_cursor 1
 default_border none
@@ -317,7 +317,7 @@ exec /home/sr20/dash_app.arm64 --display-driver wayland
 
 3. Create `/etc/systemd/system/dash.service`:
 
-```ini
+```ini title="/etc/systemd/system/dash.service"
 [Unit]
 Description=SR20 Digital Dash
 After=systemd-user-sessions.service systemd-logind.service

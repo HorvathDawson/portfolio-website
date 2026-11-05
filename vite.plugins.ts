@@ -10,6 +10,7 @@ import {
 } from './src/data/site'
 import { carAndSlug, parseFrontmatter, toPostMeta } from './src/blog/frontmatter'
 import { substitutePostBody } from './src/blog/a40Constants'
+import { headingSlugger } from './src/blog/markdown'
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -108,22 +109,8 @@ export function garageMeta(): Plugin {
 const SEARCH_ID = 'virtual:garage-search'
 const ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" }
 const decodeEntities = (s: string) => s.replace(/&(amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e])
-const plainText = (html: string) => decodeEntities(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim()
-
-/** Same rule as headingId() in src/blog/blogData.ts, so #ids from the index match the rendered post. */
-function headingSlugger() {
-  const used = new Map<string, number>()
-  return (innerHtml: string) => {
-    const base = decodeEntities(innerHtml.replace(/<[^>]+>/g, ''))
-      .trim()
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}\s_-]/gu, '')
-      .replace(/\s/g, '-')
-    const n = used.get(base) ?? 0
-    used.set(base, n + 1)
-    return n === 0 ? base : `${base}-${n}`
-  }
-}
+// Callout markers (`> [!decision]`) are syntax, not text.
+const plainText = (html: string) => decodeEntities(html.replace(/<[^>]+>/g, ' ')).replace(/\[![a-z]+\]/gi, '').replace(/\s+/g, ' ').trim()
 
 export interface SearchSection { id: string; heading: string; text: string }
 export interface SearchDoc { car: string; slug: string; title: string; sections: SearchSection[] }

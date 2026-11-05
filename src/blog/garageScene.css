@@ -2,14 +2,14 @@
    GarageScene — night-time garage, one bay per car.
    White line art (2 px, same weight as the car outlines at
    bay size) over the dark page; the site gradient
-   #f65e79 → #8a3ab9 → #4978f4 for lit things.
+   var(--g1) → var(--g2) → var(--g3) for lit things.
    Animated properties: transform and opacity only.
    ========================================================== */
 
 .gs {
-  --gs-line: rgba(252, 247, 240, 0.82);
-  --gs-line-soft: rgba(252, 247, 240, 0.16);
-  --gs-wall: #111831;
+  --gs-line: var(--line-art);
+  --gs-line-soft: color-mix(in srgb, var(--ink) 16%, transparent);
+  --gs-wall: var(--wall);
   --gs-roof-h: clamp(52px, 8.5vw, 88px);
   --gs-out: 820ms;   /* ROLL_OUT_MS in GarageScene.tsx */
   --gs-in: 850ms;    /* car part of ROLL_IN_MS */
@@ -23,10 +23,10 @@
   margin: 0 auto;
   padding: 4px 0 8px;
   overflow-x: clip;
-  color: var(--warm-white, #fcf7f0);
+  color: var(--ink);
 }
 
-/* Night haze behind the building (base #361c7d). */
+/* Night haze behind the building (base var(--haze)). */
 .gs::before {
   content: '';
   position: absolute;
@@ -34,8 +34,8 @@
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 45% at 50% 30%, rgba(54, 28, 125, 0.55), transparent 70%),
-    radial-gradient(ellipse 30% 18% at 50% 6%, rgba(246, 94, 121, 0.08), transparent 70%);
+    radial-gradient(ellipse 55% 45% at 50% 30%, color-mix(in srgb, var(--haze) 55%, transparent), transparent 70%),
+    radial-gradient(ellipse 30% 18% at 50% 6%, color-mix(in srgb, var(--g1) 8%, transparent), transparent 70%);
 }
 
 .gs-building {
@@ -62,7 +62,7 @@
 }
 .gs-roof-gable { fill: var(--gs-wall); }
 .gs-roof-board {
-  fill: #0c1124;
+  fill: var(--night-1);
   stroke: var(--gs-line);
   stroke-width: 2;
   stroke-linejoin: round;
@@ -78,7 +78,7 @@
   height: calc(var(--gs-roof-h) * 0.34);
   transform: translateX(-50%);
   fill: none;
-  stroke: rgba(252, 247, 240, 0.5);
+  stroke: color-mix(in srgb, var(--ink) 50%, transparent);
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
@@ -91,13 +91,13 @@
   z-index: 0;
   display: grid;
   padding: 0.45em 1.1em 0.5em;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--f-mono);
   font-weight: 700;
   font-size: clamp(14px, 2.2vw, 22px);
   line-height: 1.2;
   border: 2px solid var(--gs-line);
   border-radius: 8px;
-  background: #0a0f22;
+  background: var(--night-0);
   transform: translateX(-50%);
 }
 /* Posts down to the ridge (hidden behind the roof below it). */
@@ -119,7 +119,7 @@
   inset: -60% -25%;
   z-index: -2;
   pointer-events: none;
-  background: radial-gradient(ellipse closest-side, rgba(246, 94, 121, 0.22), rgba(138, 58, 185, 0.1) 55%, transparent);
+  background: radial-gradient(ellipse closest-side, color-mix(in srgb, var(--g1) 22%, transparent), color-mix(in srgb, var(--g2) 10%, transparent) 55%, transparent);
   animation: gs-sign-on 2.4s step-end 0.5s both;
 }
 .gs-sign-text {
@@ -131,16 +131,11 @@
 }
 .gs-sign-text--off {
   color: transparent;
-  -webkit-text-stroke: 1px rgba(246, 94, 121, 0.4);
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--g1) 40%, transparent);
 }
 .gs-sign-text--on {
-  color: #ffeef3;
-  text-shadow:
-    0 0 1px #fff,
-    0 0 5px #f65e79,
-    0 0 12px #f65e79,
-    0 0 24px #8a3ab9,
-    0 0 42px rgba(73, 120, 244, 0.55);
+  color: var(--neon-ink);
+  text-shadow: var(--neon-glow);
   animation: gs-sign-on 2.4s step-end 0.5s both;
 }
 
@@ -205,7 +200,7 @@
   box-sizing: border-box;
   border-left: 2px solid var(--gs-line);
   background:
-    repeating-linear-gradient(to bottom, transparent 0 13px, rgba(252, 247, 240, 0.035) 13px 14px),
+    repeating-linear-gradient(to bottom, transparent 0 13px, color-mix(in srgb, var(--ink) 3.5%, transparent) 13px 14px),
     var(--gs-wall);
 }
 .gs-bay:nth-child(2n) .gs-facade,
@@ -230,7 +225,7 @@
   box-sizing: border-box;
   border: 2px solid var(--gs-line);
   border-bottom: 0;
-  background: linear-gradient(to bottom, #05081a, #0a0f24 70%, #0d1330);
+  background: linear-gradient(to bottom, var(--night-0), var(--night-0) 70%, var(--bench));
 }
 
 .gs-interior {
@@ -243,7 +238,7 @@
   stroke-width: 1;
 }
 .gs-interior path { vector-effect: non-scaling-stroke; }
-.gs-interior-shelf { stroke: rgba(252, 247, 240, 0.1); }
+.gs-interior-shelf { stroke: color-mix(in srgb, var(--ink) 10%, transparent); }
 
 /* Strip light: the tube is always drawn; .gs-light is what switches on. */
 .gs-tube,
@@ -256,12 +251,12 @@
   border-radius: 3px;
   box-sizing: border-box;
 }
-.gs-tube { border: 1.5px solid rgba(252, 247, 240, 0.4); }
+.gs-tube { border: 1.5px solid color-mix(in srgb, var(--ink) 40%, transparent); }
 .gs-tube-glow {
-  background: #fffaf0;
+  background: var(--lamp);
   box-shadow:
-    0 0 4px 1px #fff,
-    0 0 16px 4px color-mix(in srgb, var(--car-accent) 55%, #fff);
+    0 0 4px 1px var(--ink),
+    0 0 16px 4px color-mix(in srgb, var(--car-accent) 55%, var(--ink));
 }
 
 .gs-light {
@@ -277,8 +272,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 75% 95% at 50% 6%, color-mix(in srgb, var(--car-accent) 22%, rgba(255, 248, 236, 0.34)), transparent 72%),
-    radial-gradient(ellipse 55% 16% at 50% 100%, rgba(255, 248, 236, 0.12), transparent 75%);
+    radial-gradient(ellipse 75% 95% at 50% 6%, color-mix(in srgb, var(--car-accent) 22%, color-mix(in srgb, var(--lamp) 34%, transparent)), transparent 72%),
+    radial-gradient(ellipse 55% 16% at 50% 100%, color-mix(in srgb, var(--lamp) 12%, transparent), transparent 75%);
 }
 
 /* Car: sized to the opening, parked on its floor. */
@@ -315,7 +310,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px dashed rgba(252, 247, 240, 0.4);
+  border: 1px dashed color-mix(in srgb, var(--ink) 40%, transparent);
   font-size: 13px;
 }
 .gs-art-missing small { opacity: 0.6; }
@@ -329,8 +324,8 @@
   pointer-events: none;
   mix-blend-mode: screen;
   background: radial-gradient(circle closest-side,
-    rgba(255, 252, 235, 0.95) 0,
-    rgba(255, 238, 200, 0.6) 14%,
+    color-mix(in srgb, var(--lamp) 95%, transparent) 0,
+    color-mix(in srgb, var(--lamp) 60%, transparent) 14%,
     color-mix(in srgb, var(--car-accent) 30%, transparent) 38%,
     transparent 100%);
   opacity: 0;
@@ -345,8 +340,8 @@
   transform-origin: 50% 50%;
   opacity: 0.2;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to top, #000, transparent 42%);
-  mask-image: linear-gradient(to top, #000, transparent 42%);
+  -webkit-mask-image: linear-gradient(to top, black, transparent 42%);
+  mask-image: linear-gradient(to top, black, transparent 42%);
   transition: opacity 0.3s ease;
 }
 
@@ -366,10 +361,10 @@
   border-bottom: 2px solid var(--gs-line);
   background:
     repeating-linear-gradient(to bottom,
-      rgba(252, 247, 240, 0.5) 0 1.5px,
-      rgba(252, 247, 240, 0.07) 1.5px 5px,
+      color-mix(in srgb, var(--ink) 50%, transparent) 0 1.5px,
+      color-mix(in srgb, var(--ink) 7%, transparent) 1.5px 5px,
       transparent 5px var(--slat)),
-    linear-gradient(to bottom, #182042, #111834);
+    linear-gradient(to bottom, var(--surface), var(--wall));
   background-position: 0 100%;
   transform: translateY(-56%);
   transition: transform 0.95s var(--gs-ease-door) 0.15s;
@@ -381,7 +376,7 @@
   width: 10cqw;
   height: 2.6cqh;
   box-sizing: border-box;
-  border: 1.5px solid rgba(252, 247, 240, 0.7);
+  border: 1.5px solid color-mix(in srgb, var(--ink) 70%, transparent);
   border-radius: 2px;
   transform: translateX(-50%);
 }
@@ -391,14 +386,14 @@
   inset: 78% 0 0;
   z-index: 1;
   border-top: 2px solid var(--gs-line);
-  background: linear-gradient(to bottom, rgba(73, 120, 244, 0.06), transparent 75%);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--g3) 6%, transparent), transparent 75%);
 }
 .gs-spill {
   position: absolute;
   inset: 0 6%;
   opacity: 0;
   background: radial-gradient(ellipse 48% 75% at 50% 0%,
-    color-mix(in srgb, var(--car-accent) 20%, rgba(255, 248, 236, 0.16)), transparent 75%);
+    color-mix(in srgb, var(--car-accent) 20%, color-mix(in srgb, var(--lamp) 16%, transparent)), transparent 75%);
   transition: opacity 0.3s ease 0.5s;
 }
 
@@ -406,7 +401,7 @@
 .gs-bay-name {
   display: block;
   margin-top: 8px;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--f-display);
   font-size: 22px;
   line-height: 1.3;
   text-align: center;
@@ -415,14 +410,14 @@
   margin: 4px 0 6px;
   font-size: 11px;
   letter-spacing: 0.5px;
-  color: #3898ec;
+  color: var(--cyan);
   text-align: center;
 }
 .gs-bay-desc {
   max-width: 40ch;
   margin: 0 auto;
   padding: 0 12px;
-  font-family: 'Lora', serif;
+  font-family: var(--f-body);
   font-size: 14.5px;
   line-height: 1.5;
   text-align: center;
@@ -434,17 +429,17 @@
 
 /* ── Open state: hover, keyboard focus, in view (touch), driving ── */
 
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-light {
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-light {
   opacity: 1;
   transition-delay: 0s;
   animation: gs-flicker 0.75s step-end both;
 }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-door { transform: translateY(-100%); transition-delay: 0.1s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-art--colored { opacity: 1; transition-delay: 0.3s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-art--outline { opacity: 0; transition-delay: 0.45s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-lamp { opacity: 0.9; transition-delay: 0.6s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-spill { opacity: 1; transition-delay: 0.15s; }
-.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning) .gs-bay-name { color: var(--gold, #f3de40); }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-door { transform: translateY(-100%); transition-delay: 0.1s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-art--colored { opacity: 1; transition-delay: 0.3s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-art--outline { opacity: 0; transition-delay: 0.45s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-lamp { opacity: 0.9; transition-delay: 0.6s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-spill { opacity: 1; transition-delay: 0.15s; }
+.gs-bay:not(.is-dim):is(:hover, :focus-within, .is-inview, .is-leaving, .is-returning, .is-lit) .gs-bay-name { color: var(--accent); }
 
 @keyframes gs-flicker {
   0% { opacity: 0; }
@@ -460,7 +455,7 @@
 
 .gs-bay-link:focus-visible { outline: none; }
 .gs-bay-link:focus-visible .gs-frame {
-  outline: 2px solid var(--gold, #f3de40);
+  outline: 2px solid var(--accent);
   outline-offset: 6px;
 }
 .gs-bay-link:focus-visible .gs-bay-name { text-decoration: underline; text-underline-offset: 4px; }
@@ -547,3 +542,7 @@
   .gs-art--colored { transition-duration: 0.2s !important; transition-delay: 0s !important; }
   ::view-transition-group(*) { animation-duration: 0.2s; }
 }
+
+/* ── Hero: one bay held lit on a car's home page ── */
+.gs--hero .gs-bay { padding-bottom: 0; }
+.gs--hero .gs-bay .gs-facade { border-right: 2px solid var(--gs-line); }

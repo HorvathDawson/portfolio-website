@@ -1,10 +1,11 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { SearchDoc } from 'virtual:garage-search';
-import { cars, getCar, postPath } from './cars';
+import { cars, getCar, postPath, postSlugs } from './cars';
+import { IconSearch } from './components/Icons';
 
 /* ============================================================
-   Sidebar search: post titles, headings and text.
+   Shop-bar search: post titles, headings and text.
    The index (virtual:garage-search, built by vite.plugins.ts)
    is fetched on first focus, so it is not in the page bundle.
    Keyboard: "/" focuses the box, ArrowDown moves into the
@@ -78,8 +79,16 @@ const Marked: React.FC<{ text: string; terms: string[] }> = ({ text, terms }) =>
   return <>{text.split(re).map((part, i) => (i % 2 ? <mark key={i}>{part}</mark> : part))}</>;
 };
 
-export const PostSearch: React.FC<{ car: string }> = ({ car }) => {
+/**
+ * Search box with a results dropdown.
+ * - `car`: search this car's posts (an "All cars" box widens it)
+ * - `onPicked`: called after a result is chosen or Escape on an empty box (the phone panel closes)
+ * - `autoFocus`: focus the box on mount (phone panel)
+ */
+export const PostSearch: React.FC<{ car: string; onPicked?: () => void; autoFocus?: boolean }> = ({ car, onPicked, autoFocus }) => {
   const [query, setQuery] = useState('');
+  const [focused, setFocused] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [allCars, setAllCars] = useState(false);
   const [docs, setDocs] = useState<SearchDoc[]>();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -88,6 +97,9 @@ export const PostSearch: React.FC<{ car: string }> = ({ car }) => {
   const multiCar = cars.length > 1;
 
   const ensureIndex = () => { if (!docs) loadIndex().then(setDocs); };
+  // The phone panel is always mounted, so `autoFocus` alone only works once.
+  useEffect(() => { if (autoFocus) inputRef.current?.focus(); }, [autoFocus]);
+  const count = postSlugs(car).length;
 
   // "/" focuses the search box (unless typing somewhere already).
   useEffect(() => {
@@ -114,9 +126,10 @@ export const PostSearch: React.FC<{ car: string }> = ({ car }) => {
       e.preventDefault();
       if (e.key === 'Enter') first.click();
       else first.focus();
-    } else if (e.key === 'Escape' && query) {
+    } else if (e.key === 'Escape') {
       e.preventDefault();
-      setQuery('');
+      if (query) setQuery('');
+      else onPicked?.();
     }
   };
   const onListKey = (e: React.KeyboardEvent<HTMLUListElement>) => {
@@ -134,16 +147,23 @@ export const PostSearch: React.FC<{ car: string }> = ({ car }) => {
     }
   };
 
+  const onBlur = (e: React.FocusEvent) => {
+    if (!rootRef.current?.contains(e.relatedTarget as Node)) setFocused(false);
+  };
+  const open = active && focused;
+
   return (
-    <div className="post-search" role="search">
+    <div className="post-search" role="search" ref={rootRef} onFocus={() => setFocused(true)} onBlur={onBlur}>
       <label className="sr-only" htmlFor={`${listId}-q`}>Search posts</label>
       <div className="post-search-box">
+        <IconSearch />
         <input
           ref={inputRef}
+          autoFocus={autoFocus}
           id={`${listId}-q`}
           type="search"
           className="post-search-input"
-          placeholder="Search posts…"
+          placeholder={`Search ${count} sheets…`}
           title="Search post titles, headings and text (shortcut: /)"
           aria-keyshortcuts="/"
           value={query}
@@ -155,17 +175,19 @@ export const PostSearch: React.FC<{ car: string }> = ({ car }) => {
           aria-controls={listId}
           aria-describedby={`${listId}-status`}
         />
+        <kbd className="post-search-kbd" aria-hidden="true">/</kbd>
       </div>
-      {multiCar && (
-        <label className="post-search-scope">
-          <input type="checkbox" checked={allCars} onChange={(e) => setAllCars(e.target.checked)} />
-          All cars
-        </label>
-      )}
       <p className="sr-only" id={`${listId}-status`} role="status" aria-live="polite">
         {active ? (docs ? `${hits.length} ${hits.length === 1 ? 'result' : 'results'}` : 'Loading search') : ''}
       </p>
-      {active && (
+      {open && (
+        <div className="post-search-pop">
+        {multiCar && (
+          <label className="post-search-scope">
+            <input type="checkbox" checked={allCars} onChange={(e) => setAllCars(e.target.checked)} />
+            All cars
+          </label>
+        )}
         <ul className="post-search-results" id={listId} ref={listRef} onKeyDown={onListKey} aria-label="Search results">
           {!docs && <li className="post-search-empty">Loading…</li>}
           {docs && hits.length === 0 && <li className="post-search-empty">No matches.</li>}
@@ -174,7 +196,7 @@ export const PostSearch: React.FC<{ car: string }> = ({ car }) => {
               <Link
                 to={postPath(h.car, h.slug) + (h.id ? `#${h.id}` : '')}
                 className="post-search-hit"
-                onClick={() => setQuery('')}
+                onClick={() => { setQuery(''); setFocused(false); onPicked?.(); }}
               >
                 <span className="post-search-title">
                   {allCars && h.car !== car && <span className="post-search-car">{getCar(h.car)?.model} · </span>}
@@ -186,6 +208,7 @@ export const PostSearch: React.FC<{ car: string }> = ({ car }) => {
             </li>
           ))}
         </ul>
+        </div>
       )}
     </div>
   );

@@ -30,7 +30,8 @@ Hardware: a **PiCAN FD Duo Isolated (non-SMPS)**, with two MCP2518FD controllers
 - It stops ground-loop current and alternator/motor noise between the Pi supply, the Haltech ground and the column ground.
 - It keeps a wiring fault on one bus from reaching the Pi or the other bus.
 
-This only works if each isolated side is referenced to its own bus. Never wire the DCDC 12 V or the Pi supply ground into the HAT's bus-side terminals, because that bypasses the isolation.
+> [!safety]
+> This only works if each isolated side is referenced to its own bus. Never wire the DCDC 12 V or the Pi supply ground into the HAT's bus-side terminals, because that bypasses the isolation.
 
 ## Frame translation
 
@@ -71,12 +72,14 @@ def toyota_checksum(address, d):  # d = the 8 data bytes
 
 It's a plain sum, not a rolling counter. A wrong checksum gets the frame ignored.
 
-**Send rates.** Not in the DBC. Log a running Gen 4 Prius (a cheap USB-CAN adapter on the OBD port's powertrain pins, or a comma/panda device) and match its rates. Expect tens of Hz. **Verify.**
+> [!verify]
+> **Send rates.** Not in the DBC. Log a running Gen 4 Prius (a cheap USB-CAN adapter on the OBD port's powertrain pins, or a comma/panda device) and match its rates. Expect tens of Hz. **Verify.**
 
-**What the column needs.** Speed and rpm are the usual pair, but **verify which frames the Gen 4 column listens for** before trusting the gateway:
-1. Log a donor car with the column connected and note every frame on its bus.
-2. On the bench, feed only 0xB4 + 0x1C4 and check the assist changes and no fault sets.
-3. If it faults, add frames from the log one at a time (wheel speeds 0xAA and gateway/VSC frames are the likely candidates).
+> [!verify]
+> **What the column needs.** Speed and rpm are the usual pair, but **verify which frames the Gen 4 column listens for** before trusting the gateway:
+> 1. Log a donor car with the column connected and note every frame on its bus.
+> 2. On the bench, feed only 0xB4 + 0x1C4 and check the assist changes and no fault sets.
+> 3. If it faults, add frames from the log one at a time (wheel speeds 0xAA and gateway/VSC frames are the likely candidates).
 
 **Reading the column back.** The column broadcasts `EPS_STATUS` (0x262, in `toyota_nodsu_pt.dbc`) and `STEER_TORQUE_SENSOR` (0x260). Log both on `can1`: a changing driver torque confirms the column is alive, and the EPS state fields show a fault before you feel it. Use the `VAL_` lines in the DBC for the state meanings.
 

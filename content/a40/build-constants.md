@@ -9,7 +9,8 @@ tags: [reference, constants, geometry, mass]
 
 The headline numbers for the build, in one place. Other posts use these. If a post disagrees with this page, the post is out of date.
 
-**Status:** **locked** = committed, drives other dimensions. **working** = best current estimate, will change with measurement. **target** = design intent. **measure** = waiting on a measurement of the donor or the car. **open** = not decided.
+> [!note]
+> **Status:** **locked** = committed, drives other dimensions. **working** = best current estimate, will change with measurement. **target** = design intent. **measure** = waiting on a measurement of the donor or the car. **open** = not decided.
 
 The tables are generated from [`content/a40/constants.yaml`](https://github.com/HorvathDawson/portfolio-website/blob/master/content/a40/constants.yaml), the same file the other posts, the plots and the roadmap read their numbers from. To change a number, change it there.
 
