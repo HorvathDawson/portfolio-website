@@ -175,13 +175,17 @@
   --gs-rise-tower: 116px;                    /* phones and the car-home hero: billboard on the roof */
   --gs-parapet-h: clamp(20px, 2.2vw, 30px);
   --gs-pole-w: clamp(104px, 13vw, 176px);    /* desktop pole sign column */
-  --gs-plate-w: 420px;                       /* desktop bay sign plate */
   --gs-bay-solo: 560px;                      /* a lone bay (one car, the car-home hero) */
   --gs-shaft-w: 44px;                        /* phone: freight elevator */
   --gs-slab-h: 18px;                         /* phone: I-beam floor slab (borders included) */
   --gs-neon: clamp(14px, 2.2vw, 22px);       /* rooftop neon sign */
   --gs-neon-pole: clamp(14px, 1.6vw, 22px);  /* pole sign */
   --gs-stencil: clamp(11px, 1.15vw, 16px);   /* stencilled BAY 01 */
+  --gs-band: clamp(64px, 6.6vw, 96px);       /* wall band over each bay door that carries its sign */
+  --gs-band-enamel: clamp(84px, 8.2vw, 118px);
+  --gs-sign-neon: clamp(19px, 2vw, 30px);    /* neon name sign */
+  --gs-sign-enamel: clamp(17px, 1.75vw, 24px);
+  --gs-sign-paint: clamp(20px, 2.5vw, 36px); /* painted sign-writing */
 
   /* ── Layers ── */
   --z-raise: 1;

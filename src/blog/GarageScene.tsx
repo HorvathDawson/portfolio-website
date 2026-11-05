@@ -61,10 +61,23 @@ export interface GarageSceneProps {
   returning?: string | null;
   /** Called once the returning car is parked (or straight away with reduced motion). */
   onReturned?: () => void;
-  /** Extra lines under a bay's description (status chips, latest post...). */
+  /** The one short line on a bay's sign under the name (default: year · make model). */
+  signLine?: (car: Car) => string;
+  /** Extra lines under a bay's note (kept quiet; the car home has the details). */
   renderMeta?: (car: Car) => React.ReactNode;
   className?: string;
 }
+
+/** Sign treatments under review (GAR-013): a neon name sign, a porcelain enamel sign, or sign-writing painted on the wall. */
+type SignStyle = 'a' | 'b' | 'c';
+const SIGN_STYLES: SignStyle[] = ['a', 'b', 'c'];
+const DEFAULT_SIGNS: SignStyle = 'a';
+/** Temporary switch while the owner picks: `?signs=a|b|c`. Remove with the unused styles once one is chosen. */
+const signStyle = (): SignStyle => {
+  if (typeof window === 'undefined') return DEFAULT_SIGNS;
+  const v = new URLSearchParams(window.location.search).get('signs') as SignStyle | null;
+  return v && SIGN_STYLES.includes(v) ? v : DEFAULT_SIGNS;
+};
 
 /** Viewports that get the tower layout (keep in step with the 600 px phone breakpoint in garageScene.css). */
 const TOWER_QUERY = '(max-width: 600px)';
@@ -280,10 +293,11 @@ interface BayProps {
   carRef: (el: HTMLDivElement | null) => void;
   onActivate: (e: React.MouseEvent<HTMLAnchorElement>, car: Car, direct: boolean) => void;
   onLight: (e: React.SyntheticEvent) => void;
+  signLine: string;
   renderMeta?: (car: Car) => React.ReactNode;
 }
 
-const Bay: React.FC<BayProps> = ({ car, href, state, number, tower, pole, here, on, rowEnd, lowerRow, carRef, onActivate, onLight, renderMeta }) => {
+const Bay: React.FC<BayProps> = ({ car, href, state, number, tower, pole, here, on, rowEnd, lowerRow, carRef, onActivate, onLight, signLine, renderMeta }) => {
   const nameId = `gs-bay-${car.id}`;
   const cls = ['gs-bay', `is-${state}`, here && 'is-here', on && 'is-on', rowEnd && 'is-row-end', lowerRow && `is-row-${lowerRow}`].filter(Boolean).join(' ');
   return (
@@ -291,19 +305,27 @@ const Bay: React.FC<BayProps> = ({ car, href, state, number, tower, pole, here, 
       {/* Desktop, rows after the first: this bay's piece of that row's parapet. */}
       {lowerRow && <span className="gs-row-roof" aria-hidden="true"><span className="gs-parapet" /></span>}
       <a href={href} className="gs-bay-link" aria-labelledby={nameId} data-bay-link onClick={(e) => onActivate(e, car, false)}>
+        {/* The bay's sign on the wall over the door: the name (the link's label) and one short line. */}
+        <span className="gs-signband">
+          <span className="gs-signboard">
+            <span className="gs-bay-name" id={nameId}>
+              <span className="gs-bay-name-text">{car.name}</span>
+              <span className="gs-bay-name-lit" aria-hidden="true">{car.name}</span>
+            </span>
+            <span className="gs-sign-line">{signLine}</span>
+            <span className="gs-sign-sheen" aria-hidden="true" />
+          </span>
+        </span>
         <BayStage car={car} carRef={carRef} number={number} tower={tower} pole={pole} />
-        <span className="gs-bay-name" id={nameId}>{car.name}</span>
       </a>
       {/* Shown on the lit bay for touch: the "second action" that drives the car out. */}
       <a href={href} className="gs-enter" aria-label={`Enter ${car.name}`} tabIndex={on ? undefined : -1}
         onClick={(e) => onActivate(e, car, true)}>
         Enter <span aria-hidden="true">›</span>
       </a>
-      <div className="gs-bay-plate">
-        <p className="gs-bay-sub">{car.year} · {car.make} {car.model}</p>
-        <p className="gs-bay-desc">{car.description}</p>
-        {renderMeta?.(car)}
-      </div>
+      {/* Off the sign: one quiet line (the car home has the rest). */}
+      <p className="gs-bay-note">{car.description}</p>
+      {renderMeta && <div className="gs-bay-meta">{renderMeta(car)}</div>}
     </li>
   );
 };
@@ -334,9 +356,11 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   hrefFor = (car) => carPath(car.id),
   returning,
   onReturned,
+  signLine = (car) => `${car.year} · ${car.make} ${car.model}`,
   renderMeta,
   className,
 }) => {
+  const [signs] = useState(signStyle);
   const rootRef = useRef<HTMLDivElement>(null);
   const floorsRef = useRef<HTMLDivElement>(null);
   const cabRef = useRef<HTMLDivElement>(null);
@@ -579,7 +603,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   const poleAt = cols - 1;
 
   return (
-    <div ref={rootRef} className={['gs', tower && 'gs--tower', touch && 'gs--touch', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
+    <div ref={rootRef} className={['gs', `gs--signs-${signs}`, tower && 'gs--tower', touch && 'gs--touch', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
       <div className="gs-building">
         <Roof sign={tower ? 'The Garage' : undefined} hoist={tower} />
         <div className="gs-floors" ref={floorsRef}>
@@ -602,6 +626,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
                 carRef={(el) => { if (el) carEls.current.set(car.id, el); else carEls.current.delete(car.id); }}
                 onActivate={onActivate}
                 onLight={onLight(car)}
+                signLine={signLine(car)}
                 renderMeta={renderMeta}
               />
             ))}
