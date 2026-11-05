@@ -14,6 +14,7 @@
 
 :root {
   /* ── Night layers (darkest → lightest) ── */
+  --night-deep: #03050d;  /* the garage scene's unlit corners, vignette */
   --night-0: #070b1b;     /* openings, inputs, code */
   --night-1: #0c1124;     /* bars, roof board */
   --bench: #0e1430;       /* page background (the drafting bench) */
@@ -32,6 +33,7 @@
   --line-2: rgba(252, 247, 240, 0.26);
   --line-3: rgba(252, 247, 240, 0.45);
   --line-art: rgba(252, 247, 240, 0.82);  /* 2 px white line art */
+  --line-art-dim: rgba(252, 247, 240, 0.5);  /* garage line art at rest (brightens when a bay lights) */
   --tint: rgba(252, 247, 240, 0.035);     /* zebra rows, siding slats */
   --tint-2: rgba(252, 247, 240, 0.07);
 
@@ -51,6 +53,9 @@
   --neon-ink: #ffeef3;
   --neon-glow: 0 0 1px #fff, 0 0 5px var(--g1), 0 0 12px var(--g1), 0 0 24px var(--g2), 0 0 42px rgba(73, 120, 244, 0.55);
   --lamp: #fffaf0;                        /* strip-light tube */
+  --fog: rgba(118, 100, 196, 0.24);       /* low ground fog in the garage scene */
+  --wall-night: #0b1026;                  /* garage walls at night (darker than --wall) */
+  --neon-bloom: 0 0 1px #fff, 0 0 4px #fff, 0 0 9px var(--g1), 0 0 18px var(--g1), 0 0 34px var(--g2), 0 0 60px rgba(73, 120, 244, 0.7);
 
   /* ── Status (chips, dots, callouts) ── */
   --st-locked: #7fdcaa;

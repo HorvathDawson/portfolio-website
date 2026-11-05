@@ -10,9 +10,10 @@
    ========================================================== */
 
 .gs {
-  --gs-line: var(--line-art);
-  --gs-line-soft: color-mix(in srgb, var(--ink) 16%, transparent);
-  --gs-wall: var(--wall);
+  /* Gloom: line art is dimmer at rest and brightens on a lit bay; walls are darker than the page's --wall. */
+  --gs-line: var(--line-art-dim);
+  --gs-line-soft: color-mix(in srgb, var(--ink) 11%, transparent);
+  --gs-wall: var(--wall-night);
   --gs-out: 820ms;   /* ROLL_OUT_MS in GarageScene.tsx */
   --gs-in: 850ms;    /* car part of ROLL_IN_MS */
   --gs-ease-door: cubic-bezier(0.6, 0.05, 0.25, 1);
@@ -29,6 +30,11 @@
   --gs-hazard: repeating-linear-gradient(-45deg,
     color-mix(in srgb, var(--hazard) 82%, var(--wall)) 0 var(--s-1h),
     var(--hazard-dark) var(--s-1h) var(--s-3));
+  /* Soot under the roof line and faint rain streaks (two periods, so they don't look regular). */
+  --gs-grime:
+    linear-gradient(to bottom, color-mix(in srgb, var(--night-deep) 60%, transparent), transparent var(--s-7)),
+    repeating-linear-gradient(90deg, transparent 0 calc(var(--s-6) + var(--s-1h)), color-mix(in srgb, var(--night-deep) 32%, transparent) calc(var(--s-6) + var(--s-1h)) calc(var(--s-6) + var(--s-2))),
+    repeating-linear-gradient(90deg, transparent 0 calc(var(--s-7) + var(--s-2h)), color-mix(in srgb, var(--night-deep) 24%, transparent) calc(var(--s-7) + var(--s-2h)) calc(var(--s-7) + var(--s-3)));
   --gs-bolt: radial-gradient(circle closest-side, var(--steel) 0 38%, var(--steel-2) 52% 72%, transparent 86%);
 
   position: relative;
@@ -50,7 +56,7 @@
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 45% at 45% 30%, color-mix(in srgb, var(--haze) 55%, transparent), transparent 70%);
+    radial-gradient(ellipse 55% 45% at 45% 30%, color-mix(in srgb, var(--haze) 36%, transparent), transparent 70%);
 }
 
 /* Desktop: the pole sign stands in the column on the right. */
@@ -138,12 +144,26 @@
 .gs-sign::after {
   content: '';
   position: absolute;
-  inset: -60% -25%;
+  inset: -110% -45%;
   z-index: -2;
   pointer-events: none;
-  background: radial-gradient(ellipse closest-side, color-mix(in srgb, var(--g1) 22%, transparent), color-mix(in srgb, var(--g2) 10%, transparent) 55%, transparent);
+  background: radial-gradient(ellipse closest-side, color-mix(in srgb, var(--g1) 30%, transparent), color-mix(in srgb, var(--g2) 16%, transparent) 45%, color-mix(in srgb, var(--g3) 6%, transparent) 70%, transparent);
   animation: gs-sign-on 2.4s step-end 0.5s both;
 }
+/* Bloom off the tube box: a glow round the frame and inside the panel. */
+.gs-sign::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--bw-3));
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    0 0 var(--s-3) color-mix(in srgb, var(--g1) 40%, transparent),
+    0 0 var(--s-7) color-mix(in srgb, var(--g2) 30%, transparent),
+    inset 0 0 var(--s-4) color-mix(in srgb, var(--g1) 22%, transparent);
+  animation: gs-sign-on 2.4s step-end 0.5s both;
+}
+.gs--back .gs-sign::before { animation: none; }
 .gs-sign-text {
   grid-area: 1 / 1;
   padding-left: 0.24em; /* balance the letter-spacing */
@@ -157,7 +177,7 @@
 }
 .gs-sign-text--on {
   color: var(--neon-ink);
-  text-shadow: var(--neon-glow);
+  text-shadow: var(--neon-bloom);
   animation: gs-sign-on 2.4s step-end 0.5s both;
 }
 
@@ -197,6 +217,18 @@
   pointer-events: none;
 }
 /* Ground line under the pole and the yard. */
+/* Ground fog round the foot of the pole. */
+.gs-pole::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: calc(-1 * var(--s-2));
+  bottom: calc(-1 * var(--s-6));
+  height: var(--s-8);
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 50% at 50% 60%, var(--fog), transparent 80%);
+}
 .gs-pole::after {
   content: '';
   position: absolute;
@@ -243,7 +275,7 @@
 }
 .gs-sign--pole .gs-sign-word { display: block; }
 .gs-sign--pole .gs-sign-word:first-child { font-size: max(var(--t-micro), 0.62em); letter-spacing: 0.5em; }
-.gs-sign--pole::after { inset: -30% -50%; }
+.gs-sign--pole::after { inset: -55% -85%; }
 .gs-pole-sub {
   position: relative;
   margin-top: var(--s-2h);
@@ -353,7 +385,7 @@
   inset: 0 0 22%;
   box-sizing: border-box;
   border-left: var(--bw-3) solid var(--gs-line);
-  background: var(--gs-corrugated), var(--gs-wall);
+  background: var(--gs-grime), var(--gs-corrugated), var(--gs-wall);
 }
 .gs-bay.is-row-end .gs-facade { border-right: var(--bw-3) solid var(--gs-line); }
 
@@ -415,17 +447,31 @@
 }
 .gs-walllamp path { vector-effect: non-scaling-stroke; }
 .gs-walllamp-bulb { fill: var(--night-0); stroke-width: var(--bw-2); transition: fill 0.2s ease; }
+/* The bulb's bloom on the wall. */
+.gs-walllamp::before {
+  content: '';
+  position: absolute;
+  left: -60%;
+  right: -60%;
+  top: 20%;
+  height: 170%;
+  pointer-events: none;
+  background: radial-gradient(ellipse closest-side, color-mix(in srgb, var(--lamp) 34%, transparent), color-mix(in srgb, var(--car-accent) 10%, transparent) 50%, transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease 0.55s;
+}
 .gs-walllamp-glow {
   position: absolute;
   left: -110%;
   right: -110%;
-  top: 55%;
-  height: 380%;
+  top: 70%;
+  height: 420%;
   pointer-events: none;
-  background: radial-gradient(ellipse 50% 70% at 50% 8%, color-mix(in srgb, var(--lamp) 34%, transparent), color-mix(in srgb, var(--car-accent) 10%, transparent) 45%, transparent 72%);
-  /* Fade in under the shade, so the glow has no top edge. */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%);
-  mask-image: linear-gradient(to bottom, transparent, black 30%);
+  /* A volumetric cone from the shade down the wall. */
+  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--lamp) 42%, transparent), color-mix(in srgb, var(--lamp) 14%, transparent) 55%, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 60% 100% at 50% 0%, black 40%, transparent);
+  mask-image: radial-gradient(ellipse 60% 100% at 50% 0%, black 40%, transparent);
   opacity: 0;
   transition: opacity 0.2s ease 0.55s;
 }
@@ -441,6 +487,7 @@
   background:
     linear-gradient(to bottom, var(--surface), var(--gs-wall)) top / 100% 6.4% no-repeat,
     var(--gs-hazard);
+  background-clip: padding-box; /* the line art is translucent at rest */
 }
 
 .gs-opening {
@@ -451,7 +498,7 @@
   box-sizing: border-box;
   border: var(--bw-3) solid var(--gs-line);
   border-bottom: 0;
-  background: linear-gradient(to bottom, var(--night-0), var(--night-0) 70%, var(--bench));
+  background: linear-gradient(to bottom, var(--night-deep), var(--night-deep) 60%, var(--night-0));
 }
 
 .gs-interior {
@@ -499,7 +546,17 @@
   inset: 0;
   background:
     radial-gradient(ellipse 75% 95% at 50% 6%, color-mix(in srgb, var(--car-accent) 22%, color-mix(in srgb, var(--lamp) 34%, transparent)), transparent 72%),
-    radial-gradient(ellipse 55% 16% at 50% 100%, color-mix(in srgb, var(--lamp) 12%, transparent), transparent 75%);
+    radial-gradient(ellipse 60% 24% at 50% 100%, color-mix(in srgb, var(--car-accent) 34%, color-mix(in srgb, var(--g2) 18%, transparent)), transparent 78%);
+}
+/* The strip light's beam down to the floor. */
+.gs-beam {
+  position: absolute;
+  top: 7cqh;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  clip-path: polygon(31% 0, 69% 0, 97% 100%, 3% 100%);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--lamp) 24%, transparent), color-mix(in srgb, var(--car-accent) 9%, transparent) 65%, transparent);
 }
 
 /* Car: sized to the opening, parked on its floor. */
@@ -557,6 +614,17 @@
   opacity: 0;
   transition: opacity 0.25s ease;
 }
+/* Headlight beam thrown ahead of the car. */
+.gs-lamp::after {
+  content: '';
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: -55%;
+  right: -55%;
+  background: radial-gradient(ellipse closest-side, color-mix(in srgb, var(--lamp) 30%, transparent), color-mix(in srgb, var(--car-accent) 10%, transparent) 55%, transparent);
+  transform: translateX(calc(var(--drive) * 28%));
+}
 
 /* Mirror image on the polished floor. */
 .gs-reflect {
@@ -587,10 +655,10 @@
   border-bottom: var(--bw-3) solid var(--gs-line);
   background:
     repeating-linear-gradient(to bottom,
-      color-mix(in srgb, var(--ink) 50%, transparent) 0 var(--bw-2),
+      color-mix(in srgb, var(--ink) 36%, transparent) 0 var(--bw-2),
       color-mix(in srgb, var(--ink) 7%, transparent) var(--bw-2) var(--s-1h),
       transparent var(--s-1h) var(--slat)),
-    linear-gradient(to bottom, var(--surface), var(--wall));
+    linear-gradient(to bottom, var(--wall), var(--night-0));
   background-position: 0 100%;
   transform: translateY(-56%);
   transition: transform 0.95s var(--gs-ease-door) 0.15s;
@@ -634,9 +702,29 @@
   position: absolute;
   inset: 0 6%;
   opacity: 0;
-  background: radial-gradient(ellipse 48% 75% at 50% 0%,
-    color-mix(in srgb, var(--car-accent) 20%, color-mix(in srgb, var(--lamp) 16%, transparent)), transparent 75%);
+  background: radial-gradient(ellipse 52% 85% at 50% 0%,
+    color-mix(in srgb, var(--car-accent) 32%, color-mix(in srgb, var(--lamp) 18%, transparent)), color-mix(in srgb, var(--g2) 10%, transparent) 45%, transparent 78%);
   transition: opacity 0.3s ease 0.5s;
+}
+
+/* Low fog over the ground, in front of the door's foot; tinted by the bay's light when it's on. */
+.gs-fog {
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  top: 68%;
+  height: 26%;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse 65% 50% at 50% 55%, var(--fog), transparent 80%);
+}
+.gs-fog::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 45% 45% at 50% 50%, color-mix(in srgb, var(--car-accent) 26%, transparent), color-mix(in srgb, var(--lamp) 7%, transparent) 55%, transparent 80%);
+  opacity: 0;
+  transition: opacity 0.4s ease 0.5s;
 }
 
 /* ── Sign plates: the bay's name and info on an enamel plate ──
@@ -649,7 +737,7 @@
   width: min(100% - var(--s-6), var(--gs-plate-w));
   margin-inline: auto;
   border: var(--bw-3) solid var(--gs-line);
-  background-color: var(--surface);
+  background-color: var(--sheet);
   background-repeat: no-repeat;
   background-size: var(--s-2) var(--s-2);
 }
@@ -710,7 +798,7 @@
   height: var(--s-1h);
   box-sizing: border-box;
   border: var(--bw-2) solid currentColor;
-  background: var(--surface);
+  background: var(--sheet);
 }
 .gs-bay-plate .garage-tile-stats { margin-top: var(--s-2); }
 /* The latest post on a smaller plate, bolted at both ends. */
@@ -748,7 +836,9 @@
   border: var(--bw-3) solid var(--accent-ink);
   border-radius: var(--r-1);
   background: var(--accent);
-  box-shadow: var(--shadow-hard);
+  box-shadow: var(--shadow-hard),
+    0 0 var(--s-4) color-mix(in srgb, var(--accent) 55%, transparent),
+    0 0 var(--s-7) color-mix(in srgb, var(--accent) 28%, transparent);
   color: var(--accent-ink);
   font: 700 var(--t-meta) / 1 var(--f-mono);
   letter-spacing: var(--track-label);
@@ -794,6 +884,13 @@
 .gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-walllamp-bulb { fill: var(--lamp); }
 .gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-bay-name,
 .gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-bay-name { color: var(--accent); }
+
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within),
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) { --gs-line: var(--line-art); }
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-fog::after,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-fog::after,
+.gs:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-walllamp::before,
+.gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-walllamp::before { opacity: 1; transition-delay: 0.1s; }
 
 @keyframes gs-flicker {
   0% { opacity: 0; }
@@ -899,7 +996,7 @@
   z-index: 2;
   border: var(--bw-3) solid var(--gs-line);
   border-top: 0;
-  background: var(--gs-corrugated), var(--gs-wall);
+  background: var(--gs-grime), var(--gs-corrugated), var(--gs-wall);
 }
 /* Ground line, a little wider than the building. */
 .gs--tower .gs-floors::after {
@@ -936,8 +1033,10 @@
 .gs--tower .gs-opening { inset: 21.5% 10.5% 13%; }
 .gs--tower .gs-floor {
   inset: 87% 0 0;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--g3) 9%, var(--night-1)), var(--night-1));
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--g3) 9%, var(--night-0)), var(--night-deep));
 }
+/* Fog drifting along each floor's deck, between the storeys (stops short of the sign plate). */
+.gs--tower .gs-fog { top: 78%; height: 30%; left: 0; right: 0; }
 .gs--tower .gs-car,
 .gs--tower .gs-reflect { width: min(86cqw, calc(82cqh * var(--ar))); }
 /* The deck is shallow: a shorter reflection. */
@@ -1004,7 +1103,7 @@
 .gs-call-off { color: var(--ink-4); }
 .gs-call-on {
   color: var(--neon-ink);
-  text-shadow: var(--neon-glow);
+  text-shadow: var(--neon-bloom);
   opacity: 0;
   transition: opacity var(--dur-2) ease;
 }

@@ -21,10 +21,10 @@ import './garageScene.css';
    `returning` plays the reverse on mount. Only transforms and
    opacity are animated.
 
-   Touch has no hover, so a tap lights a bay first (and shows an
-   "Enter ›" button on it); tapping the lit bay's car again, or
-   Enter, drives it out. Tapping outside or Esc turns it off.
-   Scrolling alone never opens anything.
+   Touch has no hover: the bay nearest the middle of the screen
+   opens as you scroll, with an "Enter ›" button on it; tapping
+   the open bay's car, or Enter, drives it out. Tapping a closed
+   bay scrolls to it and opens it (it never navigates).
 
    Phones (≤ 600 px, TOWER_QUERY) get the "garage tower": the
    same building stacked one floor per car on steel I-beam
@@ -68,7 +68,8 @@ export interface GarageSceneProps {
 
 /** Viewports that get the tower layout (keep in step with the 600 px phone breakpoint in garageScene.css). */
 const TOWER_QUERY = '(max-width: 600px)';
-const TOUCH_QUERY = '(hover: none)';
+/** Touch screens: no hover, or a coarse pointer (iPads with a trackpad report hover, phones may not report `hover: none`). */
+const TOUCH_QUERY = '(hover: none), (pointer: coarse)';
 
 /** Live matchMedia result (false outside the browser). */
 function useMedia(query: string) {
@@ -210,6 +211,7 @@ const BayStage: React.FC<StageProps> = ({ car, carRef, number, tower, pole }) =>
         </svg>
         <div className="gs-light">
           <div className="gs-wash" />
+          <div className="gs-beam" />
           <div className="gs-tube-glow" />
         </div>
         <div className="gs-tube" />
@@ -238,6 +240,8 @@ const BayStage: React.FC<StageProps> = ({ car, carRef, number, tower, pole }) =>
       <div className="gs-floor">
         <div className="gs-spill" />
       </div>
+      {/* Low fog along the ground, tinted by the bay's light when it's on. */}
+      <span className="gs-fog" />
       {tower && number && (
         /* Tower only: this floor's landing on the freight elevator (lit floor number, cross-braced hoistway). */
         <span className="gs-landing">
@@ -338,7 +342,10 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   const cabRef = useRef<HTMLDivElement>(null);
   const carEls = useRef(new Map<string, HTMLDivElement>());
   const tower = useMedia(TOWER_QUERY);
-  const touch = useMedia(TOUCH_QUERY);
+  // Touch: the media query, or any touch press seen on the page (robust on phones that misreport media features).
+  const touchMedia = useMedia(TOUCH_QUERY);
+  const [sawTouch, setSawTouch] = useState(false);
+  const touch = touchMedia || sawTouch;
   const back = cars.findIndex((c) => c.id === returning);
   // The lit bay (tap / keyboard focus; null = none). Coming back on a touch screen, the returning car's bay stays lit.
   const [lit, setLit] = useState<number | null>(() => (back >= 0 && matches(TOUCH_QUERY) ? back : null));
@@ -350,6 +357,17 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   );
   // How the current press started, and what was lit before it (a tap focuses the link before its click).
   const press = useRef<{ type: string; lit: number | null }>({ type: '', lit: null });
+  // Touch: after a tap opens a floor, scroll picks wait until the page has scrolled it into place.
+  const pickLock = useRef(0);
+  const litRef = useRef(lit);
+  useEffect(() => { litRef.current = lit; }, [lit]);
+
+  useEffect(() => {
+    if (sawTouch) return;
+    const onDown = (e: PointerEvent) => { if (e.pointerType === 'touch') setSawTouch(true); };
+    document.addEventListener('pointerdown', onDown, { passive: true });
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [sawTouch]);
 
   const light = (i: number | null) => {
     setLit(i);
@@ -389,9 +407,45 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tower]);
 
-  // A lit bay goes dark on a tap / click outside the bays, or Esc.
+  // Touch: the bay nearest the middle of the viewport opens as you scroll (and the elevator follows it).
+  // The probe line slides from 30 % to 75 % of the viewport with scroll progress, so the last floor is
+  // reachable even when it can't reach the middle. Reads only, rAF-throttled, passive listener.
   useEffect(() => {
-    if (lit === null || leaving) return;
+    const wrap = floorsRef.current;
+    if (!touch || !wrap || leaving) return;
+    let raf = 0;
+    const pick = () => {
+      raf = 0;
+      if (performance.now() < pickLock.current) return;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      const probe = window.innerHeight * (0.3 + 0.45 * progress);
+      const d = [...wrap.querySelectorAll('.gs-stage')].map((st) => {
+        const r = st.getBoundingClientRect();
+        return Math.abs(r.top + r.height / 2 - probe);
+      });
+      if (!d.length) return;
+      let best = d.indexOf(Math.min(...d));
+      // Bays side by side tie: keep the one that is already open.
+      const cur = litRef.current;
+      if (cur !== null && d[cur] !== undefined && d[cur] - d[best] < 2) best = cur;
+      setLit(best);
+      setFloor(best);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(pick); };
+    pick();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [touch, tower, cars, leaving]);
+
+  // Mouse / keyboard: a lit bay goes dark on a click outside the bays, or Esc. (On touch, scrolling decides.)
+  useEffect(() => {
+    if (lit === null || leaving || touch) return;
     const root = rootRef.current;
     const onDown = (e: PointerEvent) => {
       const t = e.target as Element | null;
@@ -409,7 +463,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
       document.removeEventListener('pointerdown', onDown);
       document.removeEventListener('keydown', onKey);
     };
-  }, [lit, leaving]);
+  }, [lit, leaving, touch]);
 
   // Tower: move the cab to its floor (a transform), sized to that floor's landing.
   useLayoutEffect(() => {
@@ -467,7 +521,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
     e.preventDefault();
     if (leaving) return;
     if (tap && !direct && litBefore !== i) {
-      light(i);
+      openByTap(i, e.currentTarget);
       return;
     }
     if (tower) setFloor(i);
@@ -480,10 +534,22 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
     window.setTimeout(() => enter(car, true), ROLL_OUT_MS);
   };
 
+  /** Touch: a tap on a closed bay opens it and scrolls it to the middle (scroll picks wait for that). */
+  const openByTap = (i: number, el: Element) => {
+    const smooth = !reducedMotion();
+    pickLock.current = performance.now() + (smooth ? 900 : 150);
+    light(i);
+    el.closest('.gs-bay')?.querySelector('.gs-stage')?.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' });
+  };
+
   /** Focus (keyboard) or a tap on a bay's labels lights it, on touch screens and in the tower. */
   const onLight = (car: Car) => (e: React.SyntheticEvent) => {
     if (leaving || !(tower || touch)) return;
-    if (e.type === 'click' && (press.current.type !== 'touch' || (e.target as Element).closest('a'))) return;
+    if (e.type === 'click') {
+      if (press.current.type !== 'touch' || (e.target as Element).closest('a')) return;
+      if (lit !== cars.indexOf(car)) openByTap(cars.indexOf(car), e.target as Element);
+      return;
+    }
     light(cars.indexOf(car));
   };
 
