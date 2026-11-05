@@ -1,16 +1,16 @@
 /* ============================================================
-   A40 Roadmap — pure layout
+   Roadmap — pure layout
    ------------------------------------------------------------
    Computes swim-lane positions for each task. Pure / no React,
    so a future DAG renderer can ignore this and consume the raw
    `roadmap` directly.
 
-   - laneIndex  → epic order in `epics`
+   - laneIndex  → epic order in the roadmap car's car.json
    - col        → topological depth (longest path from a root),
                   clamped to >= 0. `task.order` overrides depth.
    ============================================================ */
 
-import { epics, type Epic } from './blogData';
+import { roadmapCar, type Epic } from './cars';
 import type { Roadmap, RoadmapTask, TaskId } from './roadmapData';
 
 export interface LaneNode {
@@ -68,7 +68,7 @@ export function computeLayout(roadmap: Roadmap): LaneLayout {
   }
 
   // Lane index per epic (only epics with at least one task get a row).
-  const epicsWithTasks = epics.filter((e) =>
+  const epicsWithTasks = roadmapCar.epics.filter((e) =>
     roadmap.tasks.some((t) => t.epic === e.id),
   );
   const laneIndex = new Map<string, number>(

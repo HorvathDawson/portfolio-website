@@ -4,24 +4,33 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.css'
 import App from './App.tsx'
 import { NotFound } from './components/NotFound.tsx'
+import { LegacyRedirect } from './components/LegacyRedirect.tsx'
+import { RouteErrorBoundary } from './components/RouteErrorBoundary.tsx'
+import { PageLoader } from './components/SlimeLoader.tsx'
 
-// The A40 build log pulls in marked, KaTeX and ~150 KB of roadmap data, so it
-// is split into its own chunks and only downloaded when a blog route is visited.
-const A40Blog = lazy(() => import('./blog/A40Blog.tsx').then((m) => ({ default: m.A40Blog })))
-const A40Roadmap = lazy(() => import('./blog/A40Roadmap.tsx').then((m) => ({ default: m.A40Roadmap })))
+// The garage pulls in marked, KaTeX and the roadmap data, so each page
+// is split into its own chunk and only downloaded when a garage route is
+// visited. Post bodies are split further, one chunk per post (see cars.ts).
+const GarageSelector = lazy(() => import('./blog/GarageSelector.tsx').then((m) => ({ default: m.GarageSelector })))
+const GarageBlog = lazy(() => import('./blog/GarageBlog.tsx').then((m) => ({ default: m.GarageBlog })))
+const CarRoadmap = lazy(() => import('./blog/A40RoadmapViews.tsx').then((m) => ({ default: m.CarRoadmap })))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <Suspense fallback={null}>
-        <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/a40" element={<A40Blog />} />
-          <Route path="/a40/roadmap" element={<A40Roadmap />} />
-          <Route path="/a40/:slug" element={<A40Blog />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+      <RouteErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/garage" element={<GarageSelector />} />
+            <Route path="/garage/:car" element={<GarageBlog />} />
+            <Route path="/garage/:car/roadmap" element={<CarRoadmap />} />
+            <Route path="/garage/:car/:slug" element={<GarageBlog />} />
+            <Route path="/a40/*" element={<LegacyRedirect />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </RouteErrorBoundary>
     </BrowserRouter>
   </StrictMode>,
 )

@@ -8,7 +8,8 @@ and gradient versions used by the project cards.
 With --photo the input is a cut-out photo instead (transparent background):
 its edges are found first, turning it into a line sketch, and the gradient
 version is filled with the photo's own silhouette. --crop x0,y0,x1,y1 keeps
-part of the image, and --out sets the output folder.
+part of the image, --out sets the output folder and --weight thickens the
+lines (useful when the photo is small or upscaled).
 
     python scripts/trace_outline.py --photo public/assets/projects/competition-robot/colored.webp
 
@@ -44,8 +45,9 @@ def line_ink(img, threshold):
     return (rgba[..., 3] / 255) * (rgba[..., :3].mean(axis=2)) > threshold
 
 
-def photo_ink(img):
-    """A cut-out photo turned into a line sketch: its edges plus its silhouette."""
+def photo_ink(img, weight=1):
+    """A cut-out photo turned into a line sketch: its edges plus its silhouette.
+    `weight` thickens the lines (1 = default), e.g. for a small source photo."""
     import cv2
 
     scale = 2  # edges come out finer when found on an enlarged photo
@@ -56,7 +58,8 @@ def photo_ink(img):
     edges = cv2.Canny(smooth, 55, 130)
     edges[~cv2.erode(alpha.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)] = 0
     outline = cv2.Canny(alpha.astype(np.uint8) * 255, 50, 150)
-    ink = cv2.dilate(edges, np.ones((3, 3), np.uint8)) | cv2.dilate(outline, np.ones((5, 5), np.uint8))
+    k = lambda n: np.ones((round(n * weight),) * 2, np.uint8)
+    ink = cv2.dilate(edges, k(3)) | cv2.dilate(outline, k(5))
     return ink > 0, alpha, scale
 
 
@@ -104,12 +107,13 @@ def main():
     parser.add_argument("--photo", action="store_true", help="the input is a cut-out photo, not line art")
     parser.add_argument("--crop", help="x0,y0,x1,y1 in input pixels")
     parser.add_argument("--out", help="output folder (default: next to the input)")
+    parser.add_argument("--weight", type=float, default=1, help="photo: line thickness multiplier")
     args = parser.parse_args()
 
     img = load(args.input, [int(v) for v in args.crop.split(",")] if args.crop else None)
     silhouette = None
     if args.photo:
-        ink, alpha, scale = photo_ink(img)
+        ink, alpha, scale = photo_ink(img, args.weight)
         parts = trace_paths(ink, turdsize=60, scale=scale)
         silhouette = " ".join(trace_paths(alpha, turdsize=200, scale=scale))
     else:

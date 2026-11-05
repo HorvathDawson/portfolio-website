@@ -2,25 +2,46 @@
 Generate engineering plots for the A40 build blog.
 
 Outputs PNG files to public/assets/projects/a40-austin/blog/plots/
-Run from the repo root: python scripts/plot_geometry_reference.py
+Run from the repo root:  python3 scripts/plot_geometry_reference.py
+The run also prints a summary of every number the posts quote
+(see print_summary()), so the posts can be checked against it.
 
-Constants come from the 005b analysis:
-  - Miata NA front track 1420 mm, A40 target 1230 mm
-  - CG: Miata 460 mm, A40 estimated 575 mm (+/-50 mm)
-  - RC: Miata 45 mm, A40 39 mm (0.875 scaling)
-  - Sprung mass: Miata 820 kg, A40 850 kg
-  - Total mass: 950 kg
-  - Front spring: 25 N/mm, MR ~0.62 -> wheel rate ~9,650 N/m
+Inputs come from content/a40/constants.yaml via scripts/a40_constants.py
+(`from a40_constants import C`); results quoted in the posts are written
+to scripts/a40_geometry_results.json and merged into
+src/blog/a40-constants.generated.json.  `--results-only` skips the plots.
+
+Working inputs at the time of writing (all "working" -- verify on the car):
+  - Front: NA Miata double wishbone, every pickup translated 95 mm/side
+    inboard.  Hub face 750 -> 655 mm from CL.  ET38 wheel -> 1234 mm
+    track (~1230 nominal; vehicle-level ratios use 1230).
+  - Rear: NA Miata IRS narrowed to a 1340 mm track, RX-8 diff (sprung).
+    Rear RC and rear MR are NOT known yet: they are parameterised
+    (rear RC 80-150 mm, rear MR shown as a sensitivity range).
+  - Tire 205/65R15 (OD 647.5 mm).  Donor tire 185/60R14 (OD 577.6 mm).
+  - Sprung mass ~825 kg; sprung corners 231 kg F / 181 kg R; 55/45 F/R.
+  - CG 575 +/- 50 mm.
+  - Front motion ratio from the front-view instant centre (four-bar
+    perturbation), not from the LCA pivot.
+  - Springs are specified as WHEEL rates (1.4 Hz front, 1.5 Hz rear).
 """
 
+import json
 import os
+import sys
+
 import numpy as np
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
 from matplotlib.patches import Arc
 from matplotlib.ticker import MultipleLocator
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import a40_constants  # noqa: E402
+from a40_constants import C  # noqa: E402
 
 # ── Palette (matches blog CSS vars) ──────────────────────────
 BG = "#0f172a"
@@ -65,48 +86,88 @@ def styled_fig(nrows=1, ncols=1, figsize=(7, 4.5)):
     return fig, axes
 
 
-def save(fig, name):
+def save(fig, name, dpi=DPI):
     path = os.path.join(OUT_DIR, name)
-    fig.savefig(path, dpi=DPI, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(path, dpi=dpi, bbox_inches="tight", facecolor=fig.get_facecolor())
     plt.close(fig)
     print(f"  saved {path}")
 
 
 # ── Shared constants ─────────────────────────────────────────
-T_MIATA = 1420  # NA Miata front track (mm) — reports vary 1405–1425; 1420 matches the scanned subframe + ET40 hub geometry
-T_A40 = 1230
-ET_MIATA = 40  # NA Miata wheel offset (mm).  Hub FACE sits ET outboard of wheel CL.
-#               All `*_from_hub` offsets in SUSP are measured from the hub face,
-#               so any code that mixes hub-face vs wheel-CL must add ET_MIATA.
-H_CG_MIATA = 460
-H_CG_A40 = 575
-M_TOTAL = 950
-M_S_MIATA = 820
-M_S_A40 = 850
-G_ACC = 9.81
-AY = 0.8
-KS_FRONT = 25_000  # N/m — front coilover spring rate (25 N/mm).  Wheel rate
-#                    KW_FRONT and roll-stiffness terms are DERIVED from this
-#                    and the scanned LCA geometry below — do not hardcode.
-G_SHEAR = 80e9
-L_EFF = 400  # mm ARB effective torsional length
-# Installation ratio back-calculated from the post's stated value:
-# stock Miata 19mm front ARB adds ~10,000 N-m/rad of front roll stiffness.
-# K_bar(19mm) = 2,559 N-m/rad.  IR = sqrt(10000 / 2559) = 1.977.
-# Actual measurement from the donor car will refine this.
-IR_BAR = 1.977
+# Every build number comes from content/a40/constants.yaml through
+# scripts/a40_constants.py (inputs and the values derived from them).
+# Only the scanned donor geometry (SUSP below) and plot styling live here.
+# Results this script computes (MR, RC, roll, scrub/trail, ...) are written
+# to scripts/a40_geometry_results.json and merged into the generated JSON
+# the posts read (see write_results()).
+# Donor: NA Miata front.
+T_MIATA = C.front_track_miata  # front track (mm), unverified: measure the donor
+ET_MIATA = C.et_miata  # NA Miata wheel offset (mm).  Hub FACE sits ET outboard of wheel CL.
+#               All `*_from_hub` offsets in SUSP are measured from the hub face.
+HUB_FACE_MIATA = C.front_hub_face_miata  # 750 mm from car CL
+TIRE_OD_MIATA = C.tyre_od_miata  # 185/60R14
+TIRE_W_MIATA = C.tyre_width_miata
+WB_MIATA = C.wheelbase_miata
+H_CG_MIATA = C.cg_height_miata
 
-# Rear: live axle on four-link.  Roll stiffness uses the spring base
-# (lateral distance between coilover mounts on the axle housing), not
-# the track width.  Estimated spring base ~950mm (narrowed Ford 9-inch
-# housing, coilovers mounted near the bearing caps).
-# Rear spring: 20 N/mm, MR ~1.0 (coilover acts directly on the axle tube).
-# K_phi_r = K_w_rear * spring_base^2 / 2 = 20000 * 0.95^2 / 2 = 9,025 N-m/rad
-SPRING_BASE_REAR = 950  # mm
-KW_REAR = 20_000  # N/m (20 N/mm spring, MR ~1.0)
-K_PHI_REAR = KW_REAR * (SPRING_BASE_REAR / 1000) ** 2 / 2  # 9,025
-# Front spring-only roll stiffness and total spring roll stiffness are
-# derived AFTER SUSP is defined — see DERIVED constants block below.
+# A40 build, front.  Lock the pickups / hub-face position, not the track.
+NARROW_PER_SIDE = C.front_narrowing  # mm, locked
+ET_A40 = C.wheel_et
+HUB_FACE_A40 = C.front_hub_face  # 655 mm from CL
+HT_A40 = C.front_half_track  # 617 mm: exact wheel-CL half-track at ET38
+T_A40_EXACT = int(round(C.front_track))  # 1234 mm
+T_A40 = C.front_track_nominal  # nominal front track used for vehicle-level ratios
+TIRE_OD_A40 = C.tyre_od  # 205/65R15
+TIRE_W_A40 = C.tyre_width
+WB_A40 = C.wheelbase
+
+# A40 build, rear: narrowed NA Miata IRS.
+T_REAR = C.rear_track  # mm, locked
+H_RC_REAR_LO = C.rear_rc_lo  # mm  -- rear RC unknown until the narrowed Miata rear
+H_RC_REAR_HI = C.rear_rc_hi  # mm     is measured/modelled; carry the range.
+H_RC_REAR_NOM = C.rear_rc_nom  # mm  -- mid value used where one number is needed
+MR_REAR_CASES = (C.rear_mr_lo, C.rear_mr_mid, C.rear_mr_hi)  # rear MR unknown: sensitivity only
+
+# Mass (working).
+H_CG_A40 = C.cg_height  # +/- CG_TOL
+CG_TOL = C.cg_height_tol
+M_TOTAL = C.operating_mass  # operating mass, driver + fuel
+M_S_A40 = C.sprung_mass  # sprung mass
+M_CORNER_F = C.corner_mass_front  # sprung corner mass, front
+M_CORNER_R = C.corner_mass_rear  # sprung corner mass, rear
+FRONT_FRAC = C.front_weight_fraction / 100  # static front weight fraction
+G_ACC = 9.81
+AY = C.lateral_accel
+ROLL_TARGETS = (C.roll_target_lo, C.roll_target_nom, C.roll_target_hi)  # deg
+
+# Ride: wheel rates from target frequencies (independent of MR).
+FREQ_F = C.ride_freq_front  # Hz
+FREQ_R = C.ride_freq_rear  # Hz (0.1 Hz above front)
+FREQ_BAND_F = (C.ride_freq_front_lo, C.ride_freq_front_hi)
+FREQ_BAND_R = (C.ride_freq_rear_lo, C.ride_freq_rear_hi)
+KW_FRONT = C.kw_front * 1000  # N/m  ~17,900
+KW_REAR = C.kw_rear * 1000  # N/m  ~16,100
+K_PHI_FRONT_SPRING = C.roll_stiffness_front * 1000  # N-m/rad ~13.5k
+K_PHI_REAR_SPRING = C.roll_stiffness_rear * 1000  # N-m/rad ~14.4k
+K_PHI_SPRING = K_PHI_FRONT_SPRING + K_PHI_REAR_SPRING  # ~28k
+
+# Shock (front).
+SHOCK_STROKE_MM = C.shock_stroke  # 127 mm
+SHOCK_ALPHA_DEG = C.shock_angle  # shock angle to the LCA at the lower mount (working)
+SHOCK_LEN_RIDE = C.shock_length_ride  # eye-to-eye at ride height (assumed; only affects
+#                         how MR drifts through travel, not the static MR)
+BUMP_FRACTION = C.shock_bump_fraction / 100  # share of the stroke available in bump at ride height
+#                       (assumption: same ~45/55 split as the stock Miata)
+
+# ARB (placeholder installation ratio -- measure).
+G_SHEAR = C.steel_shear_modulus * 1e9
+L_EFF = C.arb_length  # mm ARB effective torsional length
+# Installation ratio back-calculated from "stock 19 mm front bar adds
+# ~10,000 N-m/rad" on the Miata: IR = sqrt(10000 / K_bar(19)) = 1.977.
+# IR scales with track (same end-link point on the LCA, smaller wheel
+# travel per degree of roll), so the A40 value is 1.977 * 1230/1420.
+IR_BAR_MIATA = C.arb_ir_miata
+IR_BAR = IR_BAR_MIATA * T_A40 / T_MIATA  # ~1.71
 
 # ── Miata NA front suspension geometry (all in mm) ────────────────
 # Source: photogrammetric scan of the donor front subframe (Einstar 2).
@@ -118,7 +179,7 @@ K_PHI_REAR = KW_REAR * (SPRING_BASE_REAR / 1000) ** 2 / 2  # 9,025
 # Coordinate convention: +x outboard, +y forward, +z up. Origin at hub/BJ.
 SUSP = dict(
     # ── Knuckle / heights (front view) ──
-    hub_z_ground=265,  # hub centre height above ground at ride height
+    hub_z_ground=C.hub_z_miata,  # hub centre height above ground at ride height (constants)
     # KPI / caster are DERIVED from lbj_from_hub and ubj_from_hub — see
     # KPI_DEG / CASTER_DEG below.  Do not duplicate them here.
     # ── Knuckle BJ and steering arm positions relative to hub centre ──────────
@@ -155,8 +216,8 @@ SUSP = dict(
     uca_bushing=57.0,  # scan: UCA pivot bushing length (both pivots)
     pivot_width=10.0,  # visual width for all pivot rectangles (mm)
     # ── Tire (for RC construction) ──
-    tire_w=185,  # tire section width mm
-    tire_od=577,  # 185/60R14 outer diameter mm
+    tire_w=TIRE_W_MIATA,  # donor tire section width mm
+    tire_od=TIRE_OD_MIATA,  # donor 185/60R14 outer diameter mm
 )
 
 
@@ -197,25 +258,10 @@ def susp_geometry():
     )
 
 
-# ── DERIVED constants (computed from SUSP scan-truth) ─────────────────
-# Lever from LCA inner-pivot axis to the wheel-CL contact-patch plane.
-# This is the wheel-rate-relevant lever (force at the contact patch).
-LCA_LEVER_WHEEL = (T_MIATA / 2) - SUSP["lca_from_cl"]  # mm — 710 − 329.5 = 380.5
-# Coilover lever from the same pivot axis.
-LCA_LEVER_SPRING = SUSP["lca_coilover_perp"]  # mm — 240
-# Static (alpha = 90 deg) lever ratio.
-MR_FRONT_STATIC = LCA_LEVER_SPRING / LCA_LEVER_WHEEL  # ~0.631
-# Operating motion ratio at the typical 80 deg shock angle.
-MR_FRONT = MR_FRONT_STATIC * np.sin(np.deg2rad(80))  # ~0.621
-# Wheel rate at the contact patch: KW = Ks * MR^2.
-KW_FRONT = KS_FRONT * MR_FRONT**2  # N/m — ~9,650
-# Front spring contribution to roll stiffness uses the BUILD track (A40).
-K_PHI_FRONT_SPRING = KW_FRONT * (T_A40 / 1000) ** 2 / 2  # N-m/rad
-K_PHI_SPRING = K_PHI_FRONT_SPRING + K_PHI_REAR
-
 # ── Steering-axis derived numbers (KPI, caster, scrub, trail) ─────────
-# All measured from the scan, expressed in the car-CL/ground frame.
-_HUB_FACE_X = T_MIATA / 2 + ET_MIATA  # 750
+# All measured from the scan, expressed in the car-CL/ground frame
+# (donor configuration: ET40, 185/60R14, hub 265 mm above ground).
+_HUB_FACE_X = HUB_FACE_MIATA  # 750
 _LBJ_X = _HUB_FACE_X + SUSP["lbj_from_hub"][0]  # 665.75
 _LBJ_FA = SUSP["lbj_from_hub"][1]  # -3.75
 _LBJ_Z = SUSP["hub_z_ground"] + SUSP["lbj_from_hub"][2]  # 179.0
@@ -223,15 +269,26 @@ _UBJ_X = _HUB_FACE_X + SUSP["ubj_from_hub"][0]  # 618.0
 _UBJ_FA = SUSP["ubj_from_hub"][1]  # -17.9
 _UBJ_Z = SUSP["hub_z_ground"] + SUSP["ubj_from_hub"][2]  # 402.75
 _KP_DZ = _UBJ_Z - _LBJ_Z
-KPI_DEG = np.degrees(np.arctan2(_LBJ_X - _UBJ_X, _KP_DZ))  # UBJ inboard → +KPI
-CASTER_DEG = np.degrees(np.arctan2(_LBJ_FA - _UBJ_FA, _KP_DZ))  # UBJ rearward → +caster
+KPI_DEG = np.degrees(np.arctan2(_LBJ_X - _UBJ_X, _KP_DZ))  # 12.05
+CASTER_DEG = np.degrees(np.arctan2(_LBJ_FA - _UBJ_FA, _KP_DZ))  # 3.62
 # Kingpin axis pierces ground at t = -_LBJ_Z / _KP_DZ from LBJ.
 _T_GND = -_LBJ_Z / _KP_DZ
 _KP_GND_X = _LBJ_X + _T_GND * (_UBJ_X - _LBJ_X)
 _KP_GND_FA = _LBJ_FA + _T_GND * (_UBJ_FA - _LBJ_FA)
 # Scrub: contact patch is at hub centerline = T_MIATA/2 from CL.
-SCRUB_MM = (T_MIATA / 2) - _KP_GND_X  # +ve = pierces inboard of CP
-TRAIL_MM = _KP_GND_FA - 0.0  # +ve = pierces ahead of CP → trail behind = +ve
+SCRUB_MM = (T_MIATA / 2) - _KP_GND_X  # +ve = pierces inboard of CP  (~6.05)
+TRAIL_MM = _KP_GND_FA - 0.0  # +ve = pierces ahead of CP  (~7.57)
+
+# A40 build: taller tire raises the hub; ET38 moves the CP 2 mm outboard.
+HUB_Z_A40 = C.hub_z  # hub height + half the tyre OD increase (~300)
+_DH = HUB_Z_A40 - SUSP["hub_z_ground"]
+SCRUB_A40_MM = (
+    SCRUB_MM - _DH * np.tan(np.radians(KPI_DEG)) + (ET_MIATA - ET_A40)
+)  # ~+0.5
+TRAIL_A40_MM = TRAIL_MM + _DH * np.tan(np.radians(CASTER_DEG))  # ~9.8
+# LBJ lateral offset inboard of the wheel centreline (top-view kingpin).
+KPI_OFFSET_MIATA = -SUSP["lbj_from_hub"][0] - ET_MIATA  # 44.25
+KPI_OFFSET_A40 = -SUSP["lbj_from_hub"][0] - ET_A40  # 46.25
 
 
 def arb_K_bar(d_mm):
@@ -240,878 +297,284 @@ def arb_K_bar(d_mm):
 
 
 def arb_roll_stiffness(d_mm):
-    """Roll stiffness contribution from one ARB (N-m/rad)."""
+    """Roll stiffness from one ARB at the A40 front track (N-m/rad).
+    IR_BAR is a placeholder -- measure the end-link geometry."""
     return arb_K_bar(d_mm) * IR_BAR**2
 
 
-def roll_angle_deg(cg_mm, K_phi_total, m_s=M_S_A40, h_rc=None):
-    if h_rc is None:
-        h_rc = H_RC_A40
-    arm = (cg_mm - h_rc) / 1000
+def roll_axis_height(h_rc_rear=H_RC_REAR_NOM, h_rc_front=None):
+    """Roll-axis height under the CG (mm).  CG sits (1 - FRONT_FRAC) of
+    the wheelbase behind the front axle."""
+    if h_rc_front is None:
+        h_rc_front = H_RC_A40
+    return h_rc_front + (h_rc_rear - h_rc_front) * (1 - FRONT_FRAC)
+
+
+def roll_angle_deg(cg_mm, K_phi_total, m_s=M_S_A40, h_rc_rear=H_RC_REAR_NOM):
+    """Steady-state roll at AY with the gravity (overturning) term."""
+    arm = (cg_mm - roll_axis_height(h_rc_rear)) / 1000
     moment = m_s * AY * G_ACC * arm
     grav = m_s * G_ACC * arm
     denom = np.where(K_phi_total - grav > 0, K_phi_total - grav, np.nan)
     return np.degrees(moment / denom)
 
 
+def k_phi_required(roll_deg, cg_mm=H_CG_A40, h_rc_rear=H_RC_REAR_NOM, m_s=M_S_A40):
+    """Total roll stiffness (N-m/rad) needed for a target roll angle."""
+    arm = (cg_mm - roll_axis_height(h_rc_rear)) / 1000
+    return m_s * AY * G_ACC * arm / np.radians(roll_deg) + m_s * G_ACC * arm
+
+
 # ====================================================================
-# 1. Roll angle vs CG height, parameterized by ARB diameter
+# 1. Roll angle vs CG height, by added ARB roll stiffness
+#    Bands = rear RC 80-150 mm (unknown until the narrowed Miata rear
+#    is measured).
 # ====================================================================
 def plot_roll_vs_cg():
     fig, ax = styled_fig(figsize=(7, 5.2))
-    cg = np.linspace(350, 700, 400)
+    cg = np.linspace(450, 700, 300)
 
-    roll_spring = roll_angle_deg(cg, K_PHI_SPRING)
-    ax.plot(
-        cg,
-        roll_spring,
-        color=TEXT,
-        linewidth=2,
-        alpha=0.5,
-        linestyle="--",
-        label=f"Springs only ({K_PHI_SPRING/1000:.1f} kN-m/rad)",
-    )
-
-    diameters = [19, 22, 25, 28]
-    colors = [PURPLE, BLUE, GREEN, GOLD]
-    for d, c in zip(diameters, colors):
-        K_front = arb_roll_stiffness(d)
-        K_rear = K_front * 0.7
-        K_total = K_PHI_SPRING + K_front + K_rear
-        K_bar = arb_K_bar(d)
-        roll = roll_angle_deg(cg, K_total)
-        ax.plot(
-            cg,
-            roll,
-            color=c,
-            linewidth=1.8,
-            label=f"{d} mm  ({K_bar/1000:.1f} kN-m/rad bar, {K_total/1000:.0f} total)",
+    adds = [0, 16_000, 24_000, 33_000]
+    colors = [TEXT, BLUE, GREEN, GOLD]
+    for k_add, c in zip(adds, colors):
+        K = K_PHI_SPRING + k_add
+        r_lo = roll_angle_deg(cg, K, h_rc_rear=H_RC_REAR_HI)
+        r_hi = roll_angle_deg(cg, K, h_rc_rear=H_RC_REAR_LO)
+        r_nom = roll_angle_deg(cg, K, h_rc_rear=H_RC_REAR_NOM)
+        lbl = (
+            f"Springs only ({K_PHI_SPRING/1000:.1f} kN-m/rad)"
+            if k_add == 0
+            else f"+ {k_add/1000:.0f} kN-m/rad of ARB ({K/1000:.0f} total)"
         )
+        ax.fill_between(cg, r_lo, r_hi, color=c, alpha=0.12, linewidth=0)
+        ax.plot(cg, r_nom, color=c, linewidth=1.8,
+                linestyle="--" if k_add == 0 else "-",
+                alpha=0.8 if k_add == 0 else 1.0, label=lbl)
 
-    ax.axhline(
-        3.5, color=PINK, linestyle=":", linewidth=1, alpha=0.6, label="3.5\u00b0 target"
-    )
-    ax.axvline(575, color=TEXT, linestyle=":", linewidth=0.6, alpha=0.3)
-    ax.text(578, 17, "est. CG", color=TEXT, fontsize=7, alpha=0.5)
+    ax.axhspan(ROLL_TARGETS[0], ROLL_TARGETS[2], color=PINK, alpha=0.08)
+    ax.axhline(ROLL_TARGETS[1], color=PINK, linestyle=":", linewidth=1, alpha=0.7,
+               label=f"{ROLL_TARGETS[0]:g}-{ROLL_TARGETS[2]:g}° target")
+    ax.axvline(H_CG_A40, color=TEXT, linestyle=":", linewidth=0.6, alpha=0.4)
+    ax.axvspan(H_CG_A40 - CG_TOL, H_CG_A40 + CG_TOL, color=TEXT, alpha=0.04)
+    ax.text(H_CG_A40 + 3, 11.3, f"est. CG\n{H_CG_A40:.0f} ± {CG_TOL:.0f}", color=TEXT,
+            fontsize=7, alpha=0.6)
 
-    # CG sensitivity: annotate key CG values with springs-only roll
-    # Place labels alternating above/below and offset enough to clear the curve
-    cg_points = [500, 550, 600]
-    y_offsets = [1.8, -2.0, 1.8]
-    for cg_val, dy in zip(cg_points, y_offsets):
-        roll_val = roll_angle_deg(np.array([cg_val]), K_PHI_SPRING)[0]
-        ax.plot(cg_val, roll_val, "s", color=TEXT, markersize=4, alpha=0.6, zorder=5)
-        ax.annotate(
-            f"{roll_val:.1f}\u00b0",
-            xy=(cg_val, roll_val),
-            xytext=(cg_val, roll_val + dy),
-            fontsize=6.5,
-            color=TEXT,
-            alpha=0.6,
-            ha="center",
-            arrowprops=dict(arrowstyle="-", color=TEXT, lw=0.4, alpha=0.3),
-        )
+    for cg_val in (H_CG_A40 - CG_TOL, H_CG_A40, H_CG_A40 + CG_TOL):
+        r = roll_angle_deg(np.array([cg_val]), K_PHI_SPRING)[0]
+        ax.plot(cg_val, r, "s", color=TEXT, markersize=4, alpha=0.7, zorder=5)
+        ax.annotate(f"{r:.1f}°", xy=(cg_val, r), xytext=(cg_val - 4, r + 0.6),
+                    fontsize=6.5, color=TEXT, alpha=0.75, ha="right")
 
+    ax.text(0.99, 0.02,
+            f"Lines: rear RC {H_RC_REAR_NOM:.0f} mm.  Bands: rear RC {H_RC_REAR_HI:.0f} (lower edge) to {H_RC_REAR_LO:.0f} mm.\n"
+            f"Front RC {H_RC_A40:.0f} mm (kinematic), sprung mass {M_S_A40:.0f} kg, "
+            f"springs {KW_FRONT/1000:.1f} / {KW_REAR/1000:.1f} N/mm wheel rate.",
+            transform=ax.transAxes, fontsize=6.3, color=TEXT, alpha=0.65,
+            ha="right", va="bottom")
     ax.set_xlabel("CG height (mm)")
-    ax.set_ylabel("Body roll at 0.8 G (\u00b0)")
-    ax.set_title("Roll angle vs CG height by front ARB diameter")
-    ax.legend(
-        fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="upper left"
-    )
-    ax.set_xlim(350, 700)
-    ax.set_ylim(0, 20)
-    ax.xaxis.set_major_locator(MultipleLocator(50))
+    ax.set_ylabel(f"Body roll at {AY:g} G (°)")
+    ax.set_title("Body roll vs CG height and added ARB stiffness")
+    ax.legend(fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+              loc="upper left")
+    ax.set_xlim(450, 700)
+    ax.set_ylim(0, 12)
+    ax.xaxis.set_major_locator(MultipleLocator(25))
     save(fig, "roll_vs_cg.png")
 
 
 # ====================================================================
-# 1b. Front-view roll center construction: Miata vs A40 track
+# 1b. Front-view roll centre construction
 #
-#     All pickup points are defined relative to:
-#       x = 0  at vehicle centreline
-#       y = 0  at the ground plane
-#     Outer (ball-joint) positions are at the wheel centre x-coordinate.
-#     Inner pivot positions are inboard of the ball joints.
-#
-#     To plug in real suspension numbers later, change the values in
-#     the ``pickups`` dicts below.  Everything else (IC, RC, tire
-#     rectangle, construction lines) is computed from those inputs.
+#     x = 0 at vehicle centreline, y = 0 at the ground plane.
+#     The whole linkage translates with the hub face; pickups come from
+#     SUSP (donor scan).  IC, RC, tire rectangle and construction lines
+#     are all computed from those inputs.
 # ====================================================================
-def _build_suspension(half_track, *, hub_z_ground=None, tire_od=None):
-    """Derive front-view suspension positions for one side.
+def _build_suspension(half_track, *, hub_z_ground=None, tire_od=None,
+                      et=ET_MIATA, tire_w=None):
+    """Derive front-view suspension positions for one (right) side.
 
-    All dimensions come from SUSP.  Only *half_track* changes between
-    configurations (702.5 mm for Miata, 615 mm for A40).  The entire
-    assembly translates inboard, preserving arm geometry.
+    half_track   -- wheel-CL (= contact patch) distance from car CL.
+    et           -- wheel offset; hub face sits `et` outboard of wheel CL.
+    hub_z_ground -- hub centre height above ground (default: SUSP value).
+    tire_od/w    -- tire size for drawing.
 
-    Optional overrides:
-      hub_z_ground — hub centre height above ground (default: SUSP value).
-      tire_od      — tire outer diameter for drawing (default: SUSP value).
+    The inner pivots translate inboard by the same amount as the hub
+    face (HUB_FACE_MIATA - hub_face), so the local linkage is identical
+    to the donor.
 
-    Returns a dict with absolute positions for the right side:
-        lbj, ubj, lca_inner, uca_inner, cp, ic, rc — numpy [x, y]
-        x = lateral from car CL (mm), y = height above ground (mm).
+    Returns absolute positions: lbj, ubj, lca_inner, uca_inner, cp, ic,
+    rc -- numpy [x, y]  (x = lateral from CL, y = height above ground).
     """
-    ht = half_track  # wheel CL (= contact patch x)
-    hub_face = ht + ET_MIATA  # BJ measurements are from hub face, not wheel CL
+    ht = half_track
+    hub_face = ht + et
     hz = hub_z_ground if hub_z_ground is not None else SUSP["hub_z_ground"]
     tod = tire_od if tire_od is not None else SUSP["tire_od"]
+    tw = tire_w if tire_w is not None else SUSP["tire_w"]
 
-    # Ball joints: hub FACE + scan offset (lbj_from_hub is in hub-face frame)
     lbj = np.array([hub_face + SUSP["lbj_from_hub"][0], hz + SUSP["lbj_from_hub"][2]])
     ubj = np.array([hub_face + SUSP["ubj_from_hub"][0], hz + SUSP["ubj_from_hub"][2]])
 
-    # Inner pivots: lateral distance from car CL is preserved when the whole
-    # assembly translates inboard by (T_MIATA/2 − ht).  lca_from_cl is the
-    # stock-Miata lateral from CL; subtract the inboard translation.
-    lca_inboard = (T_MIATA / 2) - ht
-    lca_inner = np.array(
-        [SUSP["lca_from_cl"] - lca_inboard, lbj[1] + SUSP["lca_z_rise"]]
-    )
-    # UCA inner pivot lateral position: hub-face minus uca_hub_to_pivot.
+    inboard = HUB_FACE_MIATA - hub_face
+    lca_inner = np.array([SUSP["lca_from_cl"] - inboard, lbj[1] + SUSP["lca_z_rise"]])
     uca_inner = np.array(
         [hub_face - SUSP["uca_hub_to_pivot"], ubj[1] - SUSP["uca_z_drop"]]
     )
-
     cp = np.array([ht, 0.0])
 
     # Instant centre: intersection of the two arm lines extended
     d_low = lbj - lca_inner
     d_up = ubj - uca_inner
     A_mat = np.array([[d_low[0], -d_up[0]], [d_low[1], -d_up[1]]])
-    b_vec = uca_inner - lca_inner
-    ts = np.linalg.solve(A_mat, b_vec)
+    ts = np.linalg.solve(A_mat, uca_inner - lca_inner)
     ic = lca_inner + ts[0] * d_low
 
-    # RC height: line from contact patch through IC to centreline (x=0)
+    # RC: line from contact patch through IC to the centreline (x = 0)
     d_rc = ic - cp
-    t_rc = -cp[0] / d_rc[0]
-    rc = cp + t_rc * d_rc
+    rc = cp + (-cp[0] / d_rc[0]) * d_rc
 
-    return dict(
-        half_track=ht,
-        tire_w=SUSP["tire_w"],
-        tire_od=tod,
-        lbj=lbj,
-        ubj=ubj,
-        lca_inner=lca_inner,
-        uca_inner=uca_inner,
-        cp=cp,
-        ic=ic,
-        rc=rc,
-    )
+    return dict(half_track=ht, tire_w=tw, tire_od=tod, hub_z=hz, et=et,
+                lbj=lbj, ubj=ubj, lca_inner=lca_inner, uca_inner=uca_inner,
+                cp=cp, ic=ic, rc=rc)
 
 
-# RC heights computed from geometry model (mm above ground).
-_A40_OD = 646.0
-H_RC_MIATA = _build_suspension(T_MIATA / 2)["rc"][1]
-H_RC_A40 = _build_suspension(
-    T_A40 / 2,
-    hub_z_ground=SUSP["hub_z_ground"] + (_A40_OD - SUSP["tire_od"]) / 2,
-    tire_od=_A40_OD,
-)["rc"][1]
+# Standard configurations: (half_track, hub_z, tire_od, et, tire_w)
+CFG_MIATA = dict(half_track=T_MIATA / 2, hub_z_ground=SUSP["hub_z_ground"],
+                 tire_od=TIRE_OD_MIATA, et=ET_MIATA, tire_w=TIRE_W_MIATA)
+CFG_A40 = dict(half_track=HT_A40, hub_z_ground=HUB_Z_A40,
+               tire_od=TIRE_OD_A40, et=ET_A40, tire_w=TIRE_W_A40)
+# A40 pickups with the donor tire/ET (isolates the narrowing effect)
+CFG_A40_MIATA_TIRE = dict(half_track=HUB_FACE_A40 - ET_MIATA,
+                          hub_z_ground=SUSP["hub_z_ground"],
+                          tire_od=TIRE_OD_MIATA, et=ET_MIATA, tire_w=TIRE_W_MIATA)
+
+_RC_MIATA_SUSP = _build_suspension(**CFG_MIATA)
+_RC_A40_SUSP = _build_suspension(**CFG_A40)
+H_RC_MIATA = _RC_MIATA_SUSP["rc"][1]  # ~142 mm
+H_RC_A40 = _RC_A40_SUSP["rc"][1]  # ~139 mm
+H_RC_A40_MIATA_TIRE = _build_suspension(**CFG_A40_MIATA_TIRE)["rc"][1]  # ~123 mm
+
+
+def _plot_rc_pair(configs, fname, title, info_lines):
+    """Front-view RC construction for two configurations, overlaid.
+
+    configs: list of (label, cfg_dict, color, alpha).
+    """
+    from matplotlib.lines import Line2D
+
+    fig, ax = styled_fig(figsize=(8, 8))
+    ax.set_aspect("equal")
+
+    def mx(pt, s):
+        return np.array([s * pt[0], pt[1]])
+
+    rc_results = []
+    all_x, all_y = [0.0], [0.0]
+    for idx, (label, cfg, color, alpha) in enumerate(configs):
+        p = _build_suspension(**cfg)
+        for s in (1, -1):
+            lbj, ubj = mx(p["lbj"], s), mx(p["ubj"], s)
+            lca_in, uca_in = mx(p["lca_inner"], s), mx(p["uca_inner"], s)
+            cp, ic = mx(p["cp"], s), mx(p["ic"], s)
+            htx, tw, th = s * p["half_track"], p["tire_w"], p["tire_od"]
+            ax.add_patch(plt.Rectangle((htx - tw / 2, 0), tw, th, linewidth=1.0,
+                                       edgecolor=color, facecolor=color,
+                                       alpha=alpha * 0.08, zorder=2))
+            ax.plot([htx - tw / 2, htx + tw / 2, htx + tw / 2, htx - tw / 2,
+                     htx - tw / 2], [0, 0, th, th, 0], color=color,
+                    linewidth=0.9, alpha=alpha * 0.4, zorder=3)
+            for a, b, lw in ((lca_in, lbj, 2.2), (uca_in, ubj, 2.2), (lbj, ubj, 2.6)):
+                ax.plot([a[0], b[0]], [a[1], b[1]], color=color, linewidth=lw,
+                        alpha=alpha, solid_capstyle="round")
+            for pt in (lca_in, uca_in, lbj, ubj):
+                ax.plot(pt[0], pt[1], "o", color=color, markersize=3.5,
+                        alpha=alpha, zorder=5)
+            for a in (lca_in, uca_in):
+                ax.plot([a[0], ic[0]], [a[1], ic[1]], color=color, linewidth=0.7,
+                        alpha=alpha * 0.35, linestyle="--")
+            ax.plot(ic[0], ic[1], "D", color=color, markersize=4.5, alpha=alpha,
+                    zorder=5)
+            ax.plot([cp[0], ic[0], 0], [cp[1], ic[1], p["rc"][1]], color=color,
+                    linewidth=1.0, alpha=alpha * 0.6, linestyle="-.", zorder=4)
+            all_x.extend([ic[0], htx + s * tw])
+            all_y.extend([ic[1], th])
+        rc_y = p["rc"][1]
+        rc_results.append((label, rc_y, color, alpha))
+        ax.plot(0, rc_y, "s", color=color, markersize=7,
+                alpha=min(alpha + 0.15, 1.0), zorder=6)
+        dx = 120 if idx == 0 else -120
+        ax.annotate(f"RC = {rc_y:.1f} mm", xy=(0, rc_y),
+                    xytext=(dx, rc_y + (55 if idx == 0 else -55)),
+                    fontsize=8, color=color, fontweight="bold",
+                    ha="left" if idx == 0 else "right",
+                    arrowprops=dict(arrowstyle="->", color=color, lw=0.7))
+
+    ax.axhline(0, color=TEXT, linewidth=1, alpha=0.3)
+    ax.axvline(0, color=TEXT, linewidth=0.5, alpha=0.2, linestyle=":")
+    ax.text(5, -30, "CL", color=TEXT, fontsize=7, alpha=0.3, ha="left")
+    ax.text(0.02, 0.97, "\n".join(info_lines), fontsize=7.5, color=TEXT,
+            alpha=0.85, transform=ax.transAxes, va="top", ha="left",
+            bbox=dict(boxstyle="round,pad=0.4", fc=BG, ec=GRID2, alpha=0.9))
+    ax.set_xlabel("Front view position (mm)")
+    ax.set_ylabel("Height (mm)")
+    ax.set_title(title)
+    x_abs = max(abs(v) for v in all_x) + 120
+    ax.set_xlim(-x_abs, x_abs)
+    ax.set_ylim(-200, max(all_y) + 380)
+    ax.legend(handles=[Line2D([0], [0], color=c, linewidth=2.2, alpha=a, label=l)
+                       for l, _, c, a in rc_results],
+              fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+              loc="upper right")
+    save(fig, fname)
+    return [r[1] for r in rc_results]
 
 
 def plot_rc_construction():
-    """Front-view RC construction: Miata vs A40 track width.
-
-    Both configurations use the stock Miata tire (185/60R14, 577 mm OD)
-    and the same hub height.  Only the track width changes.
-    """
-    fig, ax = styled_fig(figsize=(8, 8))
-    ax.set_aspect("equal")
-
-    stock_od = 577.0
-    stock_hz = SUSP["hub_z_ground"]
-
-    configs = [
-        ("Miata track (1420 mm)", T_MIATA / 2, stock_hz, stock_od, MIATA_C, 0.45),
-        ("A40 track (1230 mm)", T_A40 / 2, stock_hz, stock_od, A40_C, 0.90),
-    ]
-
-    def draw_side(half_track, hub_z, tire_od, color, alpha, side=1):
-        p = _build_suspension(half_track, hub_z_ground=hub_z, tire_od=tire_od)
-        s = side
-
-        def mx(pt):
-            return np.array([s * pt[0], pt[1]])
-
-        lbj = mx(p["lbj"])
-        ubj = mx(p["ubj"])
-        lca_inner = mx(p["lca_inner"])
-        uca_inner = mx(p["uca_inner"])
-        cp = mx(p["cp"])
-        ic = mx(p["ic"])
-        htx = s * p["half_track"]
-
-        tire_h = p["tire_od"]
-        tw = p["tire_w"]
-        tire_rect = plt.Rectangle(
-            (htx - tw / 2, 0),
-            tw,
-            tire_h,
-            linewidth=1.2,
-            edgecolor=color,
-            facecolor=color,
-            alpha=alpha * 0.10,
-            zorder=2,
-        )
-        ax.add_patch(tire_rect)
-        xs = [htx - tw / 2, htx + tw / 2, htx + tw / 2, htx - tw / 2, htx - tw / 2]
-        ys = [0, 0, tire_h, tire_h, 0]
-        ax.plot(xs, ys, color=color, linewidth=1.0, alpha=alpha * 0.45, zorder=3)
-
-        ax.plot(
-            [lca_inner[0], lbj[0]],
-            [lca_inner[1], lbj[1]],
-            color=color,
-            linewidth=2.5,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        ax.plot(
-            [uca_inner[0], ubj[0]],
-            [uca_inner[1], ubj[1]],
-            color=color,
-            linewidth=2.5,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        ax.plot(
-            [lbj[0], ubj[0]],
-            [lbj[1], ubj[1]],
-            color=color,
-            linewidth=3,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        for pt in [lca_inner, uca_inner, lbj, ubj]:
-            ax.plot(pt[0], pt[1], "o", color=color, markersize=4, alpha=alpha, zorder=5)
-
-        ax.plot(
-            [lca_inner[0], ic[0]],
-            [lca_inner[1], ic[1]],
-            color=color,
-            linewidth=0.8,
-            alpha=alpha * 0.4,
-            linestyle="--",
-        )
-        ax.plot(
-            [uca_inner[0], ic[0]],
-            [uca_inner[1], ic[1]],
-            color=color,
-            linewidth=0.8,
-            alpha=alpha * 0.4,
-            linestyle="--",
-        )
-        ax.plot(ic[0], ic[1], "D", color=color, markersize=5, alpha=alpha, zorder=5)
-
-        return ic, cp
-
-    def draw_rc_lines(ic_r, cp_r, ic_l, cp_l, color, alpha):
-        rc_pts = []
-        for cp_pt, ic_pt in [(cp_r, ic_r), (cp_l, ic_l)]:
-            d = ic_pt - cp_pt
-            t = -cp_pt[0] / d[0]
-            rc = cp_pt + t * d
-            ax.plot(
-                [cp_pt[0], ic_pt[0], rc[0]],
-                [cp_pt[1], ic_pt[1], rc[1]],
-                color=color,
-                linewidth=1.2,
-                alpha=alpha * 0.7,
-                linestyle="-.",
-                zorder=4,
-            )
-            rc_pts.append(rc)
-        rc_y = (rc_pts[0][1] + rc_pts[1][1]) / 2
-        ax.plot(
-            0,
-            rc_y,
-            "s",
-            color=color,
-            markersize=8,
-            alpha=min(alpha + 0.2, 1.0),
-            zorder=6,
-        )
-        return rc_y
-
-    rc_results = []
-    ann_offsets = [55, -55]
-    for idx, (label, ht, hz, od, col, alp) in enumerate(configs):
-        ic_r, cp_r = draw_side(ht, hz, od, col, alp, side=1)
-        ic_l, cp_l = draw_side(ht, hz, od, col, alp, side=-1)
-        rc_y = draw_rc_lines(ic_r, cp_r, ic_l, cp_l, col, alp)
-        rc_results.append((label, rc_y, col, alp))
-
-        ax_dx = 120 if idx == 0 else -120
-        ax_ha = "left" if idx == 0 else "right"
-        ax.annotate(
-            f"RC = {rc_y:.1f} mm",
-            xy=(0, rc_y),
-            xytext=(ax_dx, rc_y + ann_offsets[idx]),
-            fontsize=8,
-            color=col,
-            fontweight="bold",
-            ha=ax_ha,
-            arrowprops=dict(arrowstyle="->", color=col, lw=0.8),
-        )
-
-    # IC labels (mirrored: Miata on right, A40 on left)
-    for idx, (label, ht, hz, od, col, alp) in enumerate(configs):
-        p = _build_suspension(ht, hub_z_ground=hz, tire_od=od)
-        ic = p["ic"]
-        ic_x = abs(ic[0]) if idx == 0 else -abs(ic[0])
-        short = "Miata" if idx == 0 else "A40"
-        dx = 120 if idx == 0 else -120
-        ha = "left" if idx == 0 else "right"
-        yoff = 40 if idx == 0 else -50
-        ax.annotate(
-            f"IC ({short})",
-            xy=(ic_x, ic[1]),
-            xytext=(ic_x + dx, ic[1] + yoff),
-            fontsize=7.5,
-            color=col,
-            alpha=max(alp, 0.6),
-            ha=ha,
-            arrowprops=dict(arrowstyle="->", color=col, lw=0.6, alpha=0.4),
-        )
-
-    ax.axhline(0, color=TEXT, linewidth=1, alpha=0.3)
-    ax.axvline(0, color=TEXT, linewidth=0.5, alpha=0.2, linestyle=":")
-
-    ax.text(
-        -T_MIATA / 2,
-        -30,
-        f"Miata ({T_MIATA} mm)",
-        color=MIATA_C,
-        fontsize=7.5,
-        ha="center",
-        alpha=0.5,
-    )
-    ax.text(
-        T_A40 / 2,
-        -30,
-        f"A40 ({T_A40} mm)",
-        color=A40_C,
-        fontsize=7.5,
-        ha="center",
-        alpha=0.85,
-    )
-    ax.text(5, -30, "CL", color=TEXT, fontsize=7, alpha=0.3, ha="left")
-
-    ratio = rc_results[1][1] / rc_results[0][1]
-    ax.text(
-        0.02,
-        0.97,
-        f"Track ratio: {T_A40}/{T_MIATA} = {T_A40 / T_MIATA:.3f}\n"
-        f"RC ratio: {rc_results[1][1]:.1f}/{rc_results[0][1]:.1f} = {ratio:.3f}\n"
-        f"Same linkage shifted inboard.\n"
-        f"Narrowing alone lowers the RC.",
-        fontsize=8,
-        color=TEXT,
-        alpha=0.8,
-        transform=ax.transAxes,
-        va="top",
-        ha="left",
-        bbox=dict(boxstyle="round,pad=0.4", fc=BG, ec=GRID2, alpha=0.9),
-    )
-
-    ax.set_xlabel("Front view position (mm)")
-    ax.set_ylabel("Height (mm)")
-    ax.set_title("Roll centre construction: Miata vs A40 track width")
-
-    # Auto-fit limits to include tires, ICs, and RC points
-    x_pad = 180
-    all_x = [T_MIATA / 2, -T_MIATA / 2, T_A40 / 2, -T_A40 / 2]
-    all_y = [0, stock_od]
-    for idx2, (_, ht2, hz2, od2, _, _) in enumerate(configs):
-        p2 = _build_suspension(ht2, hub_z_ground=hz2, tire_od=od2)
-        all_x.extend([p2["ic"][0], -p2["ic"][0]])
-        all_y.append(p2["ic"][1])
-    for _, rc_y2, _, _ in rc_results:
-        all_y.append(rc_y2)
-    ax.set_xlim(min(all_x) - x_pad, max(all_x) + x_pad)
-    ax.set_ylim(min(all_y) - 200, max(all_y) + 380)
-
-    from matplotlib.lines import Line2D
-
-    legend_elements = [
-        Line2D([0], [0], color=col, linewidth=2.5, alpha=alp, label=label)
-        for label, _, col, alp in rc_results
-    ]
-    ax.legend(
-        handles=legend_elements,
-        fontsize=7.5,
-        facecolor=BG,
-        edgecolor=GRID2,
-        labelcolor=TEXT,
-        loc="upper right",
-    )
-
-    save(fig, "rc_construction.png")
+    """Narrowing only: donor tire at both tracks."""
+    a = _build_suspension(**CFG_MIATA)["rc"][1]
+    b = H_RC_A40_MIATA_TIRE
+    _plot_rc_pair(
+        [(f"Donor track ({T_MIATA:.0f} mm), {C.tyre_size_miata}", CFG_MIATA, MIATA_C, 0.45),
+         (f"A40 pickups ({2*CFG_A40_MIATA_TIRE['half_track']:.0f} mm), {C.tyre_size_miata}",
+          CFG_A40_MIATA_TIRE, A40_C, 0.9)],
+        "rc_construction.png",
+        "Roll centre construction: narrowing only (same tire)",
+        [f"Same linkage shifted {NARROW_PER_SIDE} mm/side inboard.",
+         f"RC {a:.1f} -> {b:.1f} mm ({b - a:+.1f} mm, x{b / a:.3f})",
+         f"Track ratio {2*CFG_A40_MIATA_TIRE['half_track']/T_MIATA:.3f}: "
+         "RC scales with track."])
 
 
-# ====================================================================
-# 1c. RC construction — tire-size comparison at A40 track
-# ====================================================================
 def plot_rc_tire_comparison():
-    """Front-view RC construction: stock Miata vs stock A40 tire height.
-
-    Both configurations use the A40 track width (1230 mm).  Only the
-    tire diameter changes, shifting the entire assembly vertically.
-    """
-    fig, ax = styled_fig(figsize=(8, 8))
-    ax.set_aspect("equal")
-
-    stock_od = 577.0  # 185/60R14
-    a40_od = 646.0  # 5.25-16 (stock A40)
-    stock_hz = SUSP["hub_z_ground"]  # 265 mm
-    delta_r = (a40_od - stock_od) / 2  # +34.5 mm
-    a40_hz = stock_hz + delta_r
-
-    tires = [
-        ("185/60R14 (stock Miata)", stock_od, stock_hz, MIATA_C, 0.45),
-        ("5.25-16 (stock A40)", a40_od, a40_hz, A40_C, 0.90),
-    ]
-    ht = T_A40 / 2  # all at A40 track
-
-    def draw_side(half_track, hub_z, tire_od, color, alpha, side=1):
-        p = _build_suspension(half_track, hub_z_ground=hub_z, tire_od=tire_od)
-        s = side
-
-        def mx(pt):
-            return np.array([s * pt[0], pt[1]])
-
-        lbj = mx(p["lbj"])
-        ubj = mx(p["ubj"])
-        lca_inner = mx(p["lca_inner"])
-        uca_inner = mx(p["uca_inner"])
-        cp = mx(p["cp"])
-        ic = mx(p["ic"])
-        htx = s * p["half_track"]
-
-        # Tire rectangle
-        tire_h = p["tire_od"]
-        tw = p["tire_w"]
-        tire_rect = plt.Rectangle(
-            (htx - tw / 2, 0),
-            tw,
-            tire_h,
-            linewidth=1.2,
-            edgecolor=color,
-            facecolor=color,
-            alpha=alpha * 0.10,
-            zorder=2,
-        )
-        ax.add_patch(tire_rect)
-        xs = [htx - tw / 2, htx + tw / 2, htx + tw / 2, htx - tw / 2, htx - tw / 2]
-        ys = [0, 0, tire_h, tire_h, 0]
-        ax.plot(xs, ys, color=color, linewidth=1.0, alpha=alpha * 0.45, zorder=3)
-
-        # Arms
-        ax.plot(
-            [lca_inner[0], lbj[0]],
-            [lca_inner[1], lbj[1]],
-            color=color,
-            linewidth=2.2,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        ax.plot(
-            [uca_inner[0], ubj[0]],
-            [uca_inner[1], ubj[1]],
-            color=color,
-            linewidth=2.2,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        ax.plot(
-            [lbj[0], ubj[0]],
-            [lbj[1], ubj[1]],
-            color=color,
-            linewidth=2.8,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        for pt in [lca_inner, uca_inner, lbj, ubj]:
-            ax.plot(
-                pt[0], pt[1], "o", color=color, markersize=3.5, alpha=alpha, zorder=5
-            )
-
-        # Extension lines to IC
-        ax.plot(
-            [lca_inner[0], ic[0]],
-            [lca_inner[1], ic[1]],
-            color=color,
-            linewidth=0.7,
-            alpha=alpha * 0.35,
-            linestyle="--",
-        )
-        ax.plot(
-            [uca_inner[0], ic[0]],
-            [uca_inner[1], ic[1]],
-            color=color,
-            linewidth=0.7,
-            alpha=alpha * 0.35,
-            linestyle="--",
-        )
-        ax.plot(ic[0], ic[1], "D", color=color, markersize=4, alpha=alpha, zorder=5)
-
-        return ic, cp
-
-    def draw_rc_lines(ic_r, cp_r, ic_l, cp_l, color, alpha):
-        rc_pts = []
-        for cp_pt, ic_pt in [(cp_r, ic_r), (cp_l, ic_l)]:
-            d = ic_pt - cp_pt
-            t = -cp_pt[0] / d[0]
-            rc = cp_pt + t * d
-            ax.plot(
-                [cp_pt[0], ic_pt[0], rc[0]],
-                [cp_pt[1], ic_pt[1], rc[1]],
-                color=color,
-                linewidth=1.0,
-                alpha=alpha * 0.6,
-                linestyle="-.",
-                zorder=4,
-            )
-            rc_pts.append(rc)
-        rc_y = (rc_pts[0][1] + rc_pts[1][1]) / 2
-        ax.plot(
-            0,
-            rc_y,
-            "s",
-            color=color,
-            markersize=7,
-            alpha=min(alpha + 0.15, 1.0),
-            zorder=6,
-        )
-        return rc_y
-
-    # Draw each tire configuration
-    rc_values = []
-    ann_offsets = [55, -55]  # stagger annotations
-    for idx, (label, od, hz, col, alp) in enumerate(tires):
-        ic_r, cp_r = draw_side(ht, hz, od, col, alp, side=1)
-        ic_l, cp_l = draw_side(ht, hz, od, col, alp, side=-1)
-        rc_y = draw_rc_lines(ic_r, cp_r, ic_l, cp_l, col, alp)
-        rc_values.append((label, od, rc_y, col, alp))
-
-        ax_dx = 120 if idx == 0 else -120
-        ax_ha = "left" if idx == 0 else "right"
-        ax.annotate(
-            f"RC = {rc_y:.1f} mm  ({label})",
-            xy=(0, rc_y),
-            xytext=(ax_dx, rc_y + ann_offsets[idx]),
-            fontsize=7.5,
-            color=col,
-            fontweight="bold",
-            ha=ax_ha,
-            arrowprops=dict(arrowstyle="->", color=col, lw=0.7),
-        )
-
-    # Ground line & centreline
-    ax.axhline(0, color=TEXT, linewidth=1, alpha=0.3)
-    ax.axvline(0, color=TEXT, linewidth=0.5, alpha=0.2, linestyle=":")
-
-    # Track label
-    ax.text(
-        ht,
-        -30,
-        f"A40 track ({T_A40} mm)",
-        color=A40_C,
-        fontsize=7.5,
-        ha="center",
-        alpha=0.85,
-    )
-    ax.text(5, -30, "CL", color=TEXT, fontsize=7, alpha=0.3, ha="left")
-
-    # Info box
-    lines = [f"Track: {T_A40} mm (all configs)"]
-    for label, od, rc_y, _, _ in rc_values:
-        lines.append(f"{label}: OD {od:.0f} mm, RC {rc_y:.1f} mm")
-    ax.text(
-        0.02,
-        0.97,
-        "\n".join(lines),
-        fontsize=7,
-        color=TEXT,
-        alpha=0.8,
-        transform=ax.transAxes,
-        va="top",
-        ha="left",
-        bbox=dict(boxstyle="round,pad=0.4", fc=BG, ec=GRID2, alpha=0.9),
-    )
-
-    ax.set_xlabel("Front view position (mm)")
-    ax.set_ylabel("Height (mm)")
-    ax.set_title("Roll centre construction: tire height at A40 track")
-
-    # Auto-fit limits
-    x_pad = 180
-    all_x = [ht, -ht]
-    all_y = [0, a40_od, stock_od]
-    for _, od2, hz2, _, _ in tires:
-        p2 = _build_suspension(ht, hub_z_ground=hz2, tire_od=od2)
-        all_x.extend([p2["ic"][0], -p2["ic"][0]])
-        all_y.append(p2["ic"][1])
-    for _, _, rc_y2, _, _ in rc_values:
-        all_y.append(rc_y2)
-    ax.set_xlim(min(all_x) - x_pad, max(all_x) + x_pad)
-    ax.set_ylim(min(all_y) - 200, max(all_y) + 380)
-
-    from matplotlib.lines import Line2D
-
-    legend_elements = [
-        Line2D([0], [0], color=col, linewidth=2.2, alpha=alp, label=label)
-        for label, _, _, col, alp in rc_values
-    ]
-    ax.legend(
-        handles=legend_elements,
-        fontsize=7,
-        facecolor=BG,
-        edgecolor=GRID2,
-        labelcolor=TEXT,
-        loc="upper right",
-    )
-
-    save(fig, "rc_tire_comparison.png")
+    """Tire height only: A40 pickups, donor tire vs 205/65R15."""
+    a = H_RC_A40_MIATA_TIRE
+    b = H_RC_A40
+    _plot_rc_pair(
+        [(f"{C.tyre_size_miata}, ET{ET_MIATA:.0f} ({TIRE_OD_MIATA:.1f} mm OD)", CFG_A40_MIATA_TIRE, MIATA_C, 0.45),
+         (f"{C.tyre_size}, ET{ET_A40:.0f} ({TIRE_OD_A40:.1f} mm OD)", CFG_A40, A40_C, 0.9)],
+        "rc_tire_comparison.png",
+        "Roll centre construction: tire height at the A40 pickups",
+        [f"Taller tire lifts the whole linkage {HUB_Z_A40 - SUSP['hub_z_ground']:.2f} mm",
+         "(pickups move up with it on the custom frame).",
+         f"RC {a:.1f} -> {b:.1f} mm ({b - a:+.1f} mm): the IC rises,",
+         "the contact patch does not."])
 
 
-# ====================================================================
-# 1d. RC construction — combined: 2 tracks × 2 tire heights
-# ====================================================================
 def plot_rc_combined():
-    """Front-view RC construction: stock Miata vs the actual A40 build.
-
-    Miata: stock track (1420 mm) + stock tire (577 mm OD).
-    A40:   narrowed track (1230 mm) + taller tire (646 mm OD).
-    """
-    fig, ax = styled_fig(figsize=(8, 8))
-    ax.set_aspect("equal")
-
-    stock_od = 577.0
-    a40_od = 646.0
-    stock_hz = SUSP["hub_z_ground"]
-    delta_r = (a40_od - stock_od) / 2
-    a40_hz = stock_hz + delta_r
-
-    configs = [
-        (
-            "Stock Miata (1420 mm, 577 mm OD)",
-            T_MIATA / 2,
-            stock_hz,
-            stock_od,
-            MIATA_C,
-            0.45,
-        ),
-        ("A40 build (1230 mm, 646 mm OD)", T_A40 / 2, a40_hz, a40_od, A40_C, 0.90),
-    ]
-
-    def draw_side(half_track, hub_z, tire_od, color, alpha, side=1):
-        p = _build_suspension(half_track, hub_z_ground=hub_z, tire_od=tire_od)
-        s = side
-
-        def mx(pt):
-            return np.array([s * pt[0], pt[1]])
-
-        lbj = mx(p["lbj"])
-        ubj = mx(p["ubj"])
-        lca_inner = mx(p["lca_inner"])
-        uca_inner = mx(p["uca_inner"])
-        cp = mx(p["cp"])
-        ic = mx(p["ic"])
-        htx = s * p["half_track"]
-
-        tire_h = p["tire_od"]
-        tw = p["tire_w"]
-        rect = plt.Rectangle(
-            (htx - tw / 2, 0),
-            tw,
-            tire_h,
-            linewidth=1.0,
-            edgecolor=color,
-            facecolor=color,
-            alpha=alpha * 0.08,
-            zorder=2,
-        )
-        ax.add_patch(rect)
-        xs = [htx - tw / 2, htx + tw / 2, htx + tw / 2, htx - tw / 2, htx - tw / 2]
-        ys = [0, 0, tire_h, tire_h, 0]
-        ax.plot(xs, ys, color=color, linewidth=0.9, alpha=alpha * 0.4, zorder=3)
-
-        ax.plot(
-            [lca_inner[0], lbj[0]],
-            [lca_inner[1], lbj[1]],
-            color=color,
-            linewidth=2.0,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        ax.plot(
-            [uca_inner[0], ubj[0]],
-            [uca_inner[1], ubj[1]],
-            color=color,
-            linewidth=2.0,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        ax.plot(
-            [lbj[0], ubj[0]],
-            [lbj[1], ubj[1]],
-            color=color,
-            linewidth=2.5,
-            alpha=alpha,
-            solid_capstyle="round",
-        )
-        for pt in [lca_inner, uca_inner, lbj, ubj]:
-            ax.plot(
-                pt[0], pt[1], "o", color=color, markersize=3.5, alpha=alpha, zorder=5
-            )
-
-        ax.plot(
-            [lca_inner[0], ic[0]],
-            [lca_inner[1], ic[1]],
-            color=color,
-            linewidth=0.6,
-            alpha=alpha * 0.3,
-            linestyle="--",
-        )
-        ax.plot(
-            [uca_inner[0], ic[0]],
-            [uca_inner[1], ic[1]],
-            color=color,
-            linewidth=0.6,
-            alpha=alpha * 0.3,
-            linestyle="--",
-        )
-        ax.plot(ic[0], ic[1], "D", color=color, markersize=4, alpha=alpha, zorder=5)
-        return ic, cp
-
-    def draw_rc_lines(ic_r, cp_r, ic_l, cp_l, color, alpha):
-        rc_pts = []
-        for cp_pt, ic_pt in [(cp_r, ic_r), (cp_l, ic_l)]:
-            d = ic_pt - cp_pt
-            t = -cp_pt[0] / d[0]
-            rc = cp_pt + t * d
-            ax.plot(
-                [cp_pt[0], ic_pt[0], rc[0]],
-                [cp_pt[1], ic_pt[1], rc[1]],
-                color=color,
-                linewidth=0.9,
-                alpha=alpha * 0.55,
-                linestyle="-.",
-                zorder=4,
-            )
-            rc_pts.append(rc)
-        rc_y = (rc_pts[0][1] + rc_pts[1][1]) / 2
-        ax.plot(
-            0,
-            rc_y,
-            "s",
-            color=color,
-            markersize=7,
-            alpha=min(alpha + 0.15, 1.0),
-            zorder=6,
-        )
-        return rc_y
-
-    rc_results = []
-    ann_offsets = [55, -55]
-    all_ic = []
-    for idx, (label, ht, hz, od, col, alp) in enumerate(configs):
-        ic_r, cp_r = draw_side(ht, hz, od, col, alp, side=1)
-        ic_l, cp_l = draw_side(ht, hz, od, col, alp, side=-1)
-        rc_y = draw_rc_lines(ic_r, cp_r, ic_l, cp_l, col, alp)
-        rc_results.append((label, rc_y, col, alp))
-        # Collect IC positions for auto-fitting limits
-        p = _build_suspension(ht, hub_z_ground=hz, tire_od=od)
-        all_ic.append(p["ic"])
-        ax_dx = 120 if idx == 0 else -120
-        ax_ha = "left" if idx == 0 else "right"
-        ax.annotate(
-            f"RC = {rc_y:.1f} mm",
-            xy=(0, rc_y),
-            xytext=(ax_dx, rc_y + ann_offsets[idx]),
-            fontsize=7.5,
-            color=col,
-            fontweight="bold",
-            ha=ax_ha,
-            arrowprops=dict(arrowstyle="->", color=col, lw=0.7),
-        )
-
-    ax.axhline(0, color=TEXT, linewidth=1, alpha=0.3)
-    ax.axvline(0, color=TEXT, linewidth=0.5, alpha=0.2, linestyle=":")
-
-    ax.text(
-        -T_MIATA / 2,
-        -30,
-        f"Miata ({T_MIATA} mm)",
-        color=MIATA_C,
-        fontsize=7.5,
-        ha="center",
-        alpha=0.5,
-    )
-    ax.text(
-        T_A40 / 2,
-        -30,
-        f"A40 ({T_A40} mm)",
-        color=A40_C,
-        fontsize=7.5,
-        ha="center",
-        alpha=0.85,
-    )
-    ax.text(5, -30, "CL", color=TEXT, fontsize=7, alpha=0.3, ha="left")
-
-    # Info box
-    ratio = rc_results[1][1] / rc_results[0][1]
-    ax.text(
-        0.02,
-        0.97,
-        f"Miata: track {T_MIATA} mm, tire OD {stock_od:.0f} mm\n"
-        f"A40: track {T_A40} mm, tire OD {a40_od:.0f} mm\n"
-        f"RC ratio: {rc_results[1][1]:.1f}/{rc_results[0][1]:.1f} = {ratio:.3f}",
-        fontsize=7.5,
-        color=TEXT,
-        alpha=0.8,
-        transform=ax.transAxes,
-        va="top",
-        ha="left",
-        bbox=dict(boxstyle="round,pad=0.4", fc=BG, ec=GRID2, alpha=0.9),
-    )
-
-    ax.set_xlabel("Front view position (mm)")
-    ax.set_ylabel("Height (mm)")
-    ax.set_title("Roll centre construction: stock Miata vs A40 build")
-
-    # Auto-fit limits to include tires, ICs, and RC points
-    x_pad = 180
-    all_x = [T_MIATA / 2, -T_MIATA / 2, T_A40 / 2, -T_A40 / 2]
-    all_y = [0, stock_od, a40_od]
-    for ic_pt in all_ic:
-        all_x.extend([ic_pt[0], -ic_pt[0]])
-        all_y.append(ic_pt[1])
-    for _, rc_y, _, _ in rc_results:
-        all_y.append(rc_y)
-    ax.set_xlim(min(all_x) - x_pad, max(all_x) + x_pad)
-    ax.set_ylim(min(all_y) - 200, max(all_y) + 380)
-
-    from matplotlib.lines import Line2D
-
-    legend_elements = [
-        Line2D([0], [0], color=col, linewidth=2.2, alpha=alp, label=label)
-        for label, _, col, alp in rc_results
-    ]
-    ax.legend(
-        handles=legend_elements,
-        fontsize=7,
-        facecolor=BG,
-        edgecolor=GRID2,
-        labelcolor=TEXT,
-        loc="upper right",
-    )
-
-    save(fig, "rc_combined.png")
+    """Stock Miata vs the actual A40 build (narrowing + taller tire)."""
+    a, b = H_RC_MIATA, H_RC_A40
+    pm, pa = _RC_MIATA_SUSP, _RC_A40_SUSP
+    _plot_rc_pair(
+        [(f"Stock Miata ({T_MIATA:.0f} mm, {C.tyre_size_miata} ET{ET_MIATA:.0f})", CFG_MIATA, MIATA_C, 0.45),
+         (f"A40 build ({T_A40_EXACT} mm, {C.tyre_size} ET{ET_A40:.0f})", CFG_A40, A40_C, 0.9)],
+        "rc_combined.png",
+        "Roll centre construction: stock Miata vs A40 build",
+        [f"Miata: RC {a:.1f} mm, IC {pm['cp'][0] - pm['ic'][0]:.0f} mm inboard "
+         f"of CP, {pm['ic'][1]:.0f} mm up",
+         f"A40:   RC {b:.1f} mm, IC {pa['cp'][0] - pa['ic'][0]:.0f} mm inboard "
+         f"of CP, {pa['ic'][1]:.0f} mm up",
+         f"Narrowing {H_RC_A40_MIATA_TIRE - a:+.0f} mm, taller tire "
+         f"{b - H_RC_A40_MIATA_TIRE:+.0f} mm, net {b - a:+.1f} mm"])
 
 
 # ====================================================================
@@ -1120,8 +583,9 @@ def plot_rc_combined():
 #     Sweep both wheels' LCA angles independently across bump/droop
 #     and trace the area in the front view that the RC can occupy.
 #
-#     Travel: 5 in shock stroke, MR ~0.621 at 80°,
-#     wheel travel ~201 mm = 141 mm bump + 60 mm droop (70/30).
+#     Travel: 5 in (127 mm) shock stroke through the four-bar MR
+#     (~0.68 at 80 deg), 45 % of the stroke in bump at ride height
+#     -> ~84 mm bump / ~102 mm droop at the wheel (front_wheel_travel()).
 #
 #     Kinematic model (planar front view):
 #       1. LCA inner pivot fixed; LBJ on circle of radius R_lca.
@@ -1183,9 +647,11 @@ def _rc_from_sides(state_r, state_l):
     return cp_r + ts[0] * d_r
 
 
-def _build_kinematic_params(half_track, hub_z_ground, tire_od):
+def _build_kinematic_params(half_track, hub_z_ground, tire_od, *, et=ET_MIATA,
+                            tire_w=None):
     """Pre-compute fixed kinematic parameters for one (right) side."""
-    p = _build_suspension(half_track, hub_z_ground=hub_z_ground, tire_od=tire_od)
+    p = _build_suspension(half_track, hub_z_ground=hub_z_ground, tire_od=tire_od,
+                          et=et, tire_w=tire_w)
     lca_inner = p["lca_inner"]
     uca_inner = p["uca_inner"]
     lbj_ride = p["lbj"]
@@ -1212,6 +678,7 @@ def _build_kinematic_params(half_track, hub_z_ground, tire_od):
         lbj_ride=lbj_ride, ubj_ride=ubj_ride, hub_ride=hub_ride,
         R_lca=R_lca, R_uca=R_uca, knuckle_len=knuckle_len,
         hub_local=hub_local, theta_ride=theta_ride, ride=ride,
+        tire_w=p["tire_w"],
     )
 
 
@@ -1225,112 +692,11 @@ def _theta_for_lbj_y(target_y, params):
     return th_a if abs(th_a - th_ref) < abs(th_b - th_ref) else th_b
 
 
-def _rc_migration_points(half_track, hub_z_ground, tire_od,
-                         bump_mm, droop_mm, n=27):
-    """Sweep (theta_right, theta_left) and return RC grid."""
-    params = _build_kinematic_params(half_track, hub_z_ground, tire_od)
-    y_static = params["lbj_ride"][1]
-    th_bump = _theta_for_lbj_y(y_static + bump_mm, params)
-    th_droop = _theta_for_lbj_y(y_static - droop_mm, params)
-    th_lo, th_hi = sorted((th_bump, th_droop))
-    thetas = np.linspace(th_lo, th_hi, n)
-
-    rc_grid = np.full((n, n, 2), np.nan)
-    for i, th_r in enumerate(thetas):
-        st_r = _solve_4bar(
-            th_r, params["lca_inner"], params["R_lca"], params["uca_inner"],
-            params["R_uca"], params["knuckle_len"], params["hub_local"],
-        )
-        if st_r is None:
-            continue
-        for j, th_l in enumerate(thetas):
-            st_l_right = _solve_4bar(
-                th_l, params["lca_inner"], params["R_lca"], params["uca_inner"],
-                params["R_uca"], params["knuckle_len"], params["hub_local"],
-            )
-            if st_l_right is None:
-                continue
-            mirror = lambda v: np.array([-v[0], v[1]])
-            st_l = {k: mirror(v) for k, v in st_l_right.items()}
-            rc = _rc_from_sides(st_r, st_l)
-            if rc is None:
-                continue
-            rc_grid[i, j] = rc
-    return rc_grid, params, thetas
-
-
-def _migration_boundary(rc_grid):
-    """Trace the parameter-rectangle boundary through the RC grid."""
-    top = rc_grid[0, :, :]
-    right = rc_grid[:, -1, :]
-    bottom = rc_grid[-1, ::-1, :]
-    left = rc_grid[::-1, 0, :]
-    poly = np.concatenate([top, right, bottom, left], axis=0)
-    return poly[~np.isnan(poly[:, 0])]
-
-
-def _draw_assembly(ax, params, st_r, color, *, half_track, tire_od,
-                   alpha=1.0, lw_arm=2.2, lw_knuckle=2.6, draw_tire=True,
-                   draw_ic_lines=False):
-    """Draw the full front-view assembly (both sides) for one
-    suspension state. `st_r` is the right-side `_solve_4bar` output."""
-    tw = SUSP["tire_w"]
-    for side in (1, -1):
-        mx = lambda v: np.array([side * v[0], v[1]])
-        lbj = mx(st_r["lbj"]); ubj = mx(st_r["ubj"])
-        lca_in = mx(params["lca_inner"]); uca_in = mx(params["uca_inner"])
-        hub = mx(st_r["hub"]); cp = mx(st_r["cp"]); ic = mx(st_r["ic"])
-        if draw_tire:
-            tx = hub[0] - tw / 2
-            ax.add_patch(plt.Rectangle(
-                (tx, 0), tw, tire_od, linewidth=0.8, edgecolor=color,
-                facecolor=color, alpha=0.05 * alpha, zorder=2,
-            ))
-            ax.plot(
-                [tx, tx + tw, tx + tw, tx, tx],
-                [0, 0, tire_od, tire_od, 0],
-                color=color, linewidth=0.8, alpha=0.35 * alpha, zorder=3,
-            )
-        ax.plot([lca_in[0], lbj[0]], [lca_in[1], lbj[1]],
-                color=color, linewidth=lw_arm, alpha=alpha,
-                solid_capstyle="round", zorder=4)
-        ax.plot([uca_in[0], ubj[0]], [uca_in[1], ubj[1]],
-                color=color, linewidth=lw_arm, alpha=alpha,
-                solid_capstyle="round", zorder=4)
-        ax.plot([lbj[0], ubj[0]], [lbj[1], ubj[1]],
-                color=color, linewidth=lw_knuckle, alpha=alpha,
-                solid_capstyle="round", zorder=4)
-        for pt in (lca_in, uca_in, lbj, ubj):
-            ax.plot(pt[0], pt[1], "o", color=color, markersize=3.5,
-                    alpha=alpha, zorder=5)
-        if draw_ic_lines:
-            ax.plot([cp[0], ic[0]], [cp[1], ic[1]],
-                    color=color, linewidth=0.8, alpha=0.55 * alpha,
-                    linestyle="-.", zorder=4)
-            ax.plot(ic[0], ic[1], "D", color=color, markersize=4,
-                    alpha=alpha, zorder=5)
-
-
 def _solve_state(theta, params):
     return _solve_4bar(
         theta, params["lca_inner"], params["R_lca"], params["uca_inner"],
         params["R_uca"], params["knuckle_len"], params["hub_local"],
     )
-
-
-def _mirror_state(st):
-    """Mirror a right-side state dict to the left side (negate x)."""
-    return {k: np.array([-v[0], v[1]]) for k, v in st.items()}
-
-
-def _rc_for_thetas(params, th_r, th_l):
-    st_r = _solve_state(th_r, params)
-    st_lr = _solve_state(th_l, params)
-    if st_r is None or st_lr is None:
-        return None, None, None
-    st_l = _mirror_state(st_lr)
-    rc = _rc_from_sides(st_r, st_l)
-    return rc, st_r, st_l
 
 
 def _rotate(p, phi):
@@ -1438,7 +804,7 @@ def _draw_body_assembly(ax, params, st_r, st_l, color,
                         draw_ic_lines=False, body_phi=0.0):
     """Draw both sides of the body-posed assembly using already-solved
     ground-frame states.  Includes cambered tire rectangles."""
-    tw = SUSP["tire_w"]
+    tw = params.get("tire_w") or SUSP["tire_w"]
     for st_side, side_sign in ((st_r, 1), (st_l, -1)):
         lbj = st_side["lbj"]; ubj = st_side["ubj"]
         lca_in = st_side["lca_inner_g"]; uca_in = st_side["uca_inner_g"]
@@ -1482,28 +848,6 @@ def _draw_body_assembly(ax, params, st_r, st_l, color,
                     alpha=alpha, zorder=5)
 
 
-def _convex_hull_2d(points):
-    """Andrew's monotone chain convex hull. Returns vertices in CCW order."""
-    pts = sorted(set(map(tuple, points)))
-    if len(pts) < 3:
-        return np.array(pts) if pts else np.zeros((0, 2))
-
-    def cross(o, a, b):
-        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
-
-    lower = []
-    for p in pts:
-        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
-            lower.pop()
-        lower.append(p)
-    upper = []
-    for p in reversed(pts):
-        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
-            upper.pop()
-        upper.append(p)
-    return np.array(lower[:-1] + upper[:-1])
-
-
 def _draw_body_cross(ax, params, body_h, body_phi, color, *,
                      alpha=0.45, lw=1.2, zorder=4.0):
     """Body-frame cross: vertical centerline + a single horizontal
@@ -1527,7 +871,8 @@ def _draw_body_cross(ax, params, body_h, body_phi, color, *,
 
 
 def _plot_rc_migration_panel(half_track, hub_z, tire_od, color, title, fname,
-                             bump, droop, n_h=41, n_phi=41):
+                             bump, droop, n_h=41, n_phi=41, *, et=ET_MIATA,
+                             tire_w=None):
     """Render a single full-page RC migration figure for one
     configuration.
 
@@ -1536,7 +881,8 @@ def _plot_rc_migration_panel(half_track, hub_z, tire_od, color, title, fname,
     [-droop, +bump].  Inner pivots translate and rotate with the
     body; tires stay in ground contact.
     """
-    params = _build_kinematic_params(half_track, hub_z, tire_od)
+    params = _build_kinematic_params(half_track, hub_z, tire_od, et=et,
+                                     tire_w=tire_w)
     tire_radius = hub_z  # hub centre = tire radius above ground at static
 
     # Sweep range: enough to cover any pose the shocks could reach.
@@ -1753,35 +1099,117 @@ def _plot_rc_migration_panel(half_track, hub_z, tire_od, color, title, fname,
               facecolor="#1a2438", edgecolor=color, labelcolor=TEXT,
               handlelength=1.4, borderpad=0.5)
     fig.tight_layout()
-    save(fig, fname)
+    save(fig, fname, dpi=145)  # 11-in figure: ~1580 px, <= 2x the ~780 px post width
+    if len(pts):
+        print(f"  {fname}: RC x within \u00b1{np.abs(pts[:, 0]).max():.0f} mm, "
+              f"y {pts[:, 1].min():.0f}-{pts[:, 1].max():.0f} mm "
+              f"(span {np.ptp(pts[:, 1]):.0f}); max roll "
+              f"\u00b1{np.degrees(phi_max_roll):.2f} deg")
 
 
 def plot_rc_migration():
     """Two separate figures (Miata, A40) — body has heave + roll DOFs,
     tires pinned to ground.  Sweeps every (h, φ) admissible under the
-    shock-stroke limit and paints the resulting RC envelope."""
-    SHOCK_STROKE_MM = 5 * 25.4
-    WHEEL_TRAVEL = SHOCK_STROKE_MM / MR_FRONT
-    BUMP = 0.70 * WHEEL_TRAVEL
-    DROOP = 0.30 * WHEEL_TRAVEL
+    wheel-travel limits set by the shock stroke and the four-bar MR."""
+    bump, droop = front_wheel_travel()
+    for cfg, color, name, fname in (
+        (CFG_MIATA, MIATA_C,
+         f"Stock Miata  ({T_MIATA:.0f} mm track, {C.tyre_size_miata})", "rc_migration_miata.png"),
+        (CFG_A40, A40_C,
+         f"A40 build  ({T_A40_EXACT} mm track, {C.tyre_size} ET{ET_A40:.0f})", "rc_migration_a40.png"),
+    ):
+        _plot_rc_migration_panel(
+            cfg["half_track"], cfg["hub_z_ground"], cfg["tire_od"], color,
+            f"RC migration — {name}", fname, bump, droop, n_h=41, n_phi=41,
+            et=cfg["et"], tire_w=cfg["tire_w"],
+        )
 
-    stock_od = 577.0
-    a40_od = 646.0
-    stock_hz = SUSP["hub_z_ground"]
-    a40_hz = stock_hz + (a40_od - stock_od) / 2
 
-    _plot_rc_migration_panel(
-        T_MIATA / 2, stock_hz, stock_od, MIATA_C,
-        f"RC migration — Stock Miata  ({T_MIATA} mm track, {stock_od:.0f} mm tire)",
-        "rc_migration_miata.png",
-        BUMP, DROOP, n_h=41, n_phi=41,
+# ====================================================================
+# Front motion ratio, from the four-bar
+#
+#   The knuckle (and the wheel) rotates about the front-view instant
+#   centre, not about the LCA pivot.  So the wheel-side lever is NOT
+#   (half-track - LCA pivot).  The script perturbs the four-bar and
+#   measures shock-length change per unit hub vertical travel directly.
+#
+#   Closed-form check:  MR = D_spring * sin(alpha) / D_wheel_eff
+#     D_wheel_eff = (x_LBJ - x_pivot) * (x_hub - x_IC) / (x_LBJ - x_IC)
+# ====================================================================
+def _kin_params(cfg):
+    return _build_kinematic_params(cfg["half_track"], cfg["hub_z_ground"],
+                                   cfg["tire_od"], et=cfg["et"],
+                                   tire_w=cfg["tire_w"])
+
+
+def _shock_lower_mount(params, theta):
+    """Coilover lower mount: lca_coilover_perp from the LCA pivot axis,
+    level with the pivot at ride height, rotating with the arm."""
+    d = theta - params["theta_ride"]
+    return params["lca_inner"] + SUSP["lca_coilover_perp"] * np.array(
+        [np.cos(d), np.sin(d)]
     )
-    _plot_rc_migration_panel(
-        T_A40 / 2, a40_hz, a40_od, A40_C,
-        f"RC migration — A40 build  ({T_A40} mm track, {a40_od:.0f} mm tire)",
-        "rc_migration_a40.png",
-        BUMP, DROOP, n_h=41, n_phi=41,
-    )
+
+
+def front_shock_curve(cfg=None, alpha_deg=SHOCK_ALPHA_DEG, n=601, span=0.42):
+    """Sweep the LCA and return wheel travel, shock compression and MR.
+
+    Upper shock mount is fixed to the body, SHOCK_LEN_RIDE from the lower
+    mount at ride height, leaning inboard at alpha_deg to the arm radius.
+    Returns dict(wheel_z, comp, mr) with wheel_z = hub rise from ride
+    (mm, +bump) and comp = shock shortening (mm, +bump).
+    """
+    if cfg is None:
+        cfg = CFG_A40
+    params = _kin_params(cfg)
+    a = np.radians(alpha_deg)
+    low0 = _shock_lower_mount(params, params["theta_ride"])
+    upper = low0 + SHOCK_LEN_RIDE * np.array([-np.cos(a), np.sin(a)])
+    hub0 = params["ride"]["hub"][1]
+    thetas = params["theta_ride"] + np.linspace(-span, span, n)
+    wz, comp = [], []
+    for th in thetas:
+        st = _solve_state(th, params)
+        if st is None:
+            continue
+        wz.append(st["hub"][1] - hub0)
+        comp.append(SHOCK_LEN_RIDE - np.linalg.norm(upper - _shock_lower_mount(params, th)))
+    wz, comp = np.array(wz), np.array(comp)
+    order = np.argsort(wz)
+    wz, comp = wz[order], comp[order]
+    mr = np.gradient(comp, wz)
+    return dict(wheel_z=wz, comp=comp, mr=mr)
+
+
+def front_mr(cfg=None, alpha_deg=SHOCK_ALPHA_DEG):
+    """Motion ratio at ride height (shock travel / wheel travel)."""
+    if cfg is None:
+        cfg = CFG_A40
+    params = _kin_params(cfg)
+    e = 1e-5
+    th0 = params["theta_ride"]
+    a_, b_ = _solve_state(th0 - e, params), _solve_state(th0 + e, params)
+    dhub = (b_["hub"][1] - a_["hub"][1]) / (2 * e)
+    return SUSP["lca_coilover_perp"] * np.sin(np.radians(alpha_deg)) / dhub
+
+
+def front_mr_closed_form(cfg=None, alpha_deg=SHOCK_ALPHA_DEG):
+    if cfg is None:
+        cfg = CFG_A40
+    p = _build_suspension(**cfg)
+    x_ic = p["ic"][0]
+    d_eff = (p["lbj"][0] - p["lca_inner"][0]) * (p["cp"][0] - x_ic) / (p["lbj"][0] - x_ic)
+    return SUSP["lca_coilover_perp"] * np.sin(np.radians(alpha_deg)) / d_eff, d_eff
+
+
+def front_wheel_travel(alpha_deg=SHOCK_ALPHA_DEG):
+    """Wheel bump / droop (mm) available from the shock stroke."""
+    c = front_shock_curve(alpha_deg=alpha_deg)
+    bump_stroke = BUMP_FRACTION * SHOCK_STROKE_MM
+    droop_stroke = (1 - BUMP_FRACTION) * SHOCK_STROKE_MM
+    bump = np.interp(bump_stroke, c["comp"], c["wheel_z"])
+    droop = -np.interp(-droop_stroke, c["comp"], c["wheel_z"])
+    return bump, droop
 
 
 # ====================================================================
@@ -1792,309 +1220,195 @@ def plot_track_effects():
     tracks = np.linspace(1000, 1500, 200)
     ratio = tracks / T_MIATA
 
-    ax.plot(tracks, ratio, color=BLUE, linewidth=2, label="Roll center height ratio")
-    ax.plot(
-        tracks, ratio**2, color=PURPLE, linewidth=2, label="Spring roll stiffness ratio"
-    )
-    ax.plot(tracks, 1 / ratio, color=PINK, linewidth=2, label="Weight transfer ratio")
+    ax.plot(tracks, ratio, color=BLUE, linewidth=2,
+            label="RC height ratio (same tire)")
+    ax.plot(tracks, ratio**2, color=PURPLE, linewidth=2,
+            label="Roll stiffness ratio (same wheel rate)")
+    ax.plot(tracks, 1 / ratio, color=PINK, linewidth=2,
+            label="Lateral weight transfer ratio (same CG)")
 
+    r = T_A40 / T_MIATA
+    for val, c in ((r, BLUE), (r**2, PURPLE), (1 / r, PINK)):
+        ax.plot(T_A40, val, "o", color=c, markersize=5, zorder=5)
+        ax.text(T_A40 - 10, val + 0.03, f"{val:.3f}", color=c, fontsize=7.5,
+                ha="right")
     ax.axvline(T_MIATA, color=MIATA_C, linestyle="--", linewidth=1, alpha=0.6)
     ax.axvline(T_A40, color=A40_C, linestyle="--", linewidth=1, alpha=0.6)
-    ax.text(T_MIATA + 8, 1.42, "Miata", color=MIATA_C, fontsize=8, alpha=0.7)
-    ax.text(T_A40 + 8, 1.42, "A40", color=A40_C, fontsize=8, alpha=0.7)
+    ax.text(T_MIATA + 8, 1.5, f"Miata\n{T_MIATA:.0f}", color=MIATA_C, fontsize=8, alpha=0.8)
+    ax.text(T_A40 + 8, 1.5, f"A40\n~{T_A40:.0f}", color=A40_C, fontsize=8, alpha=0.8)
     ax.axhline(1.0, color=TEXT, linestyle=":", linewidth=0.5, alpha=0.3)
 
     ax.set_xlabel("Front track width (mm)")
     ax.set_ylabel("Ratio relative to stock Miata")
     ax.set_title("How track width affects key parameters")
-    ax.legend(fontsize=8, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT)
+    ax.legend(fontsize=8, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+              loc="lower right")
     ax.set_xlim(1000, 1500)
-    ax.set_ylim(0.4, 1.6)
+    ax.set_ylim(0.4, 1.65)
     save(fig, "track_effects.png")
 
 
 # ====================================================================
-# 3. ARB sizing: required roll stiffness vs target angle, by diameter
+# 3. ARB sizing: ARB roll stiffness needed vs target roll angle
 # ====================================================================
 def plot_arb_sizing():
     fig, ax = styled_fig()
-    target_roll = np.linspace(2.0, 6.0, 200)
-    target_rad = np.radians(target_roll)
+    target = np.linspace(2.5, 6.0, 200)
 
-    arm = (H_CG_A40 - H_RC_A40) / 1000
-    moment = M_S_A40 * AY * G_ACC * arm
-    grav = M_S_A40 * G_ACC * arm
-    K_req = moment / target_rad + grav
-    ax.plot(
-        target_roll,
-        K_req / 1000,
-        color=TEXT,
-        linewidth=2,
-        alpha=0.8,
-        label="Required total (CG = 575 mm)",
-    )
+    need = lambda cg, rr: (k_phi_required(target, cg, rr) - K_PHI_SPRING) / 1000
+    ax.fill_between(target, need(H_CG_A40, H_RC_REAR_HI), need(H_CG_A40, H_RC_REAR_LO),
+                    color=TEXT, alpha=0.12, linewidth=0,
+                    label=f"CG {H_CG_A40:.0f}, rear RC {H_RC_REAR_LO:.0f}-{H_RC_REAR_HI:.0f} mm")
+    ax.plot(target, need(H_CG_A40, H_RC_REAR_NOM), color=TEXT, linewidth=2,
+            label=f"CG {H_CG_A40:.0f}, rear RC {H_RC_REAR_NOM:.0f} mm")
+    for cg_edge, ls in ((H_CG_A40 - CG_TOL, ":"), (H_CG_A40 + CG_TOL, "--")):
+        ax.plot(target, need(cg_edge, H_RC_REAR_NOM), color=TEXT, linewidth=0.9,
+                linestyle=ls, alpha=0.6, label=f"CG {cg_edge:.0f}, rear RC {H_RC_REAR_NOM:.0f} mm")
 
-    # CG uncertainty band
-    for cg_edge in [525, 625]:
-        a = (cg_edge - H_RC_A40) / 1000
-        K = (M_S_A40 * AY * G_ACC * a) / target_rad + M_S_A40 * G_ACC * a
-        ax.plot(target_roll, K / 1000, color=TEXT, linewidth=0.8, alpha=0.3)
-    a_lo = (525 - H_RC_A40) / 1000
-    a_hi = (625 - H_RC_A40) / 1000
-    K_lo = (M_S_A40 * AY * G_ACC * a_lo) / target_rad + M_S_A40 * G_ACC * a_lo
-    K_hi = (M_S_A40 * AY * G_ACC * a_hi) / target_rad + M_S_A40 * G_ACC * a_hi
-    ax.fill_between(
-        target_roll,
-        K_lo / 1000,
-        K_hi / 1000,
-        alpha=0.1,
-        color=TEXT,
-        label="CG range 525-625 mm",
-    )
+    ax.axvspan(ROLL_TARGETS[0], ROLL_TARGETS[2], color=PINK, alpha=0.07)
+    for rd in ROLL_TARGETS:
+        v = need(H_CG_A40, H_RC_REAR_NOM)[np.argmin(abs(target - rd))]
+        ax.plot(rd, v, "o", color=PINK, markersize=5, zorder=5)
+        ax.text(rd + 0.05, v + 1.2, f"{v:.0f}", color=PINK, fontsize=7.5)
 
-    ax.axhline(
-        K_PHI_SPRING / 1000,
-        color=PINK,
-        linestyle=":",
-        linewidth=1,
-        alpha=0.6,
-        label=f"Springs only ({K_PHI_SPRING/1000:.1f} kN-m/rad)",
-    )
     diameters = [19, 22, 25, 28]
     colors = [PURPLE, BLUE, GREEN, GOLD]
     for d, c in zip(diameters, colors):
-        K_total = K_PHI_SPRING + arb_roll_stiffness(d) + arb_roll_stiffness(d) * 0.7
-        K_bar = arb_K_bar(d)
-        ax.axhline(K_total / 1000, color=c, linestyle="--", linewidth=1.2, alpha=0.7)
-        ax.text(
-            2.15,
-            K_total / 1000 + 1.0,
-            f"{d}mm ({K_bar/1000:.1f} kN-m/rad)",
-            color=c,
-            fontsize=7,
-            ha="left",
-            va="bottom",
-        )
+        k = arb_roll_stiffness(d) / 1000
+        ax.axhline(k, color=c, linestyle="--", linewidth=1.0, alpha=0.7,
+                   label=f"{d} mm front bar alone ({k:.1f}, IR {IR_BAR:.2f} assumed)")
 
-    ax.set_xlabel("Target body roll at 0.8 G (\u00b0)")
-    ax.set_ylabel("Roll stiffness (kN-m/rad)")
-    ax.set_title("ARB sizing: required stiffness vs target roll angle")
-    ax.legend(
-        fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="upper right"
-    )
-    ax.set_xlim(2, 6)
-    ax.set_ylim(20, 110)
+    ax.set_xlabel(f"Target body roll at {AY:g} G (°)")
+    ax.set_ylabel("ARB roll stiffness to add, front + rear (kN-m/rad)")
+    ax.set_title(f"ARB requirement on top of the springs ({K_PHI_SPRING/1000:.1f} kN-m/rad)")
+    ax.legend(fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+              loc="upper right")
+    ax.set_xlim(2.5, 6)
+    ax.set_ylim(0, 60)
     save(fig, "arb_sizing.png")
 
 
 # ====================================================================
-# 4. Motion ratio effects (MR^2 scaling)
+# 4. Motion ratio through wheel travel (four-bar, A40 build)
 # ====================================================================
 def plot_motion_ratio():
-    fig, ax = styled_fig()
-    mr = np.linspace(0.5, 1.0, 200)
-
-    wheel_rate_factor = (mr / 0.63) ** 2
-    spring_comp = 1 / wheel_rate_factor
-
-    ax.plot(
-        mr,
-        wheel_rate_factor,
-        color=BLUE,
-        linewidth=2,
-        label="Wheel rate factor (vs MR = 0.63)",
-    )
-    ax.plot(
-        mr,
-        spring_comp,
-        color=PINK,
-        linewidth=2,
-        label="Spring rate compensation needed",
-    )
-    ax.axvline(0.63, color=MIATA_C, linestyle="--", linewidth=1, alpha=0.5)
-    ax.axvline(0.58, color=A40_C, linestyle="--", linewidth=1, alpha=0.5)
-    ax.text(0.635, 0.45, "Miata / A40\n(α ≈ 80°)", color=MIATA_C, fontsize=7, alpha=0.7)
-    ax.text(0.585, 0.45, "low edge\nof band", color=A40_C, fontsize=7, alpha=0.7)
-    ax.axhline(1.0, color=TEXT, linestyle=":", linewidth=0.5, alpha=0.3)
-
-    ax.set_xlabel("Motion ratio")
-    ax.set_ylabel("Multiplier")
-    ax.set_title("Motion ratio scaling: wheel rate and spring compensation")
-    ax.legend(fontsize=8, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT)
-    ax.set_xlim(0.5, 1.0)
-    ax.set_ylim(0, 3.5)
+    fig, ax = styled_fig(figsize=(7.2, 4.6))
+    bump, droop = front_wheel_travel()
+    for a_deg, c, lw in ((70, BLUE, 1.2), (80, A40_C, 2.4), (90, GOLD, 1.2)):
+        cur = front_shock_curve(alpha_deg=a_deg)
+        m = (cur["wheel_z"] > -droop - 15) & (cur["wheel_z"] < bump + 15)
+        ax.plot(cur["wheel_z"][m], cur["mr"][m], color=c, linewidth=lw,
+                label=f"α = {a_deg}°  (MR at ride {front_mr(alpha_deg=a_deg):.3f})")
+    ax.axvline(0, color=TEXT, linewidth=0.6, alpha=0.4)
+    ax.axvline(bump, color=GREEN, linestyle="--", linewidth=1, alpha=0.7)
+    ax.axvline(-droop, color=GREEN, linestyle="--", linewidth=1, alpha=0.7)
+    ax.text(bump - 3, 0.575, f"full bump\n+{bump:.0f} mm", color=GREEN,
+            fontsize=7, ha="right")
+    ax.text(-droop + 3, 0.575, f"full droop\n−{droop:.0f} mm", color=GREEN,
+            fontsize=7, ha="left")
+    ax.text(0.99, 0.97,
+            f"{SHOCK_STROKE_MM:.0f} mm stroke, {BUMP_FRACTION*100:.0f}% in bump at ride\n"
+            f"shock {SHOCK_LEN_RIDE:.0f} mm eye-to-eye at ride (assumed)",
+            transform=ax.transAxes, fontsize=7, color=TEXT, alpha=0.7,
+            ha="right", va="top")
+    ax.set_xlabel("Wheel travel from ride height (mm, + = bump)")
+    ax.set_ylabel("Motion ratio (shock / wheel)")
+    ax.set_title("Front motion ratio through travel (four-bar, A40 build)")
+    ax.legend(fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+              loc="lower center")
+    ax.set_ylim(0.55, 0.78)
     save(fig, "motion_ratio.png")
 
 
 # ====================================================================
-# 4b. Motion ratio vs shock angle for the actual control-arm dimensions
-#
-#     MR(alpha) = (D_spring / D_arm) * sin(alpha)
-#
-#     All distances are perpendicular from the LCA inner-pivot axis:
-#       D_arm    = perpendicular from pivot axis to LBJ
-#       D_spring = perpendicular from pivot axis to coilover lower mount
-#
-#     Because the donor LCA is reused unchanged, the lever ratio is the
-#     same as stock Miata.  The only variable on the A40 build is the
-#     shock angle alpha at the lower mount, set by the shock-tower
-#     position on the custom frame.
+# 4b. Motion ratio vs shock angle at ride height
 # ====================================================================
 def plot_motion_ratio_vs_angle():
     fig, ax = styled_fig(figsize=(7.4, 5.0))
+    alpha_deg = np.linspace(50, 90, 200)
+    mr = np.array([front_mr(alpha_deg=a) for a in alpha_deg])
 
-    alpha_deg = np.linspace(40, 90, 400)
-    alpha_rad = np.deg2rad(alpha_deg)
+    # Wheel-offset band: hub face fixed, ET +/-15 moves the contact patch.
+    d_et = 15
+    bands = []
+    for et in (ET_A40 - d_et, ET_A40 + d_et):
+        cfg = dict(CFG_A40, half_track=HUB_FACE_A40 - et, et=et)
+        bands.append(np.array([front_mr(cfg, a) for a in alpha_deg]))
+    ax.fill_between(alpha_deg, bands[0], bands[1], color=A40_C, alpha=0.15,
+                    linewidth=0, label=f"ET{ET_A40:.0f} ± {d_et} mm")
+    ax.plot(alpha_deg, mr, color=A40_C, linewidth=2.4,
+            label=f"MR = {front_mr(alpha_deg=90):.3f} · sin(α)  (IC-based)")
 
-    # Both dimensions are perpendicular distances from the LCA inner-pivot
-    # axis, taken from the Miata donor geometry in SUSP (the LCA is reused
-    # unchanged).  Wheel-side lever runs to the tire contact patch, which
-    # sits under hub centre at T_MIATA/2 from the car CL.
-    d_arm = LCA_LEVER_WHEEL  # mm — derived from SUSP (CL→pivot, wheel-CL convention)
-    d_spring = LCA_LEVER_SPRING  # mm
-    lever = MR_FRONT_STATIC  # static lever (alpha = 90 deg)
+    # Old (wrong) LCA-pivot lever, for reference.
+    old = SUSP["lca_coilover_perp"] / (T_MIATA / 2 - SUSP["lca_from_cl"])
+    ax.plot(alpha_deg, old * np.sin(np.radians(alpha_deg)), color=TEXT,
+            linewidth=1, linestyle=":", alpha=0.6,
+            label=f"old LCA-pivot lever {old:.3f} · sin(α) (wrong)")
 
-    mr = lever * np.sin(alpha_rad)
-
-    # Wheel-offset sensitivity band: a wheel with +/-15 mm offset versus
-    # the spec ET+38 shifts the contact patch laterally by the same
-    # amount, changing D_arm and therefore the lever ratio.  This is
-    # the dominant tolerance once the donor arm and frame pickups are
-    # fixed — show it as a shaded band so the reader can see it
-    # without hunting through the caption.
-    delta_offset = 15  # mm, plausible alt-wheel offset spread
-    lever_lo = d_spring / (d_arm + delta_offset)
-    lever_hi = d_spring / (d_arm - delta_offset)
-    mr_lo = lever_lo * np.sin(alpha_rad)
-    mr_hi = lever_hi * np.sin(alpha_rad)
-    ax.fill_between(
-        alpha_deg,
-        mr_lo,
-        mr_hi,
-        color=A40_C,
-        alpha=0.12,
-        linewidth=0,
-        label=f"\u00b1{delta_offset} mm wheel-offset band",
-    )
-
-    ax.plot(
-        alpha_deg,
-        mr,
-        color=A40_C,
-        linewidth=2.4,
-        label=f"MR = {lever:.3f} \u00b7 sin(\u03b1)",
-    )
-
-    # Lever-ratio ceiling (alpha = 90 deg, vertical shock)
-    ax.axhline(lever, color=A40_C, linestyle=":", linewidth=0.9, alpha=0.65)
-    ax.text(
-        88,
-        lever + 0.012,
-        f"geometric ceiling  MR = {lever:.2f}\n(perfectly vertical shock, \u03b1 = 90\u00b0)",
-        color=A40_C,
-        fontsize=7,
-        ha="right",
-        alpha=0.9,
-    )
-
-    # 0.63 reference MR used elsewhere in the post for roll math
-    # (donor-Miata calculation at alpha = 80 deg, wheel-centerline
-    # convention so it's consistent with K_phi = K_w * T^2 / 2).
-    ax.axhline(0.63, color=GOLD, linestyle="--", linewidth=1, alpha=0.7)
-    ax.text(
-        40.5,
-        0.64,
-        "MR = 0.63 used in roll/spring math (α ≈ 80° reference)",
-        color=GOLD,
-        fontsize=7,
-        ha="left",
-        alpha=0.9,
-    )
-
-    # Shaded "shock-tower placement" band — practical alpha for a tower
-    # that fits inside the frame rails.  Final angle gets locked in
-    # during SA V2.
     ax.axvspan(65, 85, color=GREEN, alpha=0.07)
-    ax.text(
-        75,
-        0.05,
-        "practical shock-tower\nangle range",
-        color=GREEN,
-        fontsize=6.8,
-        ha="center",
-        alpha=0.85,
-    )
+    ax.text(75, 0.74, "practical shock-tower range", color=GREEN, fontsize=7,
+            ha="center", alpha=0.85)
+    for a in (65, 75, 80, 85):
+        v = front_mr(alpha_deg=a)
+        ax.plot(a, v, "o", color=A40_C, markersize=5, zorder=5)
+        ax.annotate(f"{a}°: {v:.3f}", xy=(a, v), xytext=(a - 1, v + 0.018),
+                    fontsize=7, color=TEXT, ha="right", alpha=0.85)
 
-    # Annotate operating points across the practical band
-    sample_angles = [65, 75, 85]
-    for a in sample_angles:
-        mr_pt = lever * np.sin(np.deg2rad(a))
-        ax.plot(a, mr_pt, "o", color=A40_C, markersize=5, zorder=5)
-        wr_pct = (mr_pt / 0.9) ** 2 * 100
-        ax.annotate(
-            f"{a}\u00b0  \u2192  MR = {mr_pt:.2f}\nWR = {wr_pct:.0f}% of 0.9-baseline",
-            xy=(a, mr_pt),
-            xytext=(a - 11, mr_pt - 0.16),
-            fontsize=6.8,
-            color=TEXT,
-            alpha=0.85,
-            ha="left",
-            arrowprops=dict(arrowstyle="-", color=TEXT, lw=0.4, alpha=0.4),
-        )
-
-    ax.set_xlabel("Shock angle to LCA at lower mount, \u03b1 (\u00b0)")
-    ax.set_ylabel("Motion ratio  MR = (D$_{spring}$ / D$_{arm}$) \u00b7 sin(\u03b1)")
-    ax.set_title(
-        "Motion ratio vs shock angle "
-        f"(D$_{{spring}}$/D$_{{arm}}$ = {d_spring:.0f}/{d_arm:.1f} = {lever:.3f})"
-    )
-    ax.legend(
-        fontsize=8, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="lower right"
-    )
-    ax.set_xlim(40, 90)
-    ax.set_ylim(0, 1.0)
+    ax.set_xlabel("Shock angle to LCA at lower mount, α (°)")
+    ax.set_ylabel("Motion ratio at ride height")
+    ax.set_title("Front motion ratio vs shock angle (A40 build)")
+    ax.legend(fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+              loc="lower right")
+    ax.set_xlim(50, 90)
+    ax.set_ylim(0.5, 0.75)
     ax.xaxis.set_major_locator(MultipleLocator(5))
     save(fig, "motion_ratio_vs_angle.png")
 
 
 # ====================================================================
-# 5. Ride frequency carpet
+# 5. Ride frequency vs WHEEL rate (independent of MR)
 # ====================================================================
 def plot_ride_frequency():
-    fig, ax = styled_fig()
-    ks = np.linspace(10, 80, 200)
-    MR = 0.63
+    fig, ax = styled_fig(figsize=(7.2, 4.8))
+    kw = np.linspace(5, 35, 300)  # N/mm wheel rate
 
-    colors = [BLUE, PURPLE, PINK, GOLD]
-    masses = [180, 210, 234, 270]
+    for m, c, lbl, band in ((M_CORNER_F, A40_C, "front", FREQ_BAND_F),
+                            (M_CORNER_R, BLUE, "rear", FREQ_BAND_R)):
+        fn = np.sqrt(kw * 1000 / m) / (2 * np.pi)
+        ax.plot(kw, fn, color=c, linewidth=2,
+                label=f"{lbl}: {m:.0f} kg sprung corner")
+        for mm, ls in ((m * 0.9, ":"), (m * 1.1, ":")):
+            ax.plot(kw, np.sqrt(kw * 1000 / mm) / (2 * np.pi), color=c,
+                    linewidth=0.8, linestyle=ls, alpha=0.6)
+    ax.axhspan(*FREQ_BAND_F, color=GOLD, alpha=0.07)
+    ax.text(5.5, FREQ_BAND_F[1] + 0.02, f"{FREQ_BAND_F[0]:g}-{FREQ_BAND_F[1]:g} Hz street band "
+            f"(rear runs ~{FREQ_R - FREQ_F:.1f} Hz higher)", color=GOLD,
+            fontsize=7, alpha=0.8)
 
-    for mc, c in zip(masses, colors):
-        kw = ks * 1000 * MR**2
-        fn = 1 / (2 * np.pi) * np.sqrt(kw / mc)
-        ax.plot(ks, fn, color=c, linewidth=1.8, label=f"{mc} kg corner mass")
+    ks_f = KW_FRONT / front_mr() ** 2 / 1000
+    pts = ((KW_FRONT / 1000, FREQ_F, A40_C,
+            f"front {KW_FRONT/1000:.1f} N/mm @ {FREQ_F} Hz\n"
+            f"spring {ks_f:.1f} N/mm ({ks_f*5.71:.0f} lb/in) at MR {front_mr():.3f}"),
+           (KW_REAR / 1000, FREQ_R, BLUE,
+            f"rear {KW_REAR/1000:.1f} N/mm @ {FREQ_R} Hz\n"
+            "spring = " + ", ".join(f"{KW_REAR/1000/m**2:.0f}" for m in MR_REAR_CASES)
+            + " N/mm\nat MR " + "/".join(f"{m:.2f}" for m in MR_REAR_CASES)
+            + " (measure)"))
+    for x, y, c, t in pts:
+        ax.plot(x, y, "o", color=c, markersize=7, zorder=5,
+                markeredgecolor=TEXT, markeredgewidth=0.6)
+    ax.annotate(pts[0][3], xy=pts[0][:2], xytext=(21, 1.05), fontsize=7,
+                color=A40_C, arrowprops=dict(arrowstyle="->", color=A40_C, lw=0.6))
+    ax.annotate(pts[1][3], xy=pts[1][:2], xytext=(6, 2.0), fontsize=7,
+                color=BLUE, arrowprops=dict(arrowstyle="->", color=BLUE, lw=0.6))
 
-    ax.axhspan(1.2, 1.6, color=GOLD, alpha=0.08)
-    ax.axhline(1.2, color=GOLD, linestyle="--", linewidth=0.8, alpha=0.4)
-    ax.axhline(1.6, color=GOLD, linestyle="--", linewidth=0.8, alpha=0.4)
-    ax.text(11, 1.38, "1.2-1.6 Hz street target", color=GOLD, fontsize=7.5, alpha=0.7)
-
-    ax.annotate(
-        "A40 front ~234 kg corner\n" "33-60 N/mm \u2192 1.2-1.6 Hz",
-        xy=(60, 2.4),
-        fontsize=7.5,
-        color=TEXT,
-        alpha=0.7,
-        bbox=dict(boxstyle="round,pad=0.3", fc=BG, ec=GRID2, alpha=0.9),
-    )
-
-    ax.set_xlabel("Spring rate (N/mm)")
-    ax.set_ylabel("Natural frequency (Hz)")
-    ax.set_title(f"Ride frequency vs spring rate  (MR = {MR})")
-    ax.legend(
-        fontsize=8, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="upper left"
-    )
-    ax.set_xlim(10, 80)
-    ax.set_ylim(0.5, 3.0)
+    ax.set_xlabel("Wheel rate (N/mm)  -- spring = wheel rate / MR²")
+    ax.set_ylabel("Ride frequency (Hz)")
+    ax.set_title("Ride frequency vs wheel rate (dotted: corner mass ±10%)")
+    ax.legend(fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+              loc="lower right")
+    ax.set_xlim(5, 35)
+    ax.set_ylim(0.6, 2.6)
     save(fig, "ride_frequency.png")
 
 
@@ -2106,17 +1420,16 @@ def plot_ride_frequency():
 #      x = lateral (positive = driver-right)
 #      y = longitudinal (positive = forward, 0 = front axle line)
 # ====================================================================
-WB_MIATA = 2265
-WB_A40 = 2350
-
-# Fixed Miata NA knuckle convergence angle (hardware)
-THETA_KNUCKLE = np.arctan((T_MIATA / 2) / WB_MIATA)  # ~17.23 deg
+# (WB_MIATA / WB_A40 are defined with the shared constants.)
+# Fixed Miata NA knuckle convergence angle (hardware): atan(710/2265)
+THETA_KNUCKLE = np.arctan((T_MIATA / 2) / WB_MIATA)  # 17.40 deg
 
 # Schematic dimensions (mm) — replace with measured values when available
 RACK_FWD = 100  # rack centre-line, mm ahead of front-axle line
 STEER_ARM_L = 120  # steering arm length (tie-rod end to kingpin axis)
-KPI_OFFSET = 50  # kingpin lateral offset inboard of wheel centre
-TIRE_W_TOP = 185  # tire section width (top-view rectangle)
+# Kingpin (LBJ) lateral offset inboard of the wheel centreline comes from
+# the scan: KPI_OFFSET_MIATA = 44.25 (ET40), KPI_OFFSET_A40 = 46.25 (ET38).
+TIRE_W_TOP = TIRE_W_A40  # tire section width (top-view rectangle)
 TIRE_L_TOP = 500  # tyre footprint-to-rim visual length (schematic)
 
 
@@ -2171,14 +1484,14 @@ def plot_ackermann_topview():
     from matplotlib.lines import Line2D
 
     configs = [
-        # (label, track, wb, color, alpha, lw)
-        ("Miata stock", T_MIATA, WB_MIATA, MIATA_C, 0.35, 1.2),
-        ("A40 narrowed", T_A40, WB_A40, A40_C, 0.9, 2.0),
+        # (label, track, wb, color, alpha, lw, kingpin offset)
+        ("Miata stock", T_MIATA, WB_MIATA, MIATA_C, 0.35, 1.2, KPI_OFFSET_MIATA),
+        ("A40 narrowed", T_A40, WB_A40, A40_C, 0.9, 2.0, KPI_OFFSET_A40),
     ]
 
     convergence_pts = {}
 
-    for label, track, wb, color, alpha, lw in configs:
+    for label, track, wb, color, alpha, lw, KPI_OFFSET in configs:
         ht = track / 2
         # Convergence distance of the *Miata knuckle* at this track
         d_conv = ht / np.tan(THETA_KNUCKLE)
@@ -2300,7 +1613,7 @@ def plot_ackermann_topview():
     # ── Ideal convergence for A40 (green dotted to rear axle) ──
     ht_a = T_A40 / 2
     for side in [-1, 1]:
-        kp_x_ideal = side * (ht_a - KPI_OFFSET)  # through the kingpin
+        kp_x_ideal = side * (ht_a - KPI_OFFSET_A40)  # through the kingpin
         ax.plot(
             [kp_x_ideal, 0],
             [0, -WB_A40],
@@ -2343,7 +1656,7 @@ def plot_ackermann_topview():
     ax.text(
         -120,
         -WB_A40 - 50,
-        f"Ideal: rear axle at {WB_A40} mm",
+        f"Ideal: rear axle at {WB_A40:.0f} mm",
         color=GREEN,
         fontsize=7.5,
         ha="right",
@@ -2407,10 +1720,10 @@ def plot_ackermann_topview():
             color=MIATA_C,
             linewidth=1.5,
             alpha=0.4,
-            label="Miata stock (T=1420, WB=2265)",
+            label=f"Miata stock (T={T_MIATA:.0f}, WB={WB_MIATA:.0f})",
         ),
         Line2D(
-            [0], [0], color=A40_C, linewidth=2, label="A40 layout (T=1230, WB=2350)"
+            [0], [0], color=A40_C, linewidth=2, label=f"A40 layout (T~{T_A40:.0f}, WB={WB_A40:.0f})"
         ),
         Line2D([0], [0], color=GOLD, linewidth=2, label="Miata knuckle convergence"),
         Line2D(
@@ -2446,10 +1759,10 @@ def plot_ackermann_turn():
     fig, ax = styled_fig(figsize=(9, 7))
     ax.set_aspect("equal")
 
-    track = T_A40  # 1230
+    track = T_A40  # ~1230 nominal
     wb = WB_A40  # 2350
     ht = track / 2  # 615
-    d_actual_wb = ht / np.tan(THETA_KNUCKLE)  # ~1983 mm
+    d_actual_wb = ht / np.tan(THETA_KNUCKLE)  # ~1962 mm
 
     d_out_deg = 35
     d_out = np.radians(d_out_deg)
@@ -2473,7 +1786,7 @@ def plot_ackermann_turn():
         return ht - t * np.cos(d_out), -t * np.sin(d_out)
 
     icr_i = _icr(d_in_ideal)  # ideal  ICR — should be at y ≈ -2350 (rear axle)
-    icr_a = _icr(d_in_actual)  # actual ICR — should be at y ≈ -1987 (ahead)
+    icr_a = _icr(d_in_actual)  # actual ICR — ahead of the rear axle
 
     # ── Rear axle: bold, separate horizontal ──
     ax.axhline(-wb, color=TEXT, linewidth=2.2, alpha=0.55, zorder=3)
@@ -2627,7 +1940,7 @@ def plot_ackermann_turn():
     ax.set_ylabel("Longitudinal position (mm)")
     ax.set_title(
         f"ICR at {d_out_deg}\u00b0 outer lock: Miata stock knuckle vs ideal\n"
-        f"A40 +50 track (1230 mm)  x  wheelbase 2350 mm",
+        f"A40 track ~{T_A40:.0f} mm  x  wheelbase {WB_A40:.0f} mm",
         fontsize=10,
     )
 
@@ -2763,8 +2076,8 @@ def plot_ackermann():
     ax_top.set_xlabel("Outside wheel angle (\u00b0)")
     ax_top.set_ylabel("Excess Ackermann (\u00b0)")
     ax_top.set_title(
-        "Ackermann error: Miata stock knuckle (17.2\u00b0) on A40\n"
-        "Track 1230 mm, wheelbase 2350 mm",
+        f"Ackermann error: Miata stock knuckle ({np.degrees(THETA_KNUCKLE):.2f}\u00b0) on A40\n"
+        f"Track ~{T_A40:.0f} mm, wheelbase {WB_A40:.0f} mm",
         fontsize=10,
     )
     ax_top.set_xlim(0, 30)
@@ -2832,61 +2145,16 @@ def plot_ackermann():
 
 
 # ====================================================================
-# 7. ARB bar diameter vs torsional + roll stiffness (D^4)
-# ====================================================================
-def plot_bar_stiffness():
-    fig, ax = styled_fig()
-    d = np.linspace(16, 32, 200)
-    K_bar = arb_K_bar(d)
-
-    ax.plot(d, K_bar, color=BLUE, linewidth=2)
-    markers = [
-        (19, "stock Miata", (2.5, -800), "left"),
-        (22, "sport/R", (2.5, 1200), "left"),
-        (25, "aftermarket", (2.5, 1800), "left"),
-    ]
-    for dd, label, (dx, dy), ha in markers:
-        k = arb_K_bar(dd)
-        ax.plot(dd, k, "o", color=GOLD, markersize=7, zorder=5)
-        ax.annotate(
-            f"{dd}mm ({label})\n{k:,.0f} N-m/rad",
-            xy=(dd, k),
-            xytext=(dd + dx, k + dy),
-            fontsize=7,
-            color=TEXT,
-            alpha=0.8,
-            ha=ha,
-            arrowprops=dict(arrowstyle="->", color=TEXT, lw=0.5),
-        )
-
-    ax2 = ax.twinx()
-    ax2.set_facecolor(BG)
-    ax2.tick_params(colors=TEXT, labelsize=9)
-    K_roll = arb_roll_stiffness(d)
-    ax2.plot(d, K_roll / 1000, color=PINK, linewidth=1.5, linestyle="--", alpha=0.7)
-    ax2.set_ylabel("ARB roll stiffness (kN-m/rad)", color=PINK)
-    ax2.yaxis.label.set_color(PINK)
-    for spine in ax2.spines.values():
-        spine.set_color(GRID2)
-
-    ax.set_xlabel("Bar diameter (mm)")
-    ax.set_ylabel("Torsional stiffness (N-m/rad)")
-    ax.set_title(f"ARB stiffness vs diameter  (L_eff = {L_EFF} mm)")
-    ax.set_xlim(16, 32)
-    save(fig, "bar_stiffness.png")
-
-
-# ====================================================================
 # 8. Weight transfer: CG bands for each track width
 # ====================================================================
 def plot_weight_transfer():
     fig, ax = styled_fig()
     ay_range = np.linspace(0.1, 1.2, 200)
-    cg_lo, cg_hi = 525, 625  # CG uncertainty band: 575 +/- 50mm
+    cg_lo, cg_hi = H_CG_A40 - CG_TOL, H_CG_A40 + CG_TOL  # CG uncertainty band
 
     wt_miata = M_TOTAL * ay_range * G_ACC * (H_CG_MIATA / 1000) / (T_MIATA / 1000)
     ax.plot(
-        ay_range, wt_miata, color=MIATA_C, linewidth=2, label="Miata (T=1420, CG=460)"
+        ay_range, wt_miata, color=MIATA_C, linewidth=2, label=f"Miata (T={T_MIATA:.0f}, CG={H_CG_MIATA:.0f})"
     )
 
     wt_a40_lo = M_TOTAL * ay_range * G_ACC * (cg_lo / 1000) / (T_A40 / 1000)
@@ -2897,7 +2165,7 @@ def plot_weight_transfer():
         wt_a40_hi,
         alpha=0.25,
         color=PINK,
-        label=f"A40 T=1230, CG={cg_lo}-{cg_hi}",
+        label=f"A40 T~{T_A40:.0f}, CG={cg_lo:.0f}-{cg_hi:.0f}",
     )
 
     wt_stock_lo = M_TOTAL * ay_range * G_ACC * (cg_lo / 1000) / (T_MIATA / 1000)
@@ -2908,7 +2176,7 @@ def plot_weight_transfer():
         wt_stock_hi,
         alpha=0.15,
         color=PURPLE,
-        label=f"A40 CG at Miata track (T=1420)",
+        label=f"A40 CG at Miata track (T={T_MIATA:.0f})",
     )
 
     ax.axvline(0.8, color=TEXT, linestyle=":", linewidth=0.5, alpha=0.3)
@@ -2932,12 +2200,13 @@ def plot_jacking():
     fig, ax = styled_fig()
 
     rc = np.linspace(0, 180, 400)
-    half_t = T_A40 / 2
+    half_t = HT_A40
     jack_pct = rc / half_t * 100
-    jack_force = M_TOTAL * AY * G_ACC * (rc / half_t)
+    # Front axle lateral force at 0.8 G (front share of operating mass)
+    jack_force = FRONT_FRAC * M_TOTAL * AY * G_ACC * (rc / half_t)
 
     ax.plot(
-        rc, jack_pct, color=BLUE, linewidth=2, label=f"Jacking ratio (T = {T_A40} mm)"
+        rc, jack_pct, color=BLUE, linewidth=2, label=f"Jacking ratio (T = {T_A40_EXACT} mm)"
     )
 
     ax.axvspan(0, 60, color=GREEN, alpha=0.06)
@@ -2965,21 +2234,12 @@ def plot_jacking():
         alpha=0.7,
     )
 
-    # Compute actual RC from geometry model for key configs
-    stock_od = 577.0
-    a40_od = 646.0
-    stock_hz = SUSP["hub_z_ground"]
-    delta_r = (a40_od - stock_od) / 2
-    a40_hz = stock_hz + delta_r
-
-    p_miata = _build_suspension(T_MIATA / 2)
-    p_a40 = _build_suspension(T_A40 / 2)
-    p_a40_tall = _build_suspension(T_A40 / 2, hub_z_ground=a40_hz, tire_od=a40_od)
-
+    # RC from the geometry model for the three key configs
     markers = [
-        ("Stock Miata (1420 mm track)", p_miata["rc"][1], T_MIATA / 2, MIATA_C),
-        ("A40, Miata tire", p_a40["rc"][1], half_t, BLUE),
-        ("A40, A40 tire (build)", p_a40_tall["rc"][1], half_t, A40_C),
+        (f"Stock Miata ({T_MIATA:.0f} mm track)", H_RC_MIATA, T_MIATA / 2, MIATA_C),
+        ("A40 pickups, Miata tire", H_RC_A40_MIATA_TIRE,
+         CFG_A40_MIATA_TIRE["half_track"], BLUE),
+        (f"A40 build, {C.tyre_size} ET{ET_A40:.0f}", H_RC_A40, HT_A40, A40_C),
     ]
     label_positions = [(40, 24), (40, 21.5), (40, 19)]
     for (lbl, rc_val, ht_val, col), (tx, ty) in zip(markers, label_positions):
@@ -2998,16 +2258,16 @@ def plot_jacking():
     ax2.set_facecolor(BG)
     ax2.tick_params(colors=TEXT, labelsize=9)
     ax2.plot(rc, jack_force, color=PINK, linewidth=1.2, linestyle="--", alpha=0.5)
-    ax2.set_ylabel("Jacking force at 0.8 G (N)", color=PINK)
+    ax2.set_ylabel("Front-axle jacking force at 0.8 G (N)", color=PINK)
     ax2.yaxis.label.set_color(PINK)
     for spine in ax2.spines.values():
         spine.set_color(GRID2)
 
     ax.set_xlabel("Roll center height (mm)")
     ax.set_ylabel("Jacking ratio (%)")
-    ax.set_title(f"Jacking vs roll center height  (T = {T_A40} mm)")
+    ax.set_title(f"Jacking vs roll center height  (T = {T_A40_EXACT} mm)")
     ax.legend(
-        fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="upper left"
+        fontsize=7, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="lower right"
     )
     ax.set_xlim(0, 180)
     ax.set_ylim(0, 30)
@@ -3022,8 +2282,8 @@ def plot_rack_narrowing():
     fig, ax = styled_fig(figsize=(7, 5))
 
     track = np.linspace(1100, 1450, 300)
-    # From data: rack_narrowing = T_MIATA - track  (linear relationship
-    # derived from OO->track->narrowing table; verified at all three points)
+    # The rack narrows by the same amount as the track (both sides move
+    # in together): rack narrowing = T_MIATA - track.  At ~1230 -> 190 mm.
     rack_narrowing = T_MIATA - track
 
     ax.plot(track, rack_narrowing, color=BLUE, linewidth=2.5)
@@ -3057,10 +2317,12 @@ def plot_rack_narrowing():
     )
     ax.text(1420, 268, 'Limit (>10")', color=PINK, fontsize=8, ha="right", alpha=0.8)
 
+    # OO = outer-to-outer tire width = track + 205 mm section width.
+    # Stock A40 OO is 1365 mm.
     scenarios = [
-        (1180, "stock OO (1365)", PINK, (-80, 45)),
-        (1205, "+25mm OO (1390)", PURPLE, (-80, 40)),
-        (1230, "+50mm OO (1415)", GREEN, (50, 40)),
+        (C.a40_stock_outer - TIRE_W_A40, f"OO = stock A40 ({C.a40_stock_outer:.0f})", PINK, (75, 20)),
+        (1400 - TIRE_W_A40, f"OO 1400 (+{(1400 - C.a40_stock_outer) // 2:.0f}/side)", PURPLE, (-70, 40)),
+        (T_A40, f"build: OO {C.tyre_outer_front:.0f} (+{C.tyre_poke:.0f}/side)", GREEN, (40, 45)),
     ]
     for t, lbl, c, (dx, dy) in scenarios:
         n = T_MIATA - t
@@ -3116,10 +2378,15 @@ def _draw_arm_core(
 ):
     """Draw an A-arm in plan view.  inner_f/inner_r/bj are np.array([x, y]).
     BJ at origin by convention; pivots at negative x (inboard).
-    bushing_lengths: (front_len, rear_len) in mm for pivot rectangles."""
+    bushing_lengths: (front_len, rear_len) in mm for pivot rectangles, drawn
+    along the line through the two pivots (the bushing axis).
+    mounts: ((x, y), label) or ((x, y), label, (dx, dy, ha)) for the label
+    placement."""
     inner_f = np.array(inner_f, dtype=float)
     inner_r = np.array(inner_r, dtype=float)
     bj = np.array(bj, dtype=float)
+    axis = inner_f - inner_r
+    axis_deg = np.degrees(np.arctan2(axis[0], axis[1]))  # 0 = parallel to the CL
 
     # Arm blades
     for ip in (inner_f, inner_r):
@@ -3145,10 +2412,10 @@ def _draw_arm_core(
 
     # Inner pivot markers — rectangles representing bushing extents
     pw = SUSP["pivot_width"]  # visual lateral width for all pivots
-    for ip, tag, y_off, bush_len in zip(
+    for ip, tag, sgn, bush_len in zip(
         (inner_f, inner_r),
         ("Front pivot", "Rear pivot"),
-        (20, -28),
+        (1, -1),
         (bushing_lengths or (0, 0)),
     ):
         if bush_len > 0:
@@ -3162,16 +2429,22 @@ def _draw_arm_core(
                 lw=1.2,
                 zorder=2,
             )
+            rect.set_transform(
+                mtransforms.Affine2D().rotate_deg_around(ip[0], ip[1], -axis_deg) + ax.transData
+            )
             ax.add_patch(rect)
         ax.plot(*ip, "s", color=color, markersize=7, zorder=5)
+        # Label just beyond the bushing end (front above, rear below), so it
+        # never sits on the bushing rectangle.
         ax.text(
             ip[0],
-            ip[1] + y_off,
+            ip[1] + sgn * (max(bush_len, 20) / 2 + 5),
             tag,
             fontsize=6.5,
             color=color,
             alpha=0.85,
             ha="center",
+            va="bottom" if sgn > 0 else "top",
         )
 
     # BJ marker
@@ -3180,9 +2453,11 @@ def _draw_arm_core(
 
     # Extra mount points
     if mounts:
-        for (mx, my), mlabel in mounts:
+        for mount in mounts:
+            (mx, my), mlabel = mount[0], mount[1]
+            dx, dy, ha = mount[2] if len(mount) > 2 else (6, 12, "left")
             ax.plot(mx, my, "^", color=GREEN, markersize=8, zorder=5)
-            ax.text(mx + 6, my + 12, mlabel, fontsize=6.5, color=GREEN, alpha=0.9)
+            ax.text(mx + dx, my + dy, mlabel, fontsize=6.5, color=GREEN, alpha=0.9, ha=ha)
 
     mid = (inner_f + inner_r) / 2.0
     if show_annotations:
@@ -3225,7 +2500,7 @@ def _note(ax):
 # BJ at origin (0, 0).  +x outboard, +y forward.
 # Both pivots at the scanned LCA pivot lateral from CL (lca_from_cl).
 # BJ is lca_bj_fa = 25 mm forward of LCA-front-pivot
-#   → front pivot at y = -25, rear pivot at y = -(25 + 323.5) = -348.5.
+#   → front pivot at y = -25, rear pivot at y = -(25 + 322.5) = -347.5.
 # Coilover and ARB lie on horizontal lines (constant y) between BJ and the pivot line.
 def _lca_coords():
     # BJ at origin (plan view).  LCA pivot line sits at lca_from_cl from car
@@ -3249,19 +2524,37 @@ def _lca_coords():
     return bj, f, r, cov, arb
 
 
+def uca_plan_cant():
+    """Plan cant of the UCA bushing axis, from the scanned points.
+
+    The pivot pair is centred fore-aft on the LBJ (susp_geometry: lca_bj_fa
+    ± uca_fa), and the scan puts the UBJ 14.15 mm aft of the LBJ
+    (lbj_from_hub vs ubj_from_hub).  The arm is symmetric (both pivots
+    uca_fa_front from the UBJ along the bushing axis), so the UBJ lies on the
+    perpendicular bisector of the two pivots: the bushing axis is square to
+    the UBJ -> pivot-midpoint line, i.e. rotated atan(14.15 / 250) in plan
+    with the front pivot outboard.  Verify on the donor.
+
+    Returns (cant_deg, dlat, dfa, mid_lat, mid_fa), relative to the UBJ
+    (+x outboard, +y forward): front pivot at (mid_lat + dlat, mid_fa + dfa),
+    rear pivot at (mid_lat - dlat, mid_fa - dfa).
+    """
+    lat = SUSP["uca_hub_to_pivot"] - abs(SUSP["ubj_from_hub"][0])  # 250
+    mid_fa = SUSP["lbj_from_hub"][1] - SUSP["ubj_from_hub"][1]  # 14.15
+    cant = np.arctan2(mid_fa, lat)
+    half = SUSP["uca_fa_front"]  # 110 along the axis (symmetric arm)
+    return np.degrees(cant), half * np.sin(cant), half * np.cos(cant), -lat, mid_fa
+
+
 def _uca_coords():
-    # BJ at origin, +x outboard, +y forward.  UBJ sits at
-    # (hub_face + ubj_from_hub[0]) from CL; UCA pivot line is
-    # uca_hub_to_pivot mm inboard of the hub face.  So BJ→pivot lateral
-    # = uca_hub_to_pivot − |ubj_from_hub[0]|.
-    bj_to_pivot = SUSP["uca_hub_to_pivot"] - abs(SUSP["ubj_from_hub"][0])
+    # BJ (UBJ) at origin, +x outboard, +y forward.  UBJ sits at
+    # (hub_face + ubj_from_hub[0]) from CL; the UCA pivot-line midpoint is
+    # uca_hub_to_pivot mm inboard of the hub face.  The bushing axis is
+    # canted in plan (uca_plan_cant).
+    _, dlat, dfa, mid_lat, mid_fa = uca_plan_cant()
     bj = np.array([0.0, 0.0])
-    f = np.array(
-        [-bj_to_pivot, SUSP["uca_fa_front"]], dtype=float
-    )
-    r = np.array(
-        [-bj_to_pivot, -SUSP["uca_fa_rear"]], dtype=float
-    )
+    f = np.array([mid_lat + dlat, mid_fa + dfa], dtype=float)
+    r = np.array([mid_lat - dlat, mid_fa - dfa], dtype=float)
     return bj, f, r
 
 
@@ -3272,10 +2565,10 @@ def plot_lca_plan():
     """Top-down view of the Miata NA front lower control arm.
 
     Geometry (BJ at origin, +x outboard, +y forward):
-      Both pivots: x = -(T_MIATA/2 - lca_from_cl) = -374.5 mm inboard
+      Both pivots: x = -(LBJ_from_CL - lca_from_cl) = -336.25 mm inboard of the BJ
       Front pivot: y = -lca_bj_fa           = -25.0 mm  (rearward of BJ)
-      Rear  pivot: y = -(lca_bj_fa+lca_fa_span) = -348.5 mm  (rearward of BJ)
-      Fore-aft span = lca_fa_span = 323.5 mm
+      Rear  pivot: y = -(lca_bj_fa+lca_fa_span) = -347.5 mm  (rearward of BJ)
+      Fore-aft span = lca_fa_span = 322.5 mm
       Coilover: lca_coilover_perp = 240 mm outboard from pivot line.
     """
     fig, ax = styled_fig(figsize=(9, 7))
@@ -3291,10 +2584,12 @@ def plot_lca_plan():
             (
                 cov_pt,
                 f"Coilover\n({SUSP['lca_coilover_perp']:.0f}mm out, {SUSP['lca_coilover_fa']:.0f}mm)",
+                (10, 12, "left"),  # label up and outboard of the marker
             ),
             (
                 arb_pt,
                 f"ARB link\n({SUSP['lca_arb_perp']:.0f}mm out, {SUSP['lca_arb_fa']:.0f}mm)",
+                (-12, 12, "right"),  # label up and inboard, clear of the coilover label
             ),
         ],
         color=GOLD,
@@ -3304,9 +2599,9 @@ def plot_lca_plan():
     )
 
     # ── dimension callouts ──────────────────────────────────────────
-    lca_lat = abs(lca_f[0])  # 374.5 mm
+    lca_lat = abs(lca_f[0])  # 336.25 mm
     # Lateral: both pivots → BJ  (both at same inboard distance)
-    y_bot = lca_r[1] - 30  # below rear pivot
+    y_bot = lca_r[1] - SUSP["lca_r_bushing"] / 2 - 32  # below the rear pivot label
     ax.annotate(
         "",
         xy=(bj[0], y_bot),
@@ -3323,61 +2618,35 @@ def plot_lca_plan():
         alpha=0.85,
     )
 
-    # Fore-aft: front pivot rearward of BJ (−25 mm)
-    ax.annotate(
-        "",
-        xy=(lca_f[0] - 15, bj[1]),
-        xytext=(lca_f[0] - 15, lca_f[1]),
-        arrowprops=dict(arrowstyle="<->", color=TEXT, lw=0.8, alpha=0.6),
-    )
-    ax.text(
-        lca_f[0] - 28,
-        lca_f[1] / 2,
-        f"−{SUSP['lca_bj_fa']:.0f} mm\nrear",
-        fontsize=6.5,
-        color=TEXT,
-        ha="right",
-        va="center",
-        alpha=0.8,
-    )
-
-    # Fore-aft: rear pivot rearward of BJ (−348.5 mm)
+    # Fore-aft dimensions: one column each (arrow x), label placed left of
+    # its own arrow with a fixed gap in points, at a height where no other
+    # arrow passes, so no label sits on an arrow.
     rear_fa_total = SUSP["lca_bj_fa"] + SUSP["lca_fa_span"]
-    ax.annotate(
-        "",
-        xy=(lca_r[0] - 40, bj[1]),
-        xytext=(lca_r[0] - 40, lca_r[1]),
-        arrowprops=dict(arrowstyle="<->", color=TEXT, lw=0.8, alpha=0.6),
-    )
-    ax.text(
-        lca_r[0] - 53,
-        lca_r[1] / 2,
-        f"−{rear_fa_total:.0f} mm\nrear",
-        fontsize=6.5,
-        color=TEXT,
-        ha="right",
-        va="center",
-        alpha=0.8,
-    )
-
-    # Fore-aft span between pivots (= lca_fa_span = 323.5 mm)
-    mid_x = lca_r[0] - 70
-    ax.annotate(
-        "",
-        xy=(mid_x, lca_f[1]),
-        xytext=(mid_x, lca_r[1]),
-        arrowprops=dict(arrowstyle="<->", color=GOLD, lw=0.9, alpha=0.55),
-    )
-    ax.text(
-        mid_x - 8,
-        (lca_f[1] + lca_r[1]) / 2,
-        f"{SUSP['lca_fa_span']:.0f} mm\nspan",
-        fontsize=6.5,
-        color=GOLD,
-        ha="right",
-        va="center",
-        alpha=0.8,
-    )
+    x_front = lca_f[0] - 22   # −25 mm: front pivot rearward of BJ
+    x_rear = lca_r[0] - 95    # −348 mm: rear pivot rearward of BJ
+    x_span = lca_r[0] - 155   # 322 mm: span between pivots
+    for x_arr, y0, y1, y_lab, text, col, alpha in [
+        (x_front, bj[1], lca_f[1], lca_f[1] / 2, f"−{SUSP['lca_bj_fa']:.0f} mm\nrear", TEXT, 0.6),
+        (x_rear, bj[1], lca_r[1], lca_r[1] * 0.62, f"−{rear_fa_total:.0f} mm\nrear", TEXT, 0.6),
+        (x_span, lca_f[1], lca_r[1], (lca_f[1] + lca_r[1]) / 2, f"{SUSP['lca_fa_span']:.0f} mm\nspan", GOLD, 0.55),
+    ]:
+        ax.annotate(
+            "",
+            xy=(x_arr, y0),
+            xytext=(x_arr, y1),
+            arrowprops=dict(arrowstyle="<->", color=col, lw=0.8, alpha=alpha),
+        )
+        ax.annotate(
+            text,
+            xy=(x_arr, y_lab),
+            xytext=(-5, 0),
+            textcoords="offset points",
+            fontsize=6.5,
+            color=col,
+            ha="right",
+            va="center",
+            alpha=0.85,
+        )
 
     # BJ reference lines
     ax.axhline(bj[1], color=GRID2, lw=0.9, alpha=0.55, linestyle=":")
@@ -3390,9 +2659,9 @@ def plot_lca_plan():
     ax.set_ylabel("← Rear    +y forward →  (mm)")
     ax.set_aspect("equal")
     pad = 40
-    left_pad = 110  # extra room for inboard-side fa-offset labels
+    left_pad = 215  # extra room for inboard-side fa-offset labels
     all_x = [bj[0], lca_f[0], lca_r[0], cov_pt[0], arb_pt[0]]
-    all_y = [bj[1] + 20, lca_f[1], lca_r[1], y_bot - 28]
+    all_y = [bj[1] + 20, lca_f[1], lca_r[1], y_bot - 28, max(cov_pt[1], arb_pt[1]) + 45]
     ax.set_xlim(min(all_x) - left_pad, max(all_x) + pad)
     ax.set_ylim(min(all_y) - pad, max(all_y) + pad)
     _note(ax)
@@ -3403,10 +2672,13 @@ def plot_lca_plan():
 # 13b. UCA plan view
 # ====================================================================
 def plot_uca_plan():
-    """Top-down view of the Miata NA front upper control arm."""
+    """Top-down view of the Miata NA front upper control arm, with the bushing
+    axis at its plan cant (uca_plan_cant)."""
     fig, ax = styled_fig(figsize=(8, 6))
 
     bj, uca_f, uca_r = _uca_coords()
+    cant_deg, dlat, _, mid_lat, mid_fa = uca_plan_cant()
+    mid = np.array([mid_lat, mid_fa])
 
     _draw_arm_core(
         ax,
@@ -3419,40 +2691,41 @@ def plot_uca_plan():
         bushing_lengths=(SUSP["uca_bushing"], SUSP["uca_bushing"]),
     )
 
-    uca_lat = abs(uca_f[0])  # 324.5 mm
-    spread = uca_f[1] - uca_r[1]  # 113.5 + 143.5 = 257 mm
-    y_bot = uca_r[1] - 25
+    uca_lat = abs(mid_lat)  # 250 mm, UBJ -> pivot-line midpoint
+    span = np.linalg.norm(uca_f - uca_r)  # 220 mm along the axis
+    y_bot = uca_r[1] - SUSP["uca_bushing"] / 2 - 30  # below the rear pivot label
 
-    # Lateral: pivot → BJ
+    # Lateral: pivot-line midpoint -> BJ
     ax.annotate(
         "",
         xy=(bj[0], y_bot),
-        xytext=(uca_f[0], y_bot),
+        xytext=(mid_lat, y_bot),
         arrowprops=dict(arrowstyle="<->", color=TEXT, lw=1.0, alpha=0.7),
     )
     ax.text(
-        (bj[0] + uca_f[0]) / 2,
+        (bj[0] + mid_lat) / 2,
         y_bot - 14,
-        f"{uca_lat:.0f} mm  (inner pivot → BJ, lateral)",
+        f"{uca_lat:.0f} mm  (pivot-line midpoint → BJ, lateral)",
         fontsize=7,
         color=TEXT,
         ha="center",
         alpha=0.85,
     )
 
-    # Fore-aft offsets (relative to BJ)
+    # Fore-aft offsets of each pivot (relative to the BJ)
     for ip, label in [
         (uca_f, f"+{uca_f[1]:.0f} mm\nfwd"),
         (uca_r, f"−{abs(uca_r[1]):.0f} mm\nrear"),
     ]:
+        x_dim = min(uca_f[0], uca_r[0]) - 18
         ax.annotate(
             "",
-            xy=(ip[0] - 18, bj[1]),
-            xytext=(ip[0] - 18, ip[1]),
+            xy=(x_dim, bj[1]),
+            xytext=(x_dim, ip[1]),
             arrowprops=dict(arrowstyle="<->", color=TEXT, lw=0.8, alpha=0.6),
         )
         ax.text(
-            ip[0] - 30,
+            x_dim - 12,
             ip[1] / 2,
             label,
             fontsize=6.5,
@@ -3462,23 +2735,40 @@ def plot_uca_plan():
             alpha=0.8,
         )
 
-    # Spread
-    mid_x = (uca_f[0] + uca_r[0]) / 2 + 25
+    # Span along the bushing axis, drawn parallel to it
+    u = (uca_f - uca_r) / span
+    n = np.array([u[1], -u[0]])  # outboard normal
+    off = 25 * n
     ax.annotate(
         "",
-        xy=(mid_x, uca_f[1]),
-        xytext=(mid_x, uca_r[1]),
+        xy=tuple(uca_f + off),
+        xytext=tuple(uca_r + off),
         arrowprops=dict(arrowstyle="<->", color=BLUE, lw=0.9, alpha=0.55),
     )
     ax.text(
-        mid_x + 8,
-        (uca_f[1] + uca_r[1]) / 2,
-        f"{spread:.0f} mm\nspan",
+        mid[0] + off[0] + 8,
+        mid[1] + off[1] + 30,
+        f"{span:.0f} mm\nalong axis",
         fontsize=6.5,
         color=BLUE,
         ha="left",
         va="center",
         alpha=0.8,
+    )
+
+    # Plan cant: CL-parallel reference through the midpoint vs the axis
+    ax.plot([mid_lat, mid_lat], [uca_r[1] - 10, uca_f[1] + 10], color=TEXT, lw=0.8,
+            ls=":", alpha=0.5, zorder=2)
+    ax.text(
+        mid_lat + 45,
+        uca_f[1] + 36,
+        f"Bushing axis canted {cant_deg:.1f}° in plan\n"
+        f"(front pivot {2 * dlat:.1f} mm outboard of rear; dotted = parallel to CL)",
+        fontsize=6.5,
+        color=BLUE,
+        ha="left",
+        va="bottom",
+        alpha=0.9,
     )
 
     ax.axhline(bj[1], color=GRID2, lw=0.9, alpha=0.55, linestyle=":")
@@ -3491,7 +2781,7 @@ def plot_uca_plan():
     pad = 36
     left_pad = 110  # extra room for inboard-side fa-offset labels
     all_x = [bj[0], uca_f[0], uca_r[0]]
-    all_y = [bj[1], uca_f[1], uca_r[1], y_bot - 28]
+    all_y = [bj[1], uca_f[1] + 62, uca_r[1], y_bot - 28]
     ax.set_xlim(min(all_x) - left_pad, max(all_x) + pad)
     ax.set_ylim(min(all_y) - pad, max(all_y) + pad)
     _note(ax)
@@ -3973,17 +3263,20 @@ def plot_pickups_3view():
 
     # ── confirmed pivot coordinates ──────────────────────────────────
     g = susp_geometry()
-    LCA_lat = g["lca_f"][0]  # 328 mm from car CL
-    UCA_lat = g["uca_f"][0]  # 378.0 mm from car CL
+    LCA_lat = g["lca_f"][0]  # 329.5 mm from car CL (donor)
+    UCA_lat = g["uca_f"][0]  # 368.0 mm from car CL (donor)
     LCAF_fa = g["lca_f"][1]
     LCAF_z = g["lca_f"][2]  # 0, 0
     LCAR_fa = g["lca_r"][1]
-    LCAR_z = g["lca_r"][2]  # −323.5, 0
-    UCAF_fa = g["uca_f"][1]
-    UCAF_z = g["uca_f"][2]  # +138.5, +192
-    UCAR_fa = g["uca_r"][1]
-    UCAR_z = g["uca_r"][2]  # −118.5, +170
-    HT_MIATA = g["half_track"]  # 702.5 mm
+    LCAR_z = g["lca_r"][2]  # −322.5, 0
+    UCAF_z = g["uca_f"][2]  # +181.78
+    UCAR_z = g["uca_r"][2]  # +168.22
+    # Bushing axis canted in plan (uca_plan_cant): front pivot outboard.
+    UCA_cant, UCA_dlat, UCA_dfa, _, _ = uca_plan_cant()
+    UCA_mid_fa = (g["uca_f"][1] + g["uca_r"][1]) / 2  # +25 (centred on the LBJ)
+    UCAF_fa = UCA_mid_fa + UCA_dfa  # ~+134.8
+    UCAR_fa = UCA_mid_fa - UCA_dfa  # ~−84.8
+    HT_MIATA = g["half_track"]  # 710 mm
 
     # ── axis ranges ──────────────────────────────────────────────────
     lat_pad = 130
@@ -4179,14 +3472,17 @@ def plot_pickups_3view():
 
     for side in (+1, -1):
         lca_x = side * LCA_lat
-        uca_x = side * UCA_lat
+        uca_x = side * UCA_lat  # pivot-line midpoint
+        ucaf_x = side * (UCA_lat + UCA_dlat)  # front pivot (outboard)
+        ucar_x = side * (UCA_lat - UCA_dlat)  # rear pivot (inboard)
 
-        # Pivot bushing rectangles (plan view: rpw lateral × bushing fore-aft)
-        for px, py, bush, col in [
-            (lca_x, LCAF_fa, SUSP["lca_f_bushing"], GOLD),
-            (lca_x, LCAR_fa, SUSP["lca_r_bushing"], GOLD),
-            (uca_x, UCAF_fa, SUSP["uca_bushing"], BLUE),
-            (uca_x, UCAR_fa, SUSP["uca_bushing"], BLUE),
+        # Pivot bushing rectangles (plan view: rpw lateral × bushing length),
+        # the UCA ones turned to the canted bushing axis.
+        for px, py, bush, col, rot in [
+            (lca_x, LCAF_fa, SUSP["lca_f_bushing"], GOLD, 0.0),
+            (lca_x, LCAR_fa, SUSP["lca_r_bushing"], GOLD, 0.0),
+            (ucaf_x, UCAF_fa, SUSP["uca_bushing"], BLUE, side * UCA_cant),
+            (ucar_x, UCAR_fa, SUSP["uca_bushing"], BLUE, side * UCA_cant),
         ]:
             rect = plt.Rectangle(
                 (px - rpw / 2, py - bush / 2),
@@ -4197,6 +3493,9 @@ def plot_pickups_3view():
                 alpha=0.22,
                 lw=1.2,
                 zorder=2,
+            )
+            rect.set_transform(
+                mtransforms.Affine2D().rotate_deg_around(px, py, -rot) + ax_plan.transData
             )
             ax_plan.add_patch(rect)
 
@@ -4212,17 +3511,17 @@ def plot_pickups_3view():
         ax_plan.plot(lca_x, LCAF_fa, "s", color=GOLD, markersize=9, zorder=5)
         ax_plan.plot(lca_x, LCAR_fa, "s", color=GOLD, markersize=9, zorder=5)
 
-        # UCA arm line
+        # UCA bushing axis (canted in plan)
         ax_plan.plot(
-            [uca_x, uca_x],
+            [ucaf_x, ucar_x],
             [UCAF_fa, UCAR_fa],
             color=BLUE,
             lw=2.5,
             solid_capstyle="round",
             zorder=3,
         )
-        ax_plan.plot(uca_x, UCAF_fa, "^", color=BLUE, markersize=9, zorder=5)
-        ax_plan.plot(uca_x, UCAR_fa, "^", color=BLUE, markersize=9, zorder=5)
+        ax_plan.plot(ucaf_x, UCAF_fa, "^", color=BLUE, markersize=9, zorder=5)
+        ax_plan.plot(ucar_x, UCAR_fa, "^", color=BLUE, markersize=9, zorder=5)
 
         ax_plan.axvline(lca_x, color=GOLD, lw=0.4, alpha=0.18, linestyle=":")
         ax_plan.axvline(uca_x, color=BLUE, lw=0.4, alpha=0.18, linestyle=":")
@@ -4249,14 +3548,14 @@ def plot_pickups_3view():
             ax_plan.text(
                 uca_x + 10,
                 UCAF_fa + 14,
-                f"UCA-F ({uca_x:.1f}, +{UCAF_fa:.1f})",
+                f"UCA-F ({ucaf_x:.1f}, +{UCAF_fa:.1f})",
                 fontsize=6.5,
                 color=BLUE,
             )
             ax_plan.text(
                 uca_x + 10,
                 UCAR_fa - 22,
-                f"UCA-R ({uca_x:.1f}, {UCAR_fa:.1f})",
+                f"UCA-R ({ucar_x:.1f}, {UCAR_fa:.1f})",
                 fontsize=6.5,
                 color=BLUE,
             )
@@ -4274,13 +3573,22 @@ def plot_pickups_3view():
             # UCA fore-aft span dim: right of UCA column
             dim(
                 ax_plan,
-                (uca_x + 35, UCAF_fa),
-                (uca_x + 35, UCAR_fa),
+                (ucaf_x + 35, UCAF_fa),
+                (ucaf_x + 35, UCAR_fa),
                 f"{UCAF_fa - UCAR_fa:.1f}mm",
                 BLUE,
                 xoff=0,
                 yoff=0,
                 ha="left",
+            )
+            ax_plan.text(
+                ucaf_x + 60,
+                (UCAF_fa + UCAR_fa) / 2 - 40,
+                f"UCA axis canted {UCA_cant:.1f}°\n(front pivot {2 * UCA_dlat:.1f}mm\noutboard of rear)",
+                fontsize=6.5,
+                color=BLUE,
+                ha="left",
+                va="top",
             )
             # LCA→UCA lateral dim at bottom
             dim(
@@ -4452,16 +3760,20 @@ def plot_pickups_3view():
 
 
 # ====================================================================
-# Driveshaft geometry (013 rear axle post)
+# Driveshaft geometry (rear-suspension post)
+#   Engine/trans sit 3 deg TAIL-DOWN (output lower at the rear).  The RX-8
+#   diff is chassis-mounted, pinion set parallel to the trans (3 deg
+#   nose-up), so both joint angles are equal and do NOT change with
+#   suspension travel.  Driveshaft 3.5" drop over 37" = 5.4 deg.
 # ====================================================================
-TRANS_ANGLE_DEG = 3.0  # transmission tilt (nose-down), degrees
-DS_DROP_IN = 3.5  # driveshaft vertical drop, inches
-DS_LENGTH_IN = 37.0  # driveshaft horizontal run, inches
-PINION_ANGLE_DEG = 3.0  # pinion angle (parallel to motor), degrees
+TRANS_ANGLE_DEG = C.engine_angle  # trans output, tail-down, degrees
+DS_DROP_IN = C.shaft_drop  # driveshaft vertical drop, inches
+DS_LENGTH_IN = C.shaft_length  # driveshaft horizontal run, inches
+PINION_ANGLE_DEG = C.pinion_angle  # pinion nose-up (axis parallel to the trans), degrees
 
-DS_ANGLE_DEG = np.degrees(np.arctan2(DS_DROP_IN, DS_LENGTH_IN))
-FRONT_UJ_DEG = DS_ANGLE_DEG - TRANS_ANGLE_DEG
-REAR_UJ_DEG = DS_ANGLE_DEG - PINION_ANGLE_DEG
+DS_ANGLE_DEG = C.shaft_angle  # atan(drop / length)
+FRONT_UJ_DEG = C.ujoint_front
+REAR_UJ_DEG = C.ujoint_rear
 
 
 def plot_driveshaft_angles():
@@ -4493,7 +3805,7 @@ def plot_driveshaft_angles():
         color=BLUE,
         lw=lw_main,
         solid_capstyle="round",
-        label=f"Trans output ({TRANS_ANGLE_DEG:.0f}\u00b0 down)",
+        label=f"Trans output ({TRANS_ANGLE_DEG:.0f}\u00b0 tail-down)",
     )
     ax.plot(
         [x_trans, ds_x1],
@@ -4501,7 +3813,7 @@ def plot_driveshaft_angles():
         color=GOLD,
         lw=lw_main,
         solid_capstyle="round",
-        label=f"Driveshaft ({DS_ANGLE_DEG:.1f}\u00b0 down)",
+        label=f"Driveshaft ({DS_ANGLE_DEG:.1f}\u00b0 down to the rear)",
     )
     ax.plot(
         [ds_x1, px1],
@@ -4509,7 +3821,7 @@ def plot_driveshaft_angles():
         color=A40_C,
         lw=lw_main,
         solid_capstyle="round",
-        label=f"Pinion input ({PINION_ANGLE_DEG:.0f}\u00b0 down)",
+        label=f"Pinion ({PINION_ANGLE_DEG:.0f}\u00b0 nose-up, parallel to trans)",
     )
 
     ax.axhline(0, color=TEXT, lw=0.6, ls=":", alpha=0.3)
@@ -4553,8 +3865,8 @@ def plot_driveshaft_angles():
         2 * rear_arc_r,
         2 * rear_arc_r,
         angle=0,
-        theta1=180 - PINION_ANGLE_DEG,
-        theta2=180 - DS_ANGLE_DEG,
+        theta1=180 - DS_ANGLE_DEG,
+        theta2=180 - PINION_ANGLE_DEG,
         color=GREEN,
         lw=2,
         zorder=8,
@@ -4583,7 +3895,7 @@ def plot_driveshaft_angles():
     ax.text(
         dim_x + 0.8,
         (y_trans + ds_y1) / 2,
-        f'{DS_DROP_IN}" drop',
+        f'{DS_DROP_IN:.1f}" drop',
         color=TEXT,
         fontsize=8,
         ha="left",
@@ -4600,7 +3912,7 @@ def plot_driveshaft_angles():
     ax.text(
         (x_trans + ds_x1) / 2,
         dim_y - 0.6,
-        f'{DS_LENGTH_IN}" center-to-center',
+        f'{DS_LENGTH_IN:.1f}" center-to-center',
         color=TEXT,
         fontsize=8,
         ha="center",
@@ -4617,13 +3929,13 @@ def plot_driveshaft_angles():
         va="bottom",
     )
     ax.text(
-        px1 - 0.5,
-        py1 + 1.2,
-        'Ford 9" Pinion',
+        px1 + 0.5,
+        py1 - 0.8,
+        "RX-8 diff pinion\n(chassis-mounted)",
         color=A40_C,
         fontsize=9,
-        ha="right",
-        va="bottom",
+        ha="center",
+        va="top",
     )
     ax.text(
         x_trans + 0.8,
@@ -4635,20 +3947,21 @@ def plot_driveshaft_angles():
         va="top",
     )
     ax.text(
-        ds_x1 - 0.8,
-        ds_y1 - 1.2,
+        ds_x1,
+        ds_y1 + 0.9,
         "Rear\nU-joint",
         color=GREEN,
         fontsize=7.5,
         ha="center",
-        va="top",
+        va="bottom",
     )
 
-    ax.set_title("Driveshaft angle layout (side view at ride height)")
+    ax.set_title("Driveshaft angles (side view; constant through travel, sprung diff)")
     ax.set_xlabel("Horizontal distance (in)")
     ax.set_ylabel("Vertical (in)")
     ax.legend(
-        fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT, loc="lower left"
+        fontsize=7.5, facecolor=BG, edgecolor=GRID2, labelcolor=TEXT,
+        loc="upper center", bbox_to_anchor=(0.5, -0.36), ncol=3,
     )
     pad = 3
     ax.set_xlim(tx0 - pad, px1 + pad + 3)
@@ -4704,7 +4017,7 @@ def plot_ujoint_life():
     )
 
     markers = [
-        (FRONT_UJ_DEG, f"A40 build ({FRONT_UJ_DEG:.1f}\u00b0)", GREEN),
+        (FRONT_UJ_DEG, f"A40 build, both joints ({FRONT_UJ_DEG:.1f}\u00b0)", GREEN),
         (3.0, "Rated (3.0\u00b0)", BLUE),
         (6.0, "Double angle (6.0\u00b0)", PINK),
     ]
@@ -4747,30 +4060,190 @@ def plot_ujoint_life():
 
 
 # ====================================================================
+# Results: every number the posts quote from this script.  Written to
+# scripts/a40_geometry_results.json and merged by a40_constants.py into
+# the generated JSON the posts read ({{rc_front}}, {{front_mr}}, ...).
+# ====================================================================
+RESULTS_PATH = a40_constants.GEOMETRY_PATH
+
+
+def camber_in_roll(roll_deg, cfg=None):
+    """Camber change of the outside front wheel relative to the ground when
+    the body rolls roll_deg (tyres pinned, front-view four-bar).  Positive =
+    towards positive camber (top of the tyre leaning out of the turn)."""
+    params = _kin_params(cfg or CFG_A40)
+    r_tyre = (cfg or CFG_A40)["tire_od"] / 2
+
+    def knuckle_deg(st):
+        v = st["ubj"] - st["lbj"]
+        return np.degrees(np.arctan2(v[0], v[1]))
+
+    static = _solve_side_body_pose(params, 1, 0.0, 0.0, r_tyre)
+    # The right (+x) side is the outside wheel when the body rotates by
+    # -roll (it compresses).
+    rolled = _solve_side_body_pose(params, 1, 0.0, -np.radians(roll_deg), r_tyre)
+    return knuckle_deg(rolled) - knuckle_deg(static)
+
+
+def compute_results():
+    """name -> (value, unit, decimals[, signed])."""
+    res = {}
+
+    def put(name, value, unit="", decimals=1, signed=False):
+        res[name] = (float(value), unit, decimals, signed)
+
+    pm, pa = _RC_MIATA_SUSP, _RC_A40_SUSP
+    r = T_A40 / T_MIATA
+    put("track_narrower_pct", (1 - r) * 100, "%", 1)
+    put("roll_stiffness_ratio", r**2, "", 3)
+    put("roll_stiffness_drop_pct", (1 - r**2) * 100, "%", 0)
+    put("wt_ratio", 1 / r, "", 3)
+    put("wt_increase_track_pct", (1 / r - 1) * 100, "%", 1)
+    put("camber_per_roll_ratio", r, "", 3)  # nominal track, like the other vehicle-level ratios
+
+    for tag, p in (("_miata", pm), ("", pa)):
+        put("rc_miata" if tag else "rc_front", p["rc"][1], "mm", 1)
+        put(f"ic_inboard{tag}", p["cp"][0] - p["ic"][0], "mm", 0)
+        put(f"ic_height{tag}", p["ic"][1], "mm", 0)
+        put(f"fvsa_ratio{tag}", (p["cp"][0] - p["ic"][0]) / p["cp"][0], "", 2)
+        put(f"jacking_pct{tag}", p["rc"][1] / p["cp"][0] * 100, "%", 1)
+    put("rc_a40_miata_tyre", H_RC_A40_MIATA_TIRE, "mm", 1)
+    put("rc_delta_narrowing", H_RC_A40_MIATA_TIRE - H_RC_MIATA, "mm", 1, True)
+    put("rc_delta_tyre", H_RC_A40 - H_RC_A40_MIATA_TIRE, "mm", 1, True)
+    put("jacking_force_front", FRONT_FRAC * M_TOTAL * AY * G_ACC * H_RC_A40 / HT_A40, "N", 0)
+
+    put("lca_pivot", pa["lca_inner"][0], "mm", 1)
+    put("uca_pivot", pa["uca_inner"][0], "mm", 1)
+    put("lca_pivot_miata", pm["lca_inner"][0], "mm", 1)
+    put("uca_pivot_miata", pm["uca_inner"][0], "mm", 1)
+    put("uca_lca_offset", pa["uca_inner"][0] - pa["lca_inner"][0], "mm", 1)
+
+    mr_cf, d_eff = front_mr_closed_form()
+    put("front_mr", front_mr(), "", 3)
+    put("front_mr_vertical", front_mr(alpha_deg=90), "", 3)
+    put("front_mr_closed_form", mr_cf, "", 3)
+    put("mr_lever", d_eff, "mm", 1)
+    old_lever = T_MIATA / 2 - SUSP["lca_from_cl"]
+    put("mr_lever_old", old_lever, "mm", 1)
+    put("front_mr_old", SUSP["lca_coilover_perp"] / old_lever * np.sin(np.radians(SHOCK_ALPHA_DEG)), "", 3)
+    put("lca_coilover_lever", SUSP["lca_coilover_perp"], "mm", 0)
+    for a in (65, 75, 85):
+        put(f"front_mr_{a}", front_mr(alpha_deg=a), "", 3)
+    bump, droop = front_wheel_travel()
+    put("travel_bump", bump, "mm", 0)
+    put("travel_droop", droop, "mm", 0)
+    put("travel_total", bump + droop, "mm", 0)
+    cur = front_shock_curve()
+    m = (cur["wheel_z"] >= -droop) & (cur["wheel_z"] <= bump)
+    put("front_mr_travel_lo", cur["mr"][m].min(), "", 3)
+    put("front_mr_travel_hi", cur["mr"][m].max(), "", 3)
+    put("roll_travel_wheel", T_A40 / 2 * np.tan(np.radians(ROLL_TARGETS[1])), "mm", 0)
+    put("camber_roll_lo", camber_in_roll(ROLL_TARGETS[0]), "deg", 1)
+    put("camber_roll_hi", camber_in_roll(ROLL_TARGETS[2]), "deg", 1)
+    cant_deg, dlat, _, _, _ = uca_plan_cant()
+    put("uca_plan_cant", cant_deg, "deg", 1)
+    put("uca_cant_offset", 2 * dlat, "mm", 1)
+
+    rcs = (("hi", H_RC_REAR_HI), ("nom", H_RC_REAR_NOM), ("lo", H_RC_REAR_LO))
+    tgts = (("lo", ROLL_TARGETS[0]), ("nom", ROLL_TARGETS[1]), ("hi", ROLL_TARGETS[2]))
+    for rtag, rr in rcs:
+        put(f"roll_axis_rc_{rtag}", roll_axis_height(rr), "mm", 0)
+        put(f"roll_springs_rc_{rtag}", float(roll_angle_deg(H_CG_A40, K_PHI_SPRING, h_rc_rear=rr)), "deg", 1)
+        for ttag, t in tgts:
+            put(f"arb_add_rc_{rtag}_{ttag}", (k_phi_required(t, h_rc_rear=rr) - K_PHI_SPRING) / 1000, "kN·m/rad", 1)
+    put("arb_add_min", res["arb_add_rc_hi_hi"][0], "kN·m/rad", 1)
+    put("arb_add_max", res["arb_add_rc_lo_lo"][0], "kN·m/rad", 1)
+    for ctag, cg in (("low", H_CG_A40 - CG_TOL), ("high", H_CG_A40 + CG_TOL)):
+        put(f"roll_springs_cg_{ctag}", float(roll_angle_deg(cg, K_PHI_SPRING)), "deg", 1)
+        put(f"arb_add_cg_{ctag}", (k_phi_required(ROLL_TARGETS[1], cg) - K_PHI_SPRING) / 1000, "kN·m/rad", 0)
+    put("bar_ir", IR_BAR, "", 2)
+    for dmm in (19, 22, 25, 28):
+        put(f"bar_k_{dmm}", arb_roll_stiffness(dmm) / 1000, "kN·m/rad", 1)
+
+    put("kpi", KPI_DEG, "deg", 2)
+    put("caster", CASTER_DEG, "deg", 2)
+    put("scrub_miata", SCRUB_MM, "mm", 2, True)
+    put("scrub", SCRUB_A40_MM, "mm", 1, True)
+    put("scrub_delta", SCRUB_A40_MM - SCRUB_MM, "mm", 1, True)
+    put("trail_miata", TRAIL_MM, "mm", 2)
+    put("trail", TRAIL_A40_MM, "mm", 1)
+    put("trail_delta", TRAIL_A40_MM - TRAIL_MM, "mm", 1, True)
+    put("kpi_tan", np.tan(np.radians(KPI_DEG)), "", 3)
+
+    d_actual = (T_A40 / 2) / np.tan(THETA_KNUCKLE)
+    for a in (15, 20, 25):
+        put(f"ackermann_excess_{a}", _ideal_inside(a, T_A40, d_actual) - _ideal_inside(a, T_A40, WB_A40), "deg", 2)
+
+    wt = lambda m, h, t: m * AY * G_ACC * h / t  # noqa: E731
+    wt_m = wt(M_TOTAL, H_CG_MIATA / 1000, T_MIATA / 1000)
+    wt_a = wt(M_TOTAL, H_CG_A40 / 1000, T_A40 / 1000)
+    put("wt_miata", wt_m, "N", 0)
+    put("wt_a40", wt_a, "N", 0)
+    put("wt_increase_pct", (wt_a / wt_m - 1) * 100, "%", 0)
+
+    # Lock loss -> turning circle (kerb-to-kerb ~ 2 x WB / sin(outer lock))
+    d_miata = np.degrees(np.arcsin(WB_MIATA / (C.turning_circle_miata * 500)))
+    put("lock_miata", d_miata, "deg", 0)
+    for tag, loss in (("lo", C.lock_loss_lo), ("hi", C.lock_loss_hi)):
+        put(f"lock_left_{tag}", d_miata - loss, "deg", 0)
+        put(f"turning_circle_{tag}", 2 * WB_A40 / np.sin(np.radians(d_miata - loss)) / 1000, "m", 1)
+    return res
+
+
+def write_results(res):
+    inputs, _ = a40_constants.load_yaml()
+    doc = {
+        "_comment": "Written by scripts/plot_geometry_reference.py; merged by scripts/a40_constants.py. Do not edit.",
+        "inputs_hash": a40_constants.inputs_hash(inputs),
+        "results": {
+            k: dict(value=round(v, 6), unit=u, decimals=d, status="working",
+                    **({"signed": True} if sg else {}),
+                    note="Computed by scripts/plot_geometry_reference.py.")
+            for k, (v, u, d, sg) in res.items()
+        },
+    }
+    with open(RESULTS_PATH, "w", encoding="utf-8") as f:
+        f.write(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+    print(f"  wrote {os.path.relpath(RESULTS_PATH, a40_constants.ROOT)} ({len(res)} results)")
+
+
+def print_summary(res):
+    print("\n── Summary (the posts quote these via {{name}}) ──")
+    for k, (v, u, d, sg) in res.items():
+        print(f"  {k:28s} {a40_constants.format_number(v, d, signed=sg)}{a40_constants.suffix_for(u)}")
+
+
+# ====================================================================
 def main():
-    print("Generating plots...")
-    plot_roll_vs_cg()
-    plot_rc_construction()
-    plot_rc_tire_comparison()
-    plot_rc_combined()
-    plot_rc_migration()
-    plot_track_effects()
-    plot_arb_sizing()
-    plot_ride_frequency()
-    plot_ackermann()
-    plot_ackermann_topview()
-    plot_ackermann_turn()
-    plot_motion_ratio()
-    plot_motion_ratio_vs_angle()
-    plot_weight_transfer()
-    plot_jacking()
-    plot_rack_narrowing()
-    plot_lca_plan()
-    plot_uca_plan()
-    plot_knuckle_3view()
-    plot_pickups_3view()
-    plot_driveshaft_angles()
-    plot_ujoint_life()
+    results_only = "--results-only" in sys.argv[1:]
+    if not results_only:
+        print("Generating plots...")
+        plot_roll_vs_cg()
+        plot_rc_construction()
+        plot_rc_tire_comparison()
+        plot_rc_combined()
+        plot_rc_migration()
+        plot_track_effects()
+        plot_arb_sizing()
+        plot_ride_frequency()
+        plot_ackermann()
+        plot_ackermann_topview()
+        plot_ackermann_turn()
+        plot_motion_ratio()
+        plot_motion_ratio_vs_angle()
+        plot_weight_transfer()
+        plot_jacking()
+        plot_rack_narrowing()
+        plot_lca_plan()
+        plot_uca_plan()
+        plot_knuckle_3view()
+        plot_pickups_3view()
+        plot_driveshaft_angles()
+        plot_ujoint_life()
+    res = compute_results()
+    print_summary(res)
+    write_results(res)
+    a40_constants.write_generated()
     print("Done.")
 
 

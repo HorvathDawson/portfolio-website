@@ -7,83 +7,128 @@ kind: reference
 tags: [steering, safety, fabrication]
 ---
 
-The stock A40 steering is unassisted and the column is a solid shaft pointed straight at your chest. Both of those need to change. Plan is electric power assisted rack and pinion steering, a collapsible column, and a narrowed Miata rack to match the A40's reduced track width.
+The stock A40 steering is unassisted, and the column is a solid shaft pointed at your chest. The column changes; assist is still open.
+
+## Decisions
+
+| Item | Choice | Status |
+|---|---|---|
+| Assist | Open: manual (Miata NA manual/depowered rack) or Toyota Prius Gen 4 (2016–2022) EPAS | open |
+| Assist control | Only with EPAS: Pi CAN gateway (see [EPAS CAN gateway](./epas-can-gateway)) | only with EPAS |
+| Column | Collapsible (the Prius column if EPAS), adapted to the A40 dash | required |
+| Rack | Miata NA manual (or depowered) rack, **narrowed {{rack_narrowing}} total ({{rack_narrowing_in}}, {{front_narrowing}} per side)** | locked with the {{front_narrowing}}/side suspension narrowing |
+| Steering arms | Stock Miata knuckle arms | keep, pending linkage solve |
+| Steering stops | Adjustable hard stops | **mandatory** |
 
 ---
 
-## EPAS options
+## Manual or EPAS
 
-Going the junkyard route to keep costs down. There are two main approaches people use for budget EPAS conversions.
+Manual is a realistic option:
 
-### Column-mounted EPAS
+- **Load.** Front axle load is ≈ {{axle_load_front:r10}} ({{operating_mass}} × {{front_weight_ratio}}), about the same as an NA Miata, which was sold with a manual rack.
+- **Effort.** Heavier than a stock Miata at parking speed: wider {{tyre_size}} tyres and more caster (target {{caster_target_lo:raw}}–{{caster_target_hi}}). The {{trail}} trail adds a little on-centre weight at speed. Judge it by feel: drive a manual-rack NA Miata on 205-width tyres.
+- **Main knob:** steering wheel diameter (14–15 in / 350–380 mm).
+- **What manual removes:** the column motor, the CAN gateway, its bench tests, and a safety-critical failure mode.
+- **Keep EPAS possible.** It can be added later if parking effort is too much. Keep space and mounting for the Prius column.
 
-The motor and torque sensor live on the steering column itself, assisting between the steering wheel and the rack. Popular junkyard donors:
+Decide before buying the column (roadmap task `t-decide-steering-assist`).
 
-- **Toyota Prius** — The go-to cheap option. The column and its small controller can be run in "failsafe" mode with simple wiring (power, ground, ignition on), no aftermarket controller needed. Columns go for $35-50 at U-Pull yards. The controller box bolts right to the column assembly.
-- **Saturn Vue** — Another common donor. Pairs well with an aftermarket controller for adjustable assist. The wiring doesn't directly plug into a Prius controller but uses the same terminal sizes.
-- **Kia Soul** — Reportedly works well in default mode (powered up, no controller). Key notes from forum experience: use good gauge power and ground cables, and replace the rubber coupling on the motor while the unit is out of the car.
+---
 
-Column-mount is the simplest approach since the assist unit is self-contained and doesn't care what rack you're running. It just adds torque to the column.
+## EPAS
 
-### Rack-mounted / electro-hydraulic
+### Why the Prius column
 
-Some builders use an electric-hydraulic pump from a donor car to power a conventional hydraulic rack without needing a belt-driven pump. The MR2 Spyder and Volvo S40/V50 electric pumps are popular for this. You remotely mount the pump and run lines to the rack. Downside is you still have hydraulic lines and fluid, and some of these OEM pumps (especially the Volvo) are low-flow units better suited to parking lot speeds than spirited driving.
+If assist is chosen, this is the cheapest and simplest EPAS path. The motor and torque sensor sit on the column, so it does not care which rack is underneath, and there are no pumps, lines or fluid. Junkyard columns are cheap (forum prices for older Prius columns are $35–50; a Gen 4 column will cost more, verify).
 
-### Aftermarket kits
+**Why Gen 4.** openpilot supports every 2016–2022 Prius, so the powertrain CAN messages the column sees are decoded in [opendbc](https://github.com/commaai/opendbc) (`toyota_nodsu_pt_generated.dbc` for all of them). That gives tested IDs, scaling and checksum to spoof for proper speed-sensitive assist, instead of guessing from forum posts. Which frames the column actually needs still has to be confirmed with a donor log and on the bench.
 
-Companies like EPAS Performance (sold through Silver Sport Transmissions) make universal kits with a 60-amp electric motor, mounting hardware, and a prewired control module with a potentiometer for adjustable assist. These run around $1,500+ though, which defeats the junkyard budget approach.
+### How it is powered and controlled
 
-### Decision
+1. **Power:** fused 12 V and ground with heavy-gauge cable.
+2. **Wake:** the column's IG wake line is **hard-wired to switched ignition**. Do not rely on the gateway to wake it.
+3. **Assist curve:** the Pi gateway sends the two Toyota frames the column expects (`0x1C4` engine RPM, `0xB4` vehicle speed). With these the column gives speed-sensitive assist. Frame IDs, checksums and the safety reasoning are in the [EPAS CAN gateway](./epas-can-gateway) post.
+4. **Any fault fails to manual:** the column keeps its mechanical shaft, so losing power, CAN or the gateway leaves unassisted steering (bench-check that the unpowered column turns freely).
+5. **If the gateway stops:** unknown until bench-tested. The column may hold, drop to fixed or no assist, or latch a fault until a key cycle. The gateway's loss policy (hold the last speed, ramp to low assist, never to 0) is in the gateway post.
 
-Going with a **Toyota Prius Gen 3 (2010–2015) column-mount EPAS unit**, driven by the dash Pi acting as a CAN gateway. Cheapest and simplest hardware path, keeps the rack clean with no hydraulic anything, and the whole assembly can provide power steering even with the engine off (handy for pushing the car around the shop). The column will need to be adapted to fit the A40 dash and connect to the rack, but that's fab work that has to happen anyway since nothing about the stock steering is being reused.
+**Engine-off assist is not promised.** A Prius steers with its engine stopped, so the column probably doesn't need rpm > 0, but it may use `ENGINE_RUNNING` or other frames. Check on the bench what it does with ignition on and the engine off.
 
-Failsafe-mode wiring (12 V + ignition only) is the baseline and the fallback. The full setup goes one step further: the Raspberry Pi already sitting behind the dash gets a second CAN channel and rebroadcasts the two Toyota frames the column expects (`0x1C4` Powertrain RPM and `0xB4` Speed) so the column delivers speed-sensitive assist instead of a fixed curve. The full architecture, frame IDs, checksum math, the [opendbc](https://github.com/commaai/opendbc) workflow used to extract the spec, and the safety reasoning for keeping the gateway out of the Godot dash app all live in the [EPAS CAN gateway post](./epas-can-gateway). Any Gen 3 year is interchangeable — they share the same powertrain CAN architecture so the gateway code does not care which year the donor column came from.
+### Options I ruled out
 
-The collapsible column is non-negotiable from a safety standpoint. EPAS keeps things simple: no hydraulic pump to drive off the engine, no high-pressure lines to route and leak, no parasitic power loss.
+| Option | Why not |
+|---|---|
+| Saturn Vue column | Common donor, usually run with an aftermarket controller for adjustable assist. Different connector from the Prius (forum reports the same terminal sizes; verify). |
+| Kia Soul column | Reported to work in default mode with no controller. Forum tips: heavy power/ground cables, replace the motor's rubber coupling. Fewer write-ups than the Prius. |
+| Electro-hydraulic pump (MR2 Spyder, Volvo S40/V50) | A separate system: an electric pump driving a conventional hydraulic rack. Still has lines and fluid; some pumps (especially Volvo) are low-flow. |
+| Aftermarket kit (EPAS Performance, via Silver Sport Transmissions) | Adjustable controller, universal mounting, but around $1,500+ (verify). Defeats the junkyard budget. |
 
 ---
 
 ## Rack narrowing
 
-The Miata NA rack housing is ~578mm. The A40's narrower track needs it shortened to match. The rack is depowered (Flyin' Miata method) and the EPAS unit replaces the hydraulic system.
+The rack is narrowed by exactly the suspension narrowing ({{front_narrowing}} per side, **{{rack_narrowing}} / {{rack_narrowing_in}} total**) so the tie-rod inner joints stay on the same line as the control-arm pivots and bump steer is preserved. (The old 175 mm figure came from the 1405 mm donor-track baseline.) Stock NA housing length is ~578 mm (verify on the rack).
 
-### Process
+{{rack_narrowing}} sits in the "moderate" zone of builder data from [LocostUSA](https://www.locostusa.com/forums/viewtopic.php?t=2773): routine < 6" (152 mm), moderate 6-8", practical limit ~10-11".
 
-The common approach for shortening a rack is to cut both the housing and the rack gear, then weld the housing back together shorter. There's a good [LocostUSA thread](https://www.locostusa.com/forums/viewtopic.php?t=2773) covering that process and the pitfalls. The critical failure mode is rack bar warping from welding heat (causes binding). Mitigate with a V-block fixture and a copper heat sink clamped along the bar during welding. Only cut the non-toothed section.
+### Procedure
 
-The plan is to remachine the rack gear as solid billet instead of welding it. A weld on the rack gear is a precision ground surface with a weak point under load.
+The usual route keeps the toothed section of the bar untouched:
 
-### How much narrowing
+1. Measure and record the stock rack: housing length, bar length, travel lock-to-lock, inner tie-rod thread.
+2. Mark the pinion centre and keep the toothed section and its full travel intact.
+3. Decide where the {{rack_narrowing}} comes from. {{front_narrowing}} off each end keeps the pinion where it was relative to the car centreline; {{rack_narrowing}} off one end moves the pinion {{front_narrowing}} sideways (check column routing first).
+4. Shorten the **non-toothed end(s)** of the bar and re-cut the tie-rod thread (drill and tap, or turn and thread) to match the inner tie-rod joint.
+5. Shorten the housing by the same amount at the same end(s). Weld or sleeve it in a V-block fixture so it stays straight.
+6. If any welding is near the bar, clamp a copper heat sink along it. A warped bar binds.
+7. Re-check travel lock-to-lock and smoothness through the full stroke before fitting.
 
-Proven shortening ranges from [LocostUSA](https://www.locostusa.com/forums/viewtopic.php?t=2773): routine (<6"/152mm), moderate (6-8"), practical limit ~10-11". The baseline needs 175mm (6.9"), in the moderate zone.
+Machining a new bar from billet is the fallback if the stock bar cannot be shortened cleanly; it is not the default.
 
 <figure>
   <img src="/assets/projects/a40-austin/blog/plots/rack_narrowing.png" alt="Rack narrowing required vs front track width with difficulty zones" />
-  <figcaption>Rack narrowing vs track width. Background color shows difficulty zone (from LocostUSA builder data). All three build scenarios fall within proven kit-car builder ranges.</figcaption>
+  <figcaption>Rack narrowing vs front track ({{front_track_miata}} donor baseline), with difficulty zones from LocostUSA builder data. The build (~{{front_track_nominal}} track, tyres {{tyre_outer_front}} outer-to-outer, +{{tyre_poke}}/side) needs {{rack_narrowing}} ({{rack_narrowing_in}}), in the moderate zone. Pulling the tyres in to 1400 mm would need 225 mm; matching the stock A40's {{a40_stock_outer}} would need 260 mm, past the practical limit.</figcaption>
 </figure>
 
 ---
 
-## Ackermann geometry
+## Ackermann
 
-When the rack narrows by the same amount as the track (required for bump steer), the Miata knuckle steering arm geometry is preserved. The stock Miata arm converges at T=1420, WB=2265 ($\theta_{knuckle} = 17.4°$). On the A40, the narrower track shifts the convergence point ahead of the rear axle at 2350 mm. This gives slightly too much Ackermann.
+The stock Miata steering arms point at the Miata rear axle: knuckle angle atan({{half_track_miata:raw}} / {{wheelbase_miata:raw}}) = **{{ackermann_knuckle}}**. On the A40 (half-track {{front_half_track}}, wheelbase {{wheelbase}}) the same arms converge ahead of the rear axle, so the car has slightly more Ackermann than ideal.
 
-The mismatch is small. Even at autocross slalom angles (20 degrees of lock, ~7m turn radius) the Ackermann error stays under 1 degree, well within tire slip angles, compliance steer, and normal driver variation. No custom steering arms required.
+In the approximate model the excess is about {{ackermann_excess_15:1}} at 15° of lock and **about {{ackermann_excess_20:0}} at 20°** (autocross slalom, ~6.5 m radius). That is marginal: comparable to compliance steer, still well below tyre slip angles (4°+). I am keeping the stock arms for now.
+
+The plot uses a **virtual-wheelbase approximation**, not a real linkage solve. Once the steering arm is scanned (it is still an estimate in [donor geometry dimensions](./donor-geometry-dimensions)), solve the actual rack/tie-rod/arm linkage in SA V2 at the chosen rack position and re-check this before committing to the rack mount.
 
 <figure class="wide">
   <img src="/assets/projects/a40-austin/blog/plots/ackermann.png" alt="Ackermann error vs steering angle with driving scenarios and turn radii" />
-  <figcaption>Miata stock knuckle (17.2 deg) on the A40 (track 1230 mm, wheelbase 2350 mm). Top: excess Ackermann vs steering lock with driving scenarios colour-coded and turn radii on the top axis. Even at autocross slalom angles (20 deg, ~7 m radius) the error is under 1 deg. Bottom: at autocross lock angles (15-20 deg) the Ackermann error ranges from ~0.5 deg (below compliance steer) at 15 deg to ~1.0 deg (slightly above compliance steer) at 20 deg, and well below tire slip angles (4+ deg) throughout. The error is tolerable without custom steering arms.</figcaption>
+  <figcaption>Stock Miata knuckle arms ({{ackermann_knuckle}}) on the A40 (track ~{{front_track_nominal}}, wheelbase {{wheelbase}}), approximate virtual-wheelbase model. Top: excess Ackermann vs steering lock, with driving scenarios and turn radii. Excess is {{ackermann_excess_15}} at 15°, {{ackermann_excess_20}} at 20° and {{ackermann_excess_25}} at 25° (parking-speed lock). Bottom: the 15° and 20° values against tyre pressure, bushing compliance, driver input and the ~4° tyre slip angle at {{lateral_accel}}. A linkage solve with the scanned steering arm is still needed.</figcaption>
 </figure>
 
-### Rack positioning
+### Rack position
 
-Adjusting the fore-aft position of the rack by 10-15mm changes Ackermann behavior meaningfully. The inner tie rod angle at the ball joint should stay within 10-12 degrees of horizontal to avoid binding and wear. SA V2 should plot actual Ackermann and steering ratio across the full range before committing to a rack mount position.
+- Moving the rack 10-15 mm fore-aft changes Ackermann noticeably. Use this before considering custom arms.
+- Keep the inner tie-rod angle within 10-12° of horizontal to avoid binding and wear.
+- Build at least ±15 mm of vertical rack adjustment for bump steer (see [geometry design reference](./geometry-design-reference)).
+
+---
+
+## Lock and turning circle
+
+Body clearance, not the rack, limits lock. Expect to lose **{{lock_loss_lo:raw}}-{{lock_loss_hi}} of lock** compared with the Miata (the tyre sits further out and further in than the stock A40 tyre; see [narrowing analysis](./narrowing-analysis)).
+
+| | Turning circle (diameter) |
+|---|---|
+| Miata NA | ~{{turning_circle_miata}} |
+| A40 build, estimate | **~{{turning_circle_lo:raw:0}}-{{turning_circle_hi:0}}** ({{turning_circle_lo}} at {{lock_loss_lo}} lost, {{turning_circle_hi}} at {{lock_loss_hi}}) |
+
+That is a real drivability cost (three-point turns, parking). Steering stops are **mandatory**: set them on the jig where the tyre clears the scanned body at full lock and full bump, with margin. Then measure the actual turning circle.
 
 ---
 
 ## References
 
-- [GRM - Junkyard Electric Power Steering Assist](https://grassrootsmotorsports.com/forum/grm/have-we-talked-about-the-junkyard-electric-power-steering-assist-stuff/257657/page1/) - Forum thread covering Prius, Vue, Kia Soul, and electro-hydraulic options with real-world install experiences.
-- [ChevyHardcore - Add Electronic Power Steering To Your Classic](https://www.chevyhardcore.com/news/add-electronic-power-steering-to-your-classic/) - Overview of the EPAS Performance kit and how column-mount EPS works on vintage cars.
-- [Vintage Mustang - Rack and Pinion Plus EPAS Options](https://www.vintage-mustang.com/threads/rack-and-pinion-plus-epas-options.1183512/) - Discussion of combining aftermarket rack and pinion with EPAS on classic platforms.
-- [LocostUSA - Rack shortening thread](https://www.locostusa.com/forums/viewtopic.php?t=2773) - Detailed process and pitfalls of shortening a Miata steering rack, with builder data on proven shortening ranges.
+- [GRM - Junkyard Electric Power Steering Assist](https://grassrootsmotorsports.com/forum/grm/have-we-talked-about-the-junkyard-electric-power-steering-assist-stuff/257657/page1/) - Prius, Vue, Kia Soul and electro-hydraulic installs.
+- [ChevyHardcore - Add Electronic Power Steering To Your Classic](https://www.chevyhardcore.com/news/add-electronic-power-steering-to-your-classic/) - EPAS Performance kit and column-mount EPS on vintage cars.
+- [Vintage Mustang - Rack and Pinion Plus EPAS Options](https://www.vintage-mustang.com/threads/rack-and-pinion-plus-epas-options.1183512/) - aftermarket rack plus EPAS on classic platforms.
+- [LocostUSA - Rack shortening thread](https://www.locostusa.com/forums/viewtopic.php?t=2773) - shortening process, pitfalls and builder data on shortening ranges.

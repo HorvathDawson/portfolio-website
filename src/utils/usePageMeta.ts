@@ -4,7 +4,7 @@ import { absoluteUrl } from '../data/site';
 export interface PageMeta {
   title: string;
   description: string;
-  /** Canonical path, e.g. '/a40/steering'. */
+  /** Canonical path, e.g. '/garage/a40/steering'. */
   path: string;
   /** Link-preview title/description, when they differ from the page's own. */
   shareTitle?: string;
