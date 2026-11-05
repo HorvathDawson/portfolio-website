@@ -325,7 +325,7 @@
 
 .gs-bay {
   position: relative;
-  flex: 0 0 50%;
+  flex: 0 0 calc(100% / var(--gs-cols, 2));
   min-width: 0;
   box-sizing: border-box;
   padding-bottom: var(--s-6);
@@ -355,9 +355,26 @@
   border-left: var(--bw-3) solid var(--gs-line);
   background: var(--gs-corrugated), var(--gs-wall);
 }
-.gs-bay:nth-child(2n) .gs-facade,
-.gs-bay:last-child .gs-facade { border-right: var(--bw-3) solid var(--gs-line); }
-.gs-bay:nth-child(n + 3) .gs-facade { border-top: var(--bw-3) solid var(--gs-line); }
+.gs-bay.is-row-end .gs-facade { border-right: var(--bw-3) solid var(--gs-line); }
+
+/* Desktop rows after the first: the row's own parapet, one piece per bay
+   (the cap flashing overhangs only at the row's ends). */
+.gs-bay:is(.is-row-start, .is-row-mid) {
+  --gs-slab: calc(var(--s-6) + var(--gs-parapet-h)); /* keeps the Enter button on the stage */
+  padding-top: var(--gs-slab);
+}
+.gs-row-roof {
+  position: absolute;
+  top: var(--s-6);
+  left: 0;
+  right: 0;
+  height: var(--gs-parapet-h);
+}
+.gs-row-roof .gs-parapet { border-right: 0; }
+.gs-bay.is-row-mid .gs-parapet { border-left: 0; }
+.gs-bay.is-row-end .gs-row-roof .gs-parapet { border-right: var(--bw-3) solid var(--gs-line); }
+.gs-bay.is-row-mid .gs-parapet::before { left: 0; }
+.gs-bay:not(.is-row-end) .gs-row-roof .gs-parapet::before { right: 0; }
 
 /* Stencilled bay number, painted on the wall. */
 .gs-stencil {
@@ -674,6 +691,11 @@
   line-height: 1.5;
   color: var(--ink-2);
 }
+
+/* Three bays to a row: narrower plates. */
+.gs-bays--3 :is(.gs-bay-name, .gs-bay-plate) { width: min(100% - var(--s-4), var(--gs-plate-w)); padding-inline: var(--s-3); }
+.gs-bays--3 .gs-bay-name { font-size: var(--t-h4); }
+.gs-bays--3 .gs-bay-desc { font-size: var(--t-ui); }
 
 /* Status chips as stamped tags, with a punched hole. */
 .gs-bay-plate .garage-tile-meta { margin-top: var(--s-2h); }

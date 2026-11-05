@@ -48,6 +48,9 @@ const DEFAULT_RIG: CarRig = { lamps: [[0.3, 0.68], [0.7, 0.68]], drive: 0 };
 const ROLL_OUT_MS = 820;
 const ROLL_IN_MS = 1500;
 
+/** Desktop: bays per row of the building. */
+const ROW_BAYS = 3;
+
 export interface GarageSceneProps {
   cars: Car[];
   /** Called after the roll-out. May return a promise; the view transition waits for it and for the scene to unmount. */
@@ -267,17 +270,22 @@ interface BayProps {
   here: boolean;
   /** Lit by a tap or keyboard focus (touch and tower). */
   on: boolean;
+  /** Desktop rows: this bay ends its row (outer wall), and/or starts a row after the first (that row's own parapet). */
+  rowEnd: boolean;
+  lowerRow?: 'start' | 'mid';
   carRef: (el: HTMLDivElement | null) => void;
   onActivate: (e: React.MouseEvent<HTMLAnchorElement>, car: Car, direct: boolean) => void;
   onLight: (e: React.SyntheticEvent) => void;
   renderMeta?: (car: Car) => React.ReactNode;
 }
 
-const Bay: React.FC<BayProps> = ({ car, href, state, number, tower, pole, here, on, carRef, onActivate, onLight, renderMeta }) => {
+const Bay: React.FC<BayProps> = ({ car, href, state, number, tower, pole, here, on, rowEnd, lowerRow, carRef, onActivate, onLight, renderMeta }) => {
   const nameId = `gs-bay-${car.id}`;
-  const cls = ['gs-bay', `is-${state}`, here && 'is-here', on && 'is-on'].filter(Boolean).join(' ');
+  const cls = ['gs-bay', `is-${state}`, here && 'is-here', on && 'is-on', rowEnd && 'is-row-end', lowerRow && `is-row-${lowerRow}`].filter(Boolean).join(' ');
   return (
     <li className={cls} style={bayStyle(car)} data-bay={car.id} onFocus={onLight} onClick={onLight}>
+      {/* Desktop, rows after the first: this bay's piece of that row's parapet. */}
+      {lowerRow && <span className="gs-row-roof" aria-hidden="true"><span className="gs-parapet" /></span>}
       <a href={href} className="gs-bay-link" aria-labelledby={nameId} data-bay-link onClick={(e) => onActivate(e, car, false)}>
         <BayStage car={car} carRef={carRef} number={number} tower={tower} pole={pole} />
         <span className="gs-bay-name" id={nameId}>{car.name}</span>
@@ -499,15 +507,17 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   const stateOf = (id: string): BayProps['state'] =>
     leaving === id ? 'leaving' : leaving ? 'dim' : parking === id ? 'returning' : 'rest';
 
-  // Desktop: the pole sign stands beside the last bay of the first row.
-  const poleAt = Math.min(cars.length, 2) - 1;
+  // Desktop: up to ROW_BAYS bays side by side under one roof; more cars start another row with its own parapet.
+  // The pole sign stands beside the last bay of the first row.
+  const cols = Math.min(cars.length, ROW_BAYS);
+  const poleAt = cols - 1;
 
   return (
     <div ref={rootRef} className={['gs', tower && 'gs--tower', touch && 'gs--touch', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
       <div className="gs-building">
         <Roof sign={tower ? 'The Garage' : undefined} hoist={tower} />
         <div className="gs-floors" ref={floorsRef}>
-          <ul className={`gs-bays gs-bays--${Math.min(cars.length, 2)}`} aria-label="Cars" onKeyDown={onKeyDown}
+          <ul className={`gs-bays gs-bays--${cols}`} style={{ '--gs-cols': cols } as React.CSSProperties} aria-label="Cars" onKeyDown={onKeyDown}
             onBlur={onBlur} onPointerDown={(e) => { press.current = { type: e.pointerType, lit }; }}>
             {cars.map((car, i) => (
               <Bay
@@ -521,6 +531,8 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
                 pole={!tower && i === poleAt ? 'The Garage' : undefined}
                 here={tower && floor === i}
                 on={lit === i}
+                rowEnd={i % cols === cols - 1 || i === cars.length - 1}
+                lowerRow={!tower && i >= cols ? (i % cols === 0 ? 'start' : 'mid') : undefined}
                 carRef={(el) => { if (el) carEls.current.set(car.id, el); else carEls.current.delete(car.id); }}
                 onActivate={onActivate}
                 onLight={onLight(car)}
