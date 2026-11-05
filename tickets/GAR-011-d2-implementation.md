@@ -22,10 +22,10 @@ Build D2 from the round-2 mockups (`assets/GAR-009-mockups/D2-*.png`, README "D2
 - [x] Posts as drafting sheets: title block (drawing no. + sheet derived from epic order + date, optional frontmatter override), work-order tag for roadmap tasks, sticky TOC with read progress, prev/next sheet tabs
 - [x] Car home (`/garage/:car`): lit bay hero, stats + "Continue / Start at sheet 01", Next up tags, the wall (one board per epic with progress, sheets, next task), key numbers. Garage-kind cars (Autozam) get the same page with categories instead of epics and the service table
 - [x] Markdown callouts `> [!decision]`, `[!verify]`/`[!measure]`, `[!safety]`, `[!open]`, `[!note]`; figures with captions + click-to-enlarge; engineering-sheet tables with status chips; code blocks with copy button; KaTeX panel
-- [ ] Single tokens file; no stray hex colours / ad-hoc spacing in garage, blog and roadmap CSS; old unused CSS removed
+- [x] Single tokens file; no stray hex colours / ad-hoc spacing in garage, blog and roadmap CSS; old unused CSS removed
 - [x] `content/README.md` authoring guide (posts, frontmatter, placeholders, callouts, figures, adding a car); dev-only `/garage/_styleguide` page
 - [x] Existing features still work: search, print (full-length, decoration off), reduced motion, garage scene + loader, roadmap views (restyled with tokens), redirects, constants checks
-- [ ] AA contrast; keyboard and focus visible; one h1 per page; no horizontal scroll at 390 px on every page
+- [x] AA contrast; keyboard and focus visible; one h1 per page; no horizontal scroll at 390 px on every page
 - [x] `npm run build`, `npm run lint`, `npm run check-constants`, `node scripts/check-roadmap-plan.mjs` pass
 
 
@@ -157,3 +157,47 @@ Re-checked: `npm run build`, `npm run lint`, `npm run check-constants` and `node
 - drawer focus moves in, is trapped, and returns to the Sheets button
 - print is 11 pages with no navigation
 - no console errors
+
+### Re-check 2026-11-05 (after "Fixes after review")
+Same reviewer and setup: build plus `vite preview :5215`, Playwright at 1440, 1024 and 390. Screenshots are in the session scratchpad `d2recheck/`.
+
+- **Build and checks:** build, lint, check-constants and check-roadmap-plan all exit 0.
+- **Sweep:** 28 garage URLs at 3 sizes (84 loads). One h1 each, no horizontal scroll, no console or page errors. All 158 internal links and #anchors resolve.
+- **Required fixes:**
+  1. **Line length:** `--measure: 34em` makes `.prose` 612 px. Rendered lines are 71 to 73 characters (were 94). ✔
+  2. **Phone first screen:** at 390x844 the title block and work order are collapsed `<details>` ("A40-FAB-02 · 16/18 · Mar 26, 2026 · IN PROGRESS" and "WORK ORDER WO-0007 · 2 tasks"). The first prose element (the callout) is at 442 px (was 828) and the first plain paragraph at 718 px (was 1095), both on the first screen. In print media the collapsed content is still shown (title block 205 px tall, work order 80 px). ✔
+  3. **Updated cell:** no "Updated —" on any of the 20 posts. The title block is now 6 cells. ✔
+  4. **Phone search:** tapping the icon focuses `.post-search-input`. Esc closes the panel and returns focus to `.shopbar-search-btn`. "bump steer" → ArrowDown → Enter lands on `steering#rack-narrowing` H2 at 108 px. ✔
+  5. **Literal sizes:**
+     - No hex or `rgba(` outside tokens.css.
+     - In components, layout, home, base and selector CSS the grep only hits 1 px hairlines and two 18 px line boxes, each commented.
+     - roadmap.css has 0 literal font sizes. Its 8 spacing hits are `1px` hairlines and the `min(420px, 92vw)` drawer gutter. ✔
+  6. **Small text:** `--t-micro` is 11 px. A scan of all visible, non-aria-hidden text on the post, both car homes and the 3 roadmap views finds nothing under 11 px. Table headers and chips are now 11 px. ✔
+  7. **Map `chip--decided`:** now passes; the scan no longer flags it. ✔ But see the failed check below.
+  8. **Autozam home:** the Service record section is gone (no `service:` items yet), and the wall is section 01. ✔
+  9. **Badges:** the Autozam shows only the generic badge. The A40 badge comes from car.json `badge`. ✔
+- **Optional fixes:**
+  - At 1024 the full "Sheet 16 of 18" crumb shows, the search box shrinks, and there is a gap between the tags and the title block.
+  - The rail's current-sheet label is gone, and the `/` hint is hidden on touch.
+  - The rear-suspension callout title is "October 2026". ✔
+- **Regressions:**
+  - Sheet index: focus starts in the filter. 65 Tab and Shift+Tab presses never left the dialog. Esc returns focus to Sheets (1440) and to `.bbar-mid` (390), and a scrim click closes it.
+  - Phone Contents: links land on the heading.
+  - Next tab lands at scrollY 0. `/a40/*` redirects still work.
+  - `/garage` morph: `garage-car-a40` on arrival, Back works.
+  - Reduced motion: navigation in 139 ms, no animations. The loader mounts under throttling.
+  - Print: rear-suspension is 5 A4 pages and geometry-design-reference 8. Navigation and gags are `display: none`, and both rear-suspension figures render (they did not before).
+  - Contrast on the post, car homes, roadmap tree and car-facts: no failures off paper.
+
+### Failed checks (re-check)
+**Required** (box 9, AA contrast):
+1. **Roadmap Map view, completed cards: `chip--complete` is 4.26:1.** The chip is `#7fdcaa` on its opaque base, but `.rm-card--complete .rm-card-meta { opacity: 0.6; }` (`src/blog/styles/roadmap.css:411`) dims the whole meta row, chip included.
+   - Fix: replace that `opacity: 0.6` with `color: var(--ink-3);`, so the meta text is muted by colour and the chip keeps full strength.
+   - If the faded look is wanted, add `.rm-card--complete .rm-card-meta .chip { … }` with no opacity, and move the meta row's opacity onto its text spans only.
+   - Then remeasure: the chip should be ≥ 4.5:1, and `--ink-3` on the card is about 6:1.
+   - The hover and cone fades (`.rm-card--faded` 0.32, `.rm-card--dimmed` 0.25) are temporary focus states and are fine.
+
+Everything else passes. Once this one-line fix is in and the chip is remeasured at ≥ 4.5:1, tick box 9 and set the status to done.
+
+### Final fix (2026-11-05)
+`roadmap.css:411`: `.rm-card--complete .rm-card-meta` uses `color: var(--ink-3)` instead of `opacity: 0.6`. Measured on the Map view at 1440: "Complete" chip rgb(127,220,170) on rgb(24,40,47) = 9.2:1 (was 4.26:1). Build passes.

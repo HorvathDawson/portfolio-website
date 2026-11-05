@@ -80,4 +80,4 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [FUT-001](./FUT-001-stl-art-pipeline.md) | Future: 3D scans → stylised spinning art and printable models | idea |
 | [GAR-009](./GAR-009-visual-design-pass.md) | Visual design pass for the whole garage blog | D2 chosen → GAR-011 |
 | [GAR-010](./GAR-010-loader.md) | Slime-mould loading icon | done |
-| [GAR-011](./GAR-011-d2-implementation.md) | Build the D2 design (consistent, readable, easy to extend) | in-progress (review failed: 9 required fixes) |
+| [GAR-011](./GAR-011-d2-implementation.md) | Build the D2 design (consistent, readable, easy to extend) | done (pending owner review) |
