@@ -4,7 +4,7 @@ title: Visual design pass for the whole garage blog (keep its character)
 status: blocked
 owner:
 reviewer: Dawson
-blocked_by: owner picks a direction (mockups ready)
+blocked_by: owner picks D1 or D2 (B + C mix, round 2 mockups ready)
 ---
 
 ## Why
@@ -49,3 +49,6 @@ Three directions, same real content: [README](./assets/GAR-009-mockups/README.md
 - C, Workshop zine: `assets/GAR-009-mockups/C-*.png`
 - Today's site for comparison: `assets/GAR-009-mockups/current-post.png`
 Sources and screenshot scripts were built outside the repo; each direction needs the same groundwork (tokens, callout syntax, chip tables, lightbox, code copy button).
+
+## Round 2 (Nov 2026)
+Owner chose a mix of B (Blueprint) and C (Workshop zine), integrated with the animated garage, and is open to a new format with better navigation. Two layouts: D1 (current three-column format, restyled) and D2 (shop bar + sheet rail + sheet-index drawer + car-home "wall"; recommended). See `assets/GAR-009-mockups/README.md` and `D1-*.png`, `D2-*.png`.
