@@ -98,10 +98,13 @@
   --f-display: 'Playfair Display', Georgia, serif;
   --f-body: 'Lora', Georgia, serif;
   --f-mono: 'Space Mono', ui-monospace, monospace;
-  --t-micro: 10.5px;   /* chips, stamps */
+  --t-micro: 11px;     /* the smallest UI text: chips, stamps, labels */
   --t-meta: 12px;      /* labels, kickers */
   --t-ui: 13px;        /* UI text, captions */
-  --t-small: 15px;     /* tables, callouts on phones */
+  --t-small: 15px;     /* tables, small UI */
+  --t-callout: 17px;   /* callout text */
+  --t-h4: 19px;        /* sheet tabs, card titles */
+  --t-stat: 22px;      /* stat numbers */
   --t-body: 18px;      /* long-form text */
   --t-lede: 19.5px;
   --t-h3: 21px;
@@ -112,17 +115,22 @@
   --lh-ui: 1.45;
   --lh-tight: 1.12;
   --track-label: 0.14em;  /* letter-spacing of mono caps labels */
-  --measure: 70ch;
+  --measure: 34em;     /* ~73 characters of Lora at --t-body */
 
   /* ── Space ── */
   --s-0: 2px;
   --s-1: 4px;
+  --s-1h: 6px;
   --s-2: 8px;
+  --s-2h: 10px;
   --s-3: 12px;
   --s-4: 16px;
+  --s-4h: 20px;
   --s-5: 24px;
   --s-6: 32px;
+  --s-6h: 40px;
   --s-7: 48px;
+  --s-7h: 56px;
   --s-8: 64px;
   --gutter: 40px;        /* bench padding; 16px on phones */
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { GARAGE_PATH, roadmapPath, type Car } from '../cars';
 import { CarSwitcher } from '../CarSwitcher';
@@ -21,6 +21,12 @@ export interface Crumb {
  */
 export const ShopBar: React.FC<{ car: Car; crumbs: Crumb[]; onSheets?: () => void }> = ({ car, crumbs, onSheets }) => {
   const [searchOpen, setSearchOpen] = useState(false);
+  const searchBtn = useRef<HTMLButtonElement>(null);
+  const closeSearch = () => {
+    if (!searchOpen) return;
+    setSearchOpen(false);
+    searchBtn.current?.focus();
+  };
   return (
     <header className="shopbar">
       <Link to={GARAGE_PATH} className="neon" aria-label="The Garage: all cars">
@@ -38,10 +44,11 @@ export const ShopBar: React.FC<{ car: Car; crumbs: Crumb[]; onSheets?: () => voi
         </ol>
       </nav>
       <div className={`shopbar-search${searchOpen ? ' is-open' : ''}`}>
-        <PostSearch car={car.id} autoFocus={searchOpen} onPicked={() => setSearchOpen(false)} />
+        <PostSearch car={car.id} autoFocus={searchOpen} onPicked={closeSearch} />
       </div>
       <button
         type="button"
+        ref={searchBtn}
         className="icon-btn shopbar-search-btn"
         aria-label={searchOpen ? 'Close search' : 'Search'}
         aria-expanded={searchOpen}

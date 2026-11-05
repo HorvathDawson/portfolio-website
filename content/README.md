@@ -26,7 +26,7 @@ category: maintenance     # maintenance | repair | mod | inspection (omit for ki
 mileage_km: 81234
 cost: "$120"
 parts: [oil filter, 3.2 L 5W-30]
-service: [oil and filter] # items for the service table on the car's home page
+service: [oil and filter] # items for the service table on the car's home page (hidden until a post lists one)
 ```
 
 3. That's it. The post appears in the sheet rail, the sheet index, the car home's wall, search and the sitemap. Roadmap tasks that should link to it list the slug in their `posts` (src/blog/roadmapData.ts); they then show as the post's work order.
@@ -148,6 +148,7 @@ Link to another post with a relative path: `[geometry reference](./geometry-desi
 - `kind`: `build` (posts grouped by `epics`, which you list here with `id`, `title`, `status`, `order`) or `garage` (grouped by category, with a service table).
 - `code`: drawing-number prefix (defaults to the folder name in capitals).
 - `art`: white line-art outline and the gradient-coloured version, same size. They are used in the garage bay, the car home hero and the shop-bar mini bay.
+- Optional `badge`: the car's 88x31 footer badge, e.g. `"badge": "SR20 powered"` (first word bold). Leave it out for no car badge.
 - Optional for cars with a constants file: `keyNumbers` (`[{ "label": "Wheelbase", "constants": ["wheelbase"] }]`) and `constantsPost` (slug linked from Key numbers).
 
 2. Add posts. The car gets its own bay on `/garage`, a car home at `/garage/<id>` and a mini bay in the shop bar.

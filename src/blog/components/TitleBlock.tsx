@@ -1,6 +1,7 @@
 import React from 'react';
 import { categoryLabel, formatDate, formatKm, kindChipLabel, statusLabel } from '../format';
 import { sheetNo, type Sheet } from '../postIndex';
+import { Collapsible } from './Collapsible';
 
 /**
  * The drafting title block beside a post title: drawing number, sheet n of
@@ -15,9 +16,9 @@ export const TitleBlock: React.FC<{ sheet: Sheet }> = ({ sheet }) => {
     ['Sheet', <><b>{sheetNo(sheet.no)}</b> of {sheetNo(sheet.of)}</>],
     [isEpic ? 'Epic' : p.category ? 'Category' : 'Section', isEpic ? `${sheet.group.short} ${sheet.group.title}` : p.category ? categoryLabel[p.category] : sheet.group.title, 'tb-cell--wide tb-cell--wide-d'],
     ['Date', p.date ? <time dateTime={p.date}>{formatDate(p.date)}</time> : '—'],
-    ['Updated', p.updated && p.updated !== p.date ? <time dateTime={p.updated}>{formatDate(p.updated)}</time> : '—'],
     ['Status', <span className={`chip chip--${p.status}`}>{statusLabel[p.status]}</span>],
   ];
+  if (p.updated && p.updated !== p.date) cells.splice(4, 0, ['Updated', <time dateTime={p.updated}>{formatDate(p.updated)}</time>]);
   if (p.kind) cells.push(['Kind', kindChipLabel[p.kind]]);
   if (p.mileage_km !== undefined) cells.push(['Mileage', formatKm(p.mileage_km)]);
   if (p.cost) cells.push(['Cost', p.cost]);
@@ -30,7 +31,14 @@ export const TitleBlock: React.FC<{ sheet: Sheet }> = ({ sheet }) => {
     return cols - used;
   };
   const lastStyle = { '--span-d': fill(3, true), '--span-p': fill(2, false) } as React.CSSProperties;
+  const summary = (
+    <span className="tb-summary">
+      <b>{p.drawing ?? sheet.drawing}</b> · {sheetNo(sheet.no)}/{sheetNo(sheet.of)} · {p.date ? formatDate(p.date) : '—'}
+      <span className={`chip chip--${p.status}`}>{statusLabel[p.status]}</span>
+    </span>
+  );
   return (
+    <Collapsible summary={summary} className="tb-details">
     <dl className="titleblock">
       {cells.map(([k, v, cls], i) => (
         <div key={k} className={`tb-cell${cls ? ` ${cls}` : ''}`} style={i === cells.length - 1 ? lastStyle : undefined}>
@@ -39,5 +47,6 @@ export const TitleBlock: React.FC<{ sheet: Sheet }> = ({ sheet }) => {
         </div>
       ))}
     </dl>
+    </Collapsible>
   );
 };

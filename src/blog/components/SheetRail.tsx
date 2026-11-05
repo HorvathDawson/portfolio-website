@@ -6,7 +6,7 @@ import { sheetGroups, sheetNo, type Sheet } from '../postIndex';
 /**
  * Desktop strip under the shop bar: every sheet as a numbered cell, grouped
  * by epic (or category), so any sheet is one click away. The current sheet
- * is highlighted and its title shows at the right. Hidden on phones (the
+ * is highlighted (its title is in the breadcrumb). Hidden on phones (the
  * bottom bar and sheet index take over).
  */
 export const SheetRail: React.FC<{ car: Car; current?: Sheet }> = ({ car, current }) => {
@@ -33,11 +33,6 @@ export const SheetRail: React.FC<{ car: Car; current?: Sheet }> = ({ car, curren
           </div>
         ))}
       </div>
-      {current && (
-        <span className="rail-cur" aria-hidden="true">
-          <b>{sheetNo(current.no)}</b> {current.post.title}
-        </span>
-      )}
     </nav>
   );
 };

@@ -13,8 +13,8 @@
   --st: var(--st-planning);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: var(--s-1) 7px var(--s-1) 6px;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-1h) var(--s-1) var(--s-1h);
   border-radius: var(--r-pill);
   color: var(--st);
   background: color-mix(in srgb, var(--st) 14%, transparent);
@@ -60,7 +60,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  padding: 10px var(--s-4);
+  padding: var(--s-2h) var(--s-4);
   border: var(--bw-2) solid var(--line-3);
   border-radius: var(--r-2);
   color: var(--ink);
@@ -132,7 +132,7 @@
   gap: var(--s-0);
   width: 58px;
   color: var(--ink-3) !important;
-  font: 400 9.5px / 1.2 var(--f-mono);
+  font: 400 var(--t-micro) / 1.2 var(--f-mono);
   letter-spacing: 0.06em;
   text-decoration: none !important;
 }
@@ -195,11 +195,11 @@
   background: var(--line-2);
   font-family: var(--f-mono);
 }
-.tb-cell { min-width: 0; padding: 7px 10px 8px; background: var(--night-0); }
+.tb-cell { min-width: 0; padding: var(--s-1h) var(--s-2h) var(--s-2); background: var(--night-0); }
 .tb-cell--wide { grid-column: span 2; }
 .titleblock > .tb-cell:last-child { grid-column: span var(--span-d, 1); }
 .titleblock dt, .keynumbers dt {
-  font-size: 9.5px;
+  font-size: var(--t-micro);
   line-height: 1.3;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
@@ -208,13 +208,13 @@
 .titleblock dd { overflow: hidden; color: var(--ink); font-size: var(--t-ui); line-height: 1.6; text-overflow: ellipsis; white-space: nowrap; }
 .titleblock dd b { color: var(--ink); }
 .tb-cell--big dd { color: var(--accent); font-size: var(--t-small); font-weight: 700; letter-spacing: 0.04em; }
-.titleblock .chip { margin-top: 1px; }
+.titleblock .chip { margin-top: 1px; } /* hairline nudge */
 
 /* ── Work order (manila tag; roadmap tasks of a post) ── */
 .workorder {
   position: relative;
   margin-top: var(--s-5);
-  padding: var(--s-4) var(--s-5) var(--s-3) 54px;
+  padding: var(--s-4) var(--s-5) var(--s-3) var(--s-7h);
   color: var(--manila-ink);
   font: 400 var(--t-ui) / 1.4 var(--f-mono);
   background:
@@ -230,7 +230,7 @@
   top: 50%;
   width: 16px;
   height: 16px;
-  margin-top: -8px;
+  margin-top: calc(-1 * var(--s-2));
   border-radius: 50%;
   background: var(--sheet);
   box-shadow: 0 0 0 3px var(--manila-edge), inset 0 1px 2px color-mix(in srgb, var(--night-0) 50%, transparent);
@@ -247,7 +247,7 @@
 .workorder-title { color: var(--stamp-red); font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }
 .workorder-meta { margin-left: auto; color: var(--manila-ink-2); font-size: var(--t-micro); letter-spacing: 0.12em; text-transform: uppercase; }
 .workorder ul { list-style: none; }
-.workorder li { display: flex; align-items: center; gap: var(--s-3); padding: 7px 0; border-bottom: var(--bw) solid color-mix(in srgb, var(--manila-ink) 14%, transparent); }
+.workorder li { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-1h) 0; border-bottom: var(--bw) solid color-mix(in srgb, var(--manila-ink) 14%, transparent); }
 .workorder li:last-child { border-bottom: 0; }
 .garage .workorder a { color: var(--manila-ink); text-decoration-color: color-mix(in srgb, var(--manila-ink) 45%, transparent); }
 .garage .workorder a:hover { color: var(--stamp-red); }
@@ -270,7 +270,7 @@
 /* Rubber stamp (on paper only). */
 .stamp {
   flex: none;
-  padding: 3px 6px;
+  padding: var(--s-0) var(--s-1h);
   border: var(--bw-2) solid currentColor;
   border-radius: var(--r-1);
   color: var(--stamp-violet);
@@ -300,7 +300,7 @@
   color: var(--accent-ink);
   font: 700 var(--t-meta) / 1 var(--f-mono);
 }
-.toast:not(:empty) { padding: 9px 14px; box-shadow: var(--shadow-hard); }
+.toast:not(:empty) { padding: var(--s-2) var(--s-3); box-shadow: var(--shadow-hard); }
 
 /* ── Web-1.0 footer gag ── */
 .gags {
@@ -334,7 +334,7 @@
   line-height: 16px;
   text-shadow: 0 0 6px color-mix(in srgb, var(--st-locked) 60%, transparent);
 }
-.gags-badges { display: flex; gap: 6px; }
+.gags-badges { display: flex; gap: var(--s-1h); }
 .b88 {
   display: grid;
   place-content: center;
@@ -342,11 +342,11 @@
   height: 31px;
   border: 2px outset var(--line-3);
   color: var(--ink);
-  font: 700 8.5px / 1.05 var(--f-mono);
+  font: 700 var(--t-micro) / 1.05 var(--f-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.b88 b { display: block; font-size: 10px; }
+.b88 b { display: block; font-size: var(--t-micro); }
 .b88--a { background: linear-gradient(135deg, var(--g1), var(--g2)); }
 .b88--b { background: linear-gradient(135deg, var(--haze), var(--g3)); }
 
@@ -375,7 +375,7 @@
 .prose :where(h2, h3, h4) + * { margin-top: 0.6em; }
 .prose hr { height: 0; margin: var(--s-7) 0; border: 0; border-top: var(--bw) dashed var(--line-2); }
 .prose a:visited { color: color-mix(in srgb, var(--link) 75%, var(--st-decided)); }
-.prose a[href^='http']::after { content: '\2197'; display: inline-block; margin-left: 1px; font-size: 0.8em; text-decoration: none; }
+.prose a[href^='http']::after { content: '\2197'; display: inline-block; margin-left: 1px; /* hairline */ font-size: 0.8em; text-decoration: none; }
 .prose :not(pre) > code {
   padding: 0.1em 0.35em;
   border: var(--bw) solid var(--line);
@@ -411,9 +411,9 @@
   position: absolute;
   left: 50%;
   top: -2px;
-  padding: 0 10px;
+  padding: 0 var(--s-2h);
   background: var(--sheet);
-  font: 700 11px / 18px var(--f-mono);
+  font: 700 var(--t-micro) / 18px /* line box = dimension-line height */ var(--f-mono);
   letter-spacing: var(--track-label);
   white-space: nowrap;
   transform: translateX(-50%);
@@ -427,12 +427,12 @@
   --st: var(--st-note);
   position: relative;
   margin: var(--s-6) 0 var(--s-5) !important;
-  padding: var(--s-5) 22px 18px;
+  padding: var(--s-5) var(--s-4h) var(--s-4);
   border: var(--bw) solid color-mix(in srgb, var(--st) 45%, transparent);
   border-radius: var(--r-2);
   background: color-mix(in srgb, var(--st) 7%, var(--sheet));
   color: var(--ink);
-  font-size: 17px;
+  font-size: var(--t-callout);
   line-height: 1.65;
 }
 .callout > * + * { margin-top: 0.6em; }
@@ -442,12 +442,12 @@
   top: -13px;
   display: inline-flex;
   margin: 0 !important;
-  padding: var(--s-1) 10px;
+  padding: var(--s-1) var(--s-2h);
   border-radius: var(--r-1);
   background: var(--st);
   box-shadow: var(--shadow-hard);
   color: var(--accent-ink);
-  font: 700 11px / 1.3 var(--f-mono);
+  font: 700 var(--t-micro) / 1.3 var(--f-mono);
   letter-spacing: var(--track-label);
   text-transform: uppercase;
   transform: rotate(-2deg);   /* the sticker sits in the margin; the text below never tilts */
@@ -457,7 +457,7 @@
 .callout--verify, .callout--measure { --st: var(--st-measure); }
 .callout--open { --st: var(--st-open); }
 .callout--note { --st: var(--st-note); }
-.callout--safety { --st: var(--st-safety); padding-left: 36px; }
+.callout--safety { --st: var(--st-safety); padding-left: var(--s-6); }
 .callout--safety::before {
   content: '';
   position: absolute;
@@ -502,7 +502,7 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 .sheet-table thead th {
-  padding: 9px var(--s-3);
+  padding: var(--s-2) var(--s-3);
   border-top: var(--bw-2) solid var(--line-3);
   border-bottom: var(--bw-2) solid var(--line-3);
   color: var(--ink-3);
@@ -512,37 +512,37 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-.sheet-table td { padding: 9px var(--s-3); border-bottom: var(--bw) solid var(--line); vertical-align: top; }
+.sheet-table td { padding: var(--s-2) var(--s-3); border-bottom: var(--bw) solid var(--line); vertical-align: top; }
 .sheet-table tbody tr:nth-child(even) td { background: var(--tint); }
-.sheet-table .c-num { font: 400 14px / 1.5 var(--f-mono); text-align: right; white-space: nowrap; }
+.sheet-table .c-num { font: 400 var(--t-small) / 1.5 var(--f-mono); text-align: right; white-space: nowrap; }
 .sheet-table th.c-num { font-size: var(--t-micro); }
 .sheet-table .c-st { white-space: nowrap; }
 .sheet-table td.c-st { color: var(--ink-2); font: 400 var(--t-meta) / 1.5 var(--f-mono); }
 .sheet-table .u { color: var(--ink-3); font-size: 0.85em; }
-.cell-note { display: block; margin-top: 3px; color: var(--ink-3); font: 400 11.5px / 1.4 var(--f-mono); white-space: normal; min-width: 12ch; }
+.cell-note { display: block; margin-top: var(--s-0); color: var(--ink-3); font: 400 var(--t-meta) / 1.4 var(--f-mono); white-space: normal; min-width: 12ch; }
 .sheet-table td a { color: var(--link); }
 
 /* ── Code block: filename tab + copy ── */
 .code-block { overflow: hidden; border: var(--bw) solid var(--line-2); border-radius: var(--r-2); background: var(--night-0); }
-.code-bar { display: flex; align-items: center; gap: 10px; min-height: 34px; padding-right: var(--s-2); border-bottom: var(--bw) solid var(--line-2); background: var(--night-1); font: 400 var(--t-meta) / 1 var(--f-mono); }
-.code-file { align-self: stretch; display: flex; align-items: center; margin-bottom: -1px; padding: 0 14px; border-right: var(--bw) solid var(--line-2); background: var(--night-0); color: var(--ink); }
+.code-bar { display: flex; align-items: center; gap: var(--s-2h); min-height: 34px; padding-right: var(--s-2); border-bottom: var(--bw) solid var(--line-2); background: var(--night-1); font: 400 var(--t-meta) / 1 var(--f-mono); }
+.code-file { align-self: stretch; display: flex; align-items: center; margin-bottom: -1px; /* overlap the bar border */ padding: 0 var(--s-3); border-right: var(--bw) solid var(--line-2); background: var(--night-0); color: var(--ink); }
 .code-lang { padding-left: var(--s-3); color: var(--ink-3); font-size: var(--t-micro); letter-spacing: 0.12em; text-transform: uppercase; }
 .code-file + .code-lang { padding-left: 0; }
 .code-copy {
   margin-left: auto;
-  padding: var(--s-1) 9px !important;
+  padding: var(--s-1) var(--s-2) !important;
   border: var(--bw) solid var(--line-2) !important;
   border-radius: 5px !important;
   color: var(--ink-2) !important;
-  font-size: 11.5px !important;
+  font-size: var(--t-meta) !important;
 }
 .code-copy:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
-.code-block pre { margin: 0; padding: 14px 18px; overflow-x: auto; color: var(--ink); font-size: 13.5px; line-height: 1.7; }
+.code-block pre { margin: 0; padding: var(--s-3) var(--s-4); overflow-x: auto; color: var(--ink); font-size: var(--t-ui); line-height: 1.7; }
 
 /* ── Maths: KaTeX on a drafting panel ── */
 .prose .katex-display {
   margin: var(--s-5) 0;
-  padding: 14px var(--s-4);
+  padding: var(--s-3) var(--s-4);
   overflow-x: auto;
   overflow-y: hidden;
   border: var(--bw) dashed var(--line-2);
@@ -561,18 +561,18 @@
   position: absolute;
   right: var(--s-3);
   bottom: var(--s-3);
-  padding: 5px 9px !important;
+  padding: var(--s-1) var(--s-2) !important;
   border: var(--bw) solid color-mix(in srgb, var(--night-0) 25%, transparent) !important;
   border-radius: 5px !important;
   background: var(--ink) !important;
   color: var(--manila-ink) !important;
-  font: 700 11px / 1 var(--f-mono) !important;
+  font: 700 var(--t-micro) / 1 var(--f-mono) !important;
   letter-spacing: 0.06em;
   cursor: zoom-in !important;
 }
 .fig-zoom:hover { background: var(--accent) !important; }
 .prose figcaption { margin-top: var(--s-4); color: var(--ink-2); font: 400 var(--t-ui) / 1.6 var(--f-mono); }
-.fig-no { margin-right: var(--s-2); color: var(--accent); font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.fig-no { margin-right: var(--s-2); color: var(--accent); font-size: var(--t-meta); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 /* Small figures (no .wide in old posts) stay narrower. */
 .prose .fig:not(.fig--wide) .fig-card { max-width: 640px; }
 
@@ -588,11 +588,11 @@
   .titleblock { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .titleblock > .tb-cell--wide-d { grid-column: span 1; }
   .titleblock > .tb-cell:last-child { grid-column: span var(--span-p, 1); }
-  .callout { padding: var(--s-5) 14px var(--s-4); font-size: 16.5px; }
-  .callout--safety { padding-left: 28px; }
-  .sheet-table { font-size: 14.5px; }
-  .sheet-table :is(td, th) { padding-left: 6px; padding-right: 6px; }
-  .sheet-table .c-num { font-size: 13px; }
+  .callout { padding: var(--s-5) var(--s-3) var(--s-4); font-size: var(--t-callout); }
+  .callout--safety { padding-left: var(--s-5); }
+  .sheet-table { font-size: var(--t-small); }
+  .sheet-table :is(td, th) { padding-left: var(--s-1h); padding-right: var(--s-1h); }
+  .sheet-table .c-num { font-size: var(--t-ui); }
   .fig-card { padding: var(--s-2); }
 }
 

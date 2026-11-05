@@ -137,3 +137,10 @@ export function useScrollMemory(ready: unknown) {
 /** True when the user asked for less motion. */
 export const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Printing straight from the top of a post: load every lazy image first. */
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeprint', () => {
+    document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
+  });
+}

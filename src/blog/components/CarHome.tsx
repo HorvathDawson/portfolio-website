@@ -163,13 +163,12 @@ const Wall: React.FC<{ car: Car; rm: Queries | null | undefined; no: string }> =
 
 const ServiceTable: React.FC<{ car: Car; no: string }> = ({ car, no }) => {
   const rows = serviceTable(car.id);
+  // Nothing logged yet: leave the section out (how to fill it is in content/README.md).
+  if (rows.length === 0) return null;
   return (
     <section className="home-section" aria-labelledby="service-h">
       <h2 className="section-h" id="service-h"><span className="section-no">{no}</span>Service record <small>latest job per item</small></h2>
-      {rows.length === 0 ? (
-        <p className="muted">No services logged yet. List jobs in a post's <code>service:</code> frontmatter and they show here.</p>
-      ) : (
-        <div className="scroll-x">
+      <div className="scroll-x">
           <table className="sheet-table">
             <thead><tr><th scope="col">Item</th><th scope="col">Last done</th><th scope="col" className="c-num">Mileage</th></tr></thead>
             <tbody>
@@ -182,8 +181,7 @@ const ServiceTable: React.FC<{ car: Car; no: string }> = ({ car, no }) => {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+      </div>
     </section>
   );
 };
@@ -203,10 +201,10 @@ export const CarHome: React.FC<{ car: Car }> = ({ car }) => {
     <div className="home">
       <Hero car={car} sheets={sheets} rm={rm} />
       {rm && <NextUp car={car} rm={rm} no={no()} />}
-      {car.kind === 'garage' && <ServiceTable car={car} no={no()} />}
+      {car.kind === 'garage' && serviceTable(car.id).length > 0 && <ServiceTable car={car} no={no()} />}
       <Wall car={car} rm={rm} no={no()} />
       <KeyNumbers car={car} no={no()} />
-      <Gags count={sheets.length} />
+      <Gags count={sheets.length} badge={car.badge} />
     </div>
   );
 };

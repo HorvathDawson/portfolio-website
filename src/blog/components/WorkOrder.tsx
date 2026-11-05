@@ -4,6 +4,7 @@ import { roadmapCar, roadmapPath } from '../cars';
 import { statusLabel } from '../format';
 import { useRoadmap } from '../useRoadmap';
 import { sheetNo, type Sheet } from '../postIndex';
+import { Collapsible } from './Collapsible';
 
 const taskHref = (car: string, id: string) => `${roadmapPath(car)}?view=tree&task=${encodeURIComponent(id)}`;
 
@@ -20,6 +21,7 @@ export const WorkOrder: React.FC<{ car: string; sheet: Sheet }> = ({ car, sheet 
   if (tasks.length === 0) return null;
   const next = rm.opensNext(tasks);
   return (
+    <Collapsible className="wo-details" summary={<span className="wo-summary"><b>Work order</b> {rm.workOrderNo(tasks[0])} · {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}</span>}>
     <aside className="workorder" aria-labelledby="wo-h">
       <span className="workorder-hole" aria-hidden="true" />
       <p className="workorder-head">
@@ -48,5 +50,6 @@ export const WorkOrder: React.FC<{ car: string; sheet: Sheet }> = ({ car, sheet 
         </p>
       )}
     </aside>
+    </Collapsible>
   );
 };

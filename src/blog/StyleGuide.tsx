@@ -165,7 +165,7 @@ export const StyleGuide: React.FC = () => {
           <h2 className="sg-h">Sheet tabs</h2>
           <SheetTabs car={car} prev={sheets[0]} next={sheets[1]} />
         </article>
-        <Gags count={sheets.length} />
+        <Gags count={sheets.length} badge={car.badge} />
       </main>
       <SheetIndex car={car} current={sheet} open={indexOpen} onClose={() => setIndexOpen(false)} />
       <Lightbox image={zoom} onClose={() => setZoom(null)} />

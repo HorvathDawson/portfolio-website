@@ -97,6 +97,8 @@ export const PostSearch: React.FC<{ car: string; onPicked?: () => void; autoFocu
   const multiCar = cars.length > 1;
 
   const ensureIndex = () => { if (!docs) loadIndex().then(setDocs); };
+  // The phone panel is always mounted, so `autoFocus` alone only works once.
+  useEffect(() => { if (autoFocus) inputRef.current?.focus(); }, [autoFocus]);
   const count = postSlugs(car).length;
 
   // "/" focuses the search box (unless typing somewhere already).

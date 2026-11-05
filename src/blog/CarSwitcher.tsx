@@ -32,7 +32,7 @@ export const CarSwitcher: React.FC<{ current: string }> = ({ current }) => (
                 />
                 <span className="minibay-slats" />
               </span>
-              <span className="minibay-name">{car.model}</span>
+              <span className="minibay-name">{car.code}</span>
             </Link>
           </li>
         );

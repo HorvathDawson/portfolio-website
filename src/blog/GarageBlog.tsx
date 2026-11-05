@@ -202,7 +202,7 @@ const PostSheet: React.FC<{ car: Car; sheet: Sheet; post?: BlogPost; onSheets: (
 
         <SheetTabs car={car} prev={prev} next={next} />
       </article>
-      <Gags count={sheets.length} />
+      <Gags count={sheets.length} badge={car.badge} />
 
       <BottomBar car={car} current={sheet} prev={prev} next={next} onSheets={onSheets} onContents={toc.length ? () => setContentsOpen(true) : undefined} />
       <Dialog open={contentsOpen} onClose={() => setContentsOpen(false)} label="On this sheet" className="dialog--contents">

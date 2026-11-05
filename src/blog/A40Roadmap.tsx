@@ -1079,15 +1079,15 @@ export const RoadmapMap: React.FC<{ toolbar?: React.ReactNode }> = ({ toolbar })
             soft
           </span>
           <span className="rm-legend-item">
-            <span className="rm-card-kind rm-card-kind--purchase" aria-hidden="true" style={{ width: 14, height: 14, fontSize: 9 }}>$</span>
+            <span className="rm-card-kind rm-card-kind--purchase" aria-hidden="true" style={{ width: 16, height: 16 }}>$</span>
             purchase
           </span>
           <span className="rm-legend-item">
-            <span className="rm-card-kind rm-card-kind--decision" aria-hidden="true" style={{ width: 14, height: 14, fontSize: 9 }}>?</span>
+            <span className="rm-card-kind rm-card-kind--decision" aria-hidden="true" style={{ width: 16, height: 16 }}>?</span>
             decision
           </span>
           <span className="rm-legend-item">
-            <span className="rm-card-check" aria-hidden="true" style={{ width: 14, height: 14, fontSize: 10 }}>✓</span>
+            <span className="rm-card-check" aria-hidden="true" style={{ width: 16, height: 16 }}>✓</span>
             done
           </span>
           <span className="rm-legend-item rm-legend-hint">

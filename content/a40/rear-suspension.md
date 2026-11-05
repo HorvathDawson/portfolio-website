@@ -7,8 +7,8 @@ kind: log
 tags: [suspension, rear, miata, rx-8, driveshaft]
 ---
 
-> [!decision]
-> **Decision (October 2026): the rear is a narrowed Mazda NA Miata independent rear, with an RX-8 differential and custom half-shafts.** This replaces the earlier Ford 9" and four-link plan. The 9" on hand is now surplus.
+> [!decision] October 2026
+> **The rear is a narrowed Mazda NA Miata independent rear, with an RX-8 differential and custom half-shafts.** This replaces the earlier Ford 9" and four-link plan. The 9" on hand is now surplus.
 
 Same idea as the front: keep the Miata geometry and move every inboard pickup towards the centreline by the same amount. Lateral translation leaves the side-view geometry (anti-squat, anti-lift, toe curve) exactly as Mazda designed it. It only changes track, roll centre height and roll stiffness, which the [suspension tuning](./suspension-tuning) and [geometry reference](./geometry-design-reference) posts cover.
 

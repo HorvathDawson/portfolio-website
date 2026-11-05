@@ -25,6 +25,7 @@
     { "id": "fabrication", "title": "Fabrication", "status": "in-progress", "order": 4},
     { "id": "finishing", "title": "Finishing & Interior", "status": "planning", "order": 5}
   ],
+  "badge": "SR20 powered",
   "constantsPost": "build-constants",
   "keyNumbers": [
     { "label": "Wheelbase", "constants": ["wheelbase"] },

@@ -48,6 +48,8 @@ interface CarFile {
   keyNumbers?: KeyNumber[];
   /** Slug of the post that lists every constant (linked from Key numbers). */
   constantsPost?: string;
+  /** Text of the car's 88x31 footer badge, e.g. "SR20 powered" (first word bold). */
+  badge?: string;
 }
 
 export interface KeyNumber {

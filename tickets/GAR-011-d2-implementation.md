@@ -1,7 +1,7 @@
 ---
 id: GAR-011
 title: Build the D2 "bay to bench" design (cleaned up, consistent, easy to extend)
-status: in-progress
+status: review
 owner: implementation agent
 reviewer: independent review agent (Nov 5 2026), then Dawson on the preview
 blocked_by:
@@ -122,3 +122,38 @@ Independent review, 2026-11-05. Reviewer did not implement. Checked against `npm
 - The roadmap Next up and Map cards and flags (`rm-card-defer`, `rv-crit-badge`, the mono caps "READY NOW" heading) still use a different card, chip and heading language from the car home (`.section-h`, chips, manila tags). Moving them onto the shared components would finish the "one card / one chip" goal.
 - The `/garage` morph lands on the shop-bar mini bay, not on the big lit hero bay that sits right under it. Putting the transition name on `BayHero` would read more naturally.
 - Print reliability: post images get `loading="lazy"` (`blogData.ts:30`). In Playwright `page.pdf()` without scrolling, figures came out blank or cropped (rear-suspension p. 4). Add a `beforeprint` handler in `postDom.ts` that sets `img.loading = 'eager'`, so printing straight from the top always includes the plots.
+
+## Fixes after review
+Required:
+1. `--measure: 34em` (612 px of Lora, ~73 characters per line). The `.sheet-body--toc` grid is now `minmax(0, var(--measure)) 236px` with space-between, and it sets the body font size so the em value resolves the same as in `.prose`. The TOC lines up with the title block's right edge.
+2. Phones (< 600 px): the title block and the work order are `Collapsible` `<details>` (new `components/Collapsible.tsx`).
+   - Title block summary: drawing no. · n/N · date · status chip.
+   - Work order summary: "Work order WO-0007 · 2 tasks".
+   - At 390x844 the first callout or paragraph now starts at 442 px, inside the first screen (it was 1095 px).
+3. The Updated cell is only added when `updated` differs from `date`.
+4. Phone search: `PostSearch` focuses the input whenever `autoFocus` turns on. Esc (or picking a result) closes the panel and returns focus to the search button. Checked: activeElement is `.post-search-input` after the tap, then `.shopbar-search-btn` after Esc.
+5. Type and spacing are on tokens in base, components, layout, home, selector and roadmap CSS.
+   - New tokens: `--t-callout` 17, `--t-h4` 19, `--t-stat` 22; `--s-1h` 6, `--s-2h` 10, `--s-4h` 20, `--s-6h` 40, `--s-7h` 56.
+   - The reviewer's grep now only hits five 1 px hairlines and two 18 px line boxes, each with a comment.
+6. `--t-micro` is now 11 px and is the floor. A Playwright scan of every visible text element at 1440, 1024 and 390 finds nothing under 11 px outside the aria-hidden gags.
+   - This covers the roadmap legend icons (their inline 9/10 px sizes were removed) and the bottom-bar labels.
+   - Mini-bay labels use the car's `code` (A40 / AZ1) so they fit at 11 px.
+7. Map chips: `.rm-card .chip` and `.rm-drawer .chip` get an opaque base, `color-mix(st 14%, --night-0)`. `chip--decided` on a decided card is now 7.9:1 (it was 4.41).
+8. The Service record section is left out until a post lists a `service:` item. The how-to is only in content/README.md.
+9. The car's own badge comes from optional `"badge"` in car.json (A40: "SR20 powered", documented in content/README.md). Cars without one show only the generic "Best viewed" badge.
+
+Optional, done:
+- 1024 px:
+  - The search box shrinks (`flex: 0 1 280px`, min 180) and the last crumb never truncates; the crumb check found nothing cut off at 1440, 1024 or 390.
+  - The stacked post head has `gap: var(--s-4)`.
+- Rail: the right-hand current-sheet label is removed (the breadcrumb has it).
+- The `/` hint is hidden under `(hover: none)`.
+- rear-suspension: `> [!decision] October 2026`, with the body starting "The rear is a narrowed…". The repeated "Decision (October 2026):" lead is gone.
+- Print: a `beforeprint` handler in postDom.ts sets lazy images to eager. With that event fired, every image on rear-suspension loaded before `page.pdf()`.
+
+Re-checked: `npm run build`, `npm run lint`, `npm run check-constants` and `node scripts/check-roadmap-plan.mjs` pass. Playwright at 1440, 1024 and 390 (screenshots `fix-*.png` in the session scratchpad `d2/`):
+- one h1 per page and no horizontal scroll on all 27 phone pages
+- 26 internal links resolve
+- drawer focus moves in, is trapped, and returns to the Sheets button
+- print is 11 pages with no navigation
+- no console errors
