@@ -68,17 +68,6 @@ export interface GarageSceneProps {
   className?: string;
 }
 
-/** Sign treatments under review (GAR-013): a neon name sign, a porcelain enamel sign, sign-writing painted on the wall, or D: neon name over a small enamel plate. */
-type SignStyle = 'a' | 'b' | 'c' | 'd';
-const SIGN_STYLES: SignStyle[] = ['a', 'b', 'c', 'd'];
-const DEFAULT_SIGNS: SignStyle = 'a';
-/** Temporary switch while the owner picks: `?signs=a|b|c|d`. Remove with the unused styles once one is chosen. */
-const signStyle = (): SignStyle => {
-  if (typeof window === 'undefined') return DEFAULT_SIGNS;
-  const v = new URLSearchParams(window.location.search).get('signs') as SignStyle | null;
-  return v && SIGN_STYLES.includes(v) ? v : DEFAULT_SIGNS;
-};
-
 /** Viewports that get the tower layout (keep in step with the 600 px phone breakpoint in garageScene.css). */
 const TOWER_QUERY = '(max-width: 600px)';
 /** Touch screens: no hover, or a coarse pointer (iPads with a trackpad report hover, phones may not report `hover: none`). */
@@ -138,21 +127,46 @@ const Neon: React.FC<{ text: string; className?: string }> = ({ text, className 
   );
 };
 
-/** Desktop: a tall gas-station pole sign beside the building, with a SERVICE panel, an oil drum and tyres at its foot. */
+/** Desktop: a tall gas-station pole sign beside the building, with a SERVICE panel, and a stack of tyres and an oil drum at its foot. */
 const PoleSign: React.FC<{ sign: string }> = ({ sign }) => (
   <div className="gs-pole">
     <span className="gs-pole-post" />
     <Neon text={sign} className="gs-sign--pole" />
     <span className="gs-pole-sub">Service</span>
-    <svg className="gs-yard" viewBox="0 0 120 44">
-      {/* Tyre stack */}
-      <rect x="4" y="31" width="40" height="12" rx="6" />
-      <rect x="6" y="19" width="36" height="12" rx="6" />
-      <rect x="8" y="7" width="32" height="12" rx="6" />
-      <path className="gs-yard-detail" d="M14 37 H34 M15 25 H33 M16 13 H32" />
-      {/* Oil drum */}
-      <path d="M84 43 V12 H112 V43" />
-      <path className="gs-yard-detail" d="M84 21 H112 M84 33 H112 M90 16 H96" />
+    <svg className="gs-yard" viewBox="0 0 120 56" aria-hidden="true">
+      <defs>
+        <linearGradient id="gs-yard-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" className="gs-yard-stop-lit" />
+          <stop offset="0.55" className="gs-yard-stop-dark" />
+        </linearGradient>
+      </defs>
+      {/* Tyre stack: three lying flat (tread blocks at the edges), the top one showing its bead and opening */}
+      <path className="gs-yard-shape" d="M3 40 A22 4.5 0 0 0 47 40 C49.2 43 49.2 48 47 51 A22 4.5 0 0 1 3 51 C0.8 48 0.8 43 3 40 Z" />
+      <path className="gs-yard-detail" d="M4.2 45.5 A20.8 4.5 0 0 0 45.8 45.5 M5.6 43.3 V47 M5.6 48.5 V51.9 M44.4 43.3 V47 M44.4 48.5 V51.9 M8.6 44.2 V47.9 M8.6 49.4 V52.8 M41.4 44.2 V47.9 M41.4 49.4 V52.8" />
+      <path className="gs-yard-shape" d="M5.5 30 A20.2 4.5 0 0 0 46 30 C48.2 33 48.2 38 46 41 A20.2 4.5 0 0 1 5.5 41 C3.3 38 3.3 33 5.5 30 Z" />
+      <path className="gs-yard-detail" d="M6.7 35.5 A19.1 4.5 0 0 0 44.8 35.5 M8.1 33.4 V37.1 M8.1 38.6 V42 M43.4 33.4 V37.1 M43.4 38.6 V42 M11.1 34.3 V38 M11.1 39.5 V42.9 M40.4 34.3 V38 M40.4 39.5 V42.9" />
+      <path className="gs-yard-shape" d="M4 20 A21.8 4.5 0 0 0 47.5 20 C49.7 23 49.7 28 47.5 31 A21.8 4.5 0 0 1 4 31 C1.8 28 1.8 23 4 20 Z" />
+      <path className="gs-yard-detail" d="M5.2 25.5 A20.6 4.5 0 0 0 46.3 25.5 M6.6 23.3 V27 M6.6 28.5 V31.9 M44.9 23.3 V27 M44.9 28.5 V31.9 M9.6 24.2 V27.9 M9.6 29.4 V32.8 M41.9 24.2 V27.9 M41.9 29.4 V32.8" />
+      <ellipse className="gs-yard-shape gs-yard-rim" cx="25.8" cy="20" rx="21.8" ry="4.5" />
+      <ellipse className="gs-yard-faint" cx="25.8" cy="20" rx="17.2" ry="2.9" strokeDasharray="2.4 1.6" />
+      <ellipse className="gs-yard-hole" cx="25.8" cy="20.2" rx="10" ry="2" />
+      {/* One tyre leaning on the stack */}
+      <g transform="rotate(-13 55 38)">
+        <ellipse className="gs-yard-shape" cx="57.6" cy="38" rx="6.6" ry="13" />
+        <path className="gs-yard-detail" d="M61.6 30 h2 M63.1 35 h1.8 M63.5 40 h1.8 M62.9 45 h1.8" />
+        <ellipse className="gs-yard-shape gs-yard-rim" cx="55" cy="38" rx="6.6" ry="13" />
+        <ellipse className="gs-yard-faint" cx="55" cy="38" rx="4.6" ry="9.3" strokeDasharray="2.2 1.6" />
+        <ellipse className="gs-yard-hole" cx="55" cy="38" rx="2.7" ry="5.4" />
+      </g>
+      {/* Oil drum: rolled rims, two hoops, bung caps, a stencilled label */}
+      <path className="gs-yard-shape" d="M84 12 V50 A16 3.6 0 0 0 116 50 V12 Z" />
+      <path className="gs-yard-detail" d="M84 14.2 A16 3.6 0 0 0 116 14.2 M84 25 A16 3.6 0 0 0 116 25 M84 26.8 A16 3.6 0 0 0 116 26.8 M84 37 A16 3.6 0 0 0 116 37 M84 38.8 A16 3.6 0 0 0 116 38.8 M84 48 A16 3.6 0 0 0 116 48" />
+      <ellipse className="gs-yard-shape gs-yard-rim" cx="100" cy="12" rx="16" ry="3.6" />
+      <ellipse className="gs-yard-faint" cx="100" cy="12" rx="14.2" ry="2.6" />
+      <ellipse className="gs-yard-hole" cx="92.5" cy="11.6" rx="2.6" ry="0.9" />
+      <path className="gs-yard-detail" d="M105.2 11.2 v-1.4 h3.2 v1.4" />
+      <rect className="gs-yard-faint" x="90" y="28.6" width="20" height="6.6" rx="0.6" />
+      <path className="gs-yard-faint" d="M92.6 31.9 H107.4" strokeDasharray="2.2 1.2" />
     </svg>
   </div>
 );
@@ -360,7 +374,6 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   renderMeta,
   className,
 }) => {
-  const [signs] = useState(signStyle);
   const rootRef = useRef<HTMLDivElement>(null);
   const floorsRef = useRef<HTMLDivElement>(null);
   const cabRef = useRef<HTMLDivElement>(null);
@@ -603,7 +616,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   const poleAt = cols - 1;
 
   return (
-    <div ref={rootRef} className={['gs', `gs--signs-${signs}`, tower && 'gs--tower', touch && 'gs--touch', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
+    <div ref={rootRef} className={['gs', tower && 'gs--tower', touch && 'gs--touch', leaving && 'gs--leaving', returning && 'gs--back', className].filter(Boolean).join(' ')}>
       <div className="gs-building">
         <Roof sign={tower ? 'The Garage' : undefined} hoist={tower} />
         <div className="gs-floors" ref={floorsRef}>

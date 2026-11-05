@@ -181,11 +181,8 @@
   --gs-neon: clamp(14px, 2.2vw, 22px);       /* rooftop neon sign */
   --gs-neon-pole: clamp(14px, 1.6vw, 22px);  /* pole sign */
   --gs-stencil: clamp(11px, 1.15vw, 16px);   /* stencilled BAY 01 */
-  --gs-band: clamp(64px, 6.6vw, 96px);       /* wall band over each bay door that carries its sign */
-  --gs-band-enamel: clamp(84px, 8.2vw, 118px);
+  --gs-band: clamp(84px, 8.2vw, 118px);      /* wall band over each bay door that carries its sign */
   --gs-sign-neon: clamp(19px, 2vw, 30px);    /* neon name sign */
-  --gs-sign-enamel: clamp(17px, 1.75vw, 24px);
-  --gs-sign-paint: clamp(20px, 2.5vw, 36px); /* painted sign-writing */
 
   /* ── Layers ── */
   --z-raise: 1;
