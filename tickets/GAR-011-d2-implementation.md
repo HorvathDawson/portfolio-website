@@ -1,9 +1,9 @@
 ---
 id: GAR-011
 title: Build the D2 "bay to bench" design (cleaned up, consistent, easy to extend)
-status: review
+status: in-progress
 owner: implementation agent
-reviewer: (independent agent, then Dawson on the preview)
+reviewer: independent review agent (Nov 5 2026), then Dawson on the preview
 blocked_by:
 ---
 
@@ -22,10 +22,10 @@ Build D2 from the round-2 mockups (`assets/GAR-009-mockups/D2-*.png`, README "D2
 - [x] Posts as drafting sheets: title block (drawing no. + sheet derived from epic order + date, optional frontmatter override), work-order tag for roadmap tasks, sticky TOC with read progress, prev/next sheet tabs
 - [x] Car home (`/garage/:car`): lit bay hero, stats + "Continue / Start at sheet 01", Next up tags, the wall (one board per epic with progress, sheets, next task), key numbers. Garage-kind cars (Autozam) get the same page with categories instead of epics and the service table
 - [x] Markdown callouts `> [!decision]`, `[!verify]`/`[!measure]`, `[!safety]`, `[!open]`, `[!note]`; figures with captions + click-to-enlarge; engineering-sheet tables with status chips; code blocks with copy button; KaTeX panel
-- [x] Single tokens file; no stray hex colours / ad-hoc spacing in garage, blog and roadmap CSS; old unused CSS removed
+- [ ] Single tokens file; no stray hex colours / ad-hoc spacing in garage, blog and roadmap CSS; old unused CSS removed
 - [x] `content/README.md` authoring guide (posts, frontmatter, placeholders, callouts, figures, adding a car); dev-only `/garage/_styleguide` page
 - [x] Existing features still work: search, print (full-length, decoration off), reduced motion, garage scene + loader, roadmap views (restyled with tokens), redirects, constants checks
-- [x] AA contrast; keyboard and focus visible; one h1 per page; no horizontal scroll at 390 px on every page
+- [ ] AA contrast; keyboard and focus visible; one h1 per page; no horizontal scroll at 390 px on every page
 - [x] `npm run build`, `npm run lint`, `npm run check-constants`, `node scripts/check-roadmap-plan.mjs` pass
 
 
@@ -57,4 +57,68 @@ Build D2 from the round-2 mockups (`assets/GAR-009-mockups/D2-*.png`, README "D2
 **Checked** (Playwright against `vite preview`, screenshots in the session scratchpad `d2/`): 1440×900 and 390×844 for /garage (hover lights the bay, click drives out and lands on /garage/a40 with the thumbnail carrying `garage-car-a40`), car homes, posts, roadmap next/tree/map, sheet index open, search open, lightbox; all 20 posts + garage/roadmap/not-found pages at 390: one h1, no horizontal scroll; 26 internal links resolve; no console errors; drawer focus in → trapped → back to the Sheets button; print PDF of geometry-design-reference is 11 pages with bar/rail/TOC/tabs/bottom bar hidden. `npm run build`, `npm run lint`, `npm run check-constants`, `node scripts/check-roadmap-plan.mjs` pass.
 
 ## Verification
-_Filled by the reviewer._
+Independent review, 2026-11-05. Reviewer did not implement. Checked against `npm run build` + `npx vite preview --port 5215` with Playwright (chromium, 1440x900, 1024x768, 390x844) and the code. Screenshots are in the session scratchpad `d2review/`.
+
+**Checks run**
+- `npm run build` passes (built in 2.7 s). `npm run lint`, `npm run check-constants` (752 placeholders in 18 posts) and `node scripts/check-roadmap-plan.mjs` all exit 0.
+- **Every page at all 3 sizes** (84 loads: the 26 sitemap garage URLs, roadmap tree/map and 2 not-found URLs): exactly one h1 on each, no horizontal scroll (`scrollWidth == clientWidth`), no console errors or page errors. Collected 158 internal links and loaded every one. Each resolves and every `#hash` target exists. The only "miss" was the not-found page linking to itself.
+- **Nav at 1440:** the rail, the Sheets button, search, the TOC and the sheet tabs are visible. The bottom bar is hidden. **At 390:** the rail, TOC and Sheets button are hidden and the bottom bar is shown. Every movement control is an `<a>`: rail cells, crumbs, mini bays, tabs and bottom-bar prev/next. Only the Sheets and Contents buttons are `<button>`, and they open dialogs. Shop-bar links are `/garage`, `/garage/a40` (aria-current), `/garage/autozam`, the crumb and `/garage/a40/roadmap`.
+- **Sheet index:** opening it moves focus to the filter. I pressed Tab 60 times and Shift+Tab 5 times, and focus stayed inside every time. Esc closes it, and focus returns to `.shopbar-sheets` at 1440 and `.bbar-mid` at 390. Clicking the scrim closes it. It shows 18 rows and the "You are on 16" card, and filtering on "steer" leaves only `/garage/a40/steering`.
+- **Contents dialog (phone):** it has 7 links. Tapping one lands on `#build-plan` at 108 px from the top, below the bar, and the dialog closes.
+- **TOC progress:** reads 0 % at the top, 22 % in the middle and 70 % at the bottom (27 % and 71 % at 390). The active entry follows the scroll.
+- **Prev/next tabs:** they show "Sheet 15 · E5 Frame Jig Build" and "Sheet 17 · E5 Digital Dash". The bottom-bar next link lands at scrollY 0.
+- **Search on desktop:** pressing `/` focuses the box. "bump steer" returns `/garage/a40/steering#rack-narrowing`, and ArrowDown then Enter lands on that h2, 112 px from the top (108 px at 390).
+- **Redirects:** `/a40`, `/a40/`, `/a40/rear-suspension` and `/a40/roadmap?view=map` redirect client-side to `/garage/...` with the query kept. `public/_redirects` has the 301s.
+- **/garage morph:** View Transitions are available. Clicking a bay drives the car out, and the URL changes after about 600 ms. On `/garage/a40`, `garage-car-a40` is on the mini bay, and Back returns to `/garage`. With reduced motion, navigation takes 144 ms, the post runs no animations and `scroll-behavior` is auto. With the network throttled, the loader (`.slime-loader`) mounts.
+- **Print:** in print media the shop bar, rail, TOC, tabs, bottom bar and gags are `display: none`. Geometry-design-reference prints to 8 A4 pages and rear-suspension to 5. Neither is cut off.
+- **Readability (rear-suspension, measured):**
+  - Body text is Lora 18 px / 30.6 px (1.7), and 17 px / 28.9 px on the phone. Table cells are 15 px.
+  - Contrast ratios, computed from the styles: body 11.9:1, TOC links 13.7, TOC numbers 6.95, crumbs 7.7, sheet-tab labels 6.8, chips 6.8 to 11.3 on surface, ink-4 on surface-2 4.93, and table headers 7.5.
+  - Manila paper: stamps 4.8 to 6.7 and work-order ink 11.2. Every pair is AA except one, listed below.
+  - Nothing is tilted except `.callout-label` (the sticker). No background texture on `p` or `table`.
+  - **Line length is 94 characters per line at 1440** (counted from rendered lines). `70ch` in Lora is 782 px. That is too long for the stated ~70.
+  - **On the phone the first body paragraph starts 1095 px down a 844 px screen.** The first prose element (the callout) starts at 828 px. The title, tags, a 7-cell title block and the work order fill the whole first screen.
+  - **"Updated —" shows on all 20 posts.** No post has an `updated:` date.
+- **Consistency:**
+  - `grep '#hex'` and `rgba(` across `src/blog/styles/*.css` and `garageScene.css` only hit tokens.css.
+  - **Literal sizes remain:** 40 literal font sizes in components/layout/home.css (8.5, 9.5, 10, 11, 11.5 px and others) and about 77 literal padding/margin/gap values (5, 6, 7, 10, 14, 18, 22, 26, 56 px). roadmap.css has 85 literal font sizes and about 80 literal spacing values.
+  - One chip, card, callout and table style is used across posts, the car home and the style guide. The roadmap Next up and Map views still use their own `rm-card-*` / `rv-crit-badge` flags.
+  - Autozam pages use the same layout, with REF/INS groups and the category cell in the title block.
+- **Extensibility (followed content/README.md literally in a scratch copy, node_modules symlinked, no code changes):**
+  - I added a third car, `content/mini/car.json` (kind build, 2 epics), with `01-subframe-check.md`. It has a `> [!decision]` callout, an image with a title, a Status table and a `yaml title=` code block. I also added an A40 post, `review-test-post.md` (epic finishing, uses `{{rear_track}}`).
+  - The build passed. The sitemap lists `/garage/mini`, `/garage/mini/subframe-check` and `/garage/a40/review-test-post`.
+  - `/garage` shows 3 bays, and there are 3 mini bays in the shop bar. The Mini home has the hero, stats and a wall with 2 boards.
+  - The Mini post gets drawing no. MIN-BOD-01, sheet 01 of 01, epic E2 Bodywork. Its callout is `callout--decision`, its figure is "FIG. 1" with Zoom, the chips read MEASURE / OPEN / LOCKED, the number column is right-aligned and the code block has a filename tab and Copy.
+  - The A40 post gets A40-FIN-01, sheet 19 of 19, `1340 mm`. The rail and the other posts move to "of 19". There is no horizontal scroll at 390 and no errors.
+- **Style guide:** `/garage/_styleguide` renders in `npm run dev` (14 sections: tokens, type, spacing, chips, title block, callouts, tables, code, figure, bay hero, key numbers, tabs). In preview it shows "Page not found". No `dist/` file mentions it and it is not in the sitemap.
+- **Keyboard:** I tabbed through 40 stops on a post: skip link, neon, bays, crumb, search, Sheets, Roadmap, 18 rail cells, TOC and anchors. Every stop has a visible outline. The search box shows focus through its gold `:focus-within` border.
+
+### Failed checks
+**Required** (needed for the acceptance boxes or for the owner's "consistent and reads easier" goal):
+1. **Line length too long.** `src/blog/styles/tokens.css:115` sets `--measure: 70ch`, which is 782 px in Lora and gives 94 characters per line. Change it to `--measure: 34em` (612 px, about 73 characters per line). Let figures and tables keep the full column through `.wide` / the table scroll box if they need it. Then recheck that `.sheet-body--toc` still lines up with the TOC.
+2. **Phone body text starts below the first screen** (at 1095 px on an 844 px screen). At `max-width: 600px`, collapse the head:
+   - Make the title block a single summary line: drawing no. · sheet n/N · date · status chip. Put the full `<dl>` inside a `<details>` ("Title block").
+   - Make the work order a `<details>` with the summary "Work order WO-0007 · 2 tasks".
+   - Files: `components/TitleBlock.tsx`, `components/WorkOrder.tsx`, `GarageBlog.tsx:188-190`, and the CSS in `styles/layout.css:283-292`.
+   - Target: the first paragraph or callout is visible at 390x844 without scrolling.
+3. **Hide the "Updated —" placeholder.** `components/TitleBlock.tsx:18` always pushes the Updated cell. Push it only when `p.updated && p.updated !== p.date`, as is already done for mileage and cost.
+4. **Phone search icon does not focus the box.** After a tap, `activeElement` stays on `.shopbar-search-btn`, so the user has to tap again. Cause: `PostSearch.tsx:160` uses the `autoFocus` attribute, which only works on mount, and the component is always mounted. Fix: add `useEffect(() => { if (autoFocus) inputRef.current?.focus(); }, [autoFocus]);` in PostSearch (`inputRef` is at line 94). Esc in the open panel should also close it and return focus to the button.
+5. **Ad-hoc sizes break box 6.**
+   - Replace the literal `font-size` / `font:` px values in `styles/components.css`, `layout.css` and `home.css` with type tokens. Examples: `components.css:135,202,345,349`, `layout.css:151,251,254,278,320`, `home.css:15,101,115`.
+   - Replace the literal padding, margin and gap values with `--s-*` tokens. If 6 px and 10 px are really needed, add `--s-1h` and `--s-2h` to tokens.css rather than hard-coding them.
+   - Do the same pass on `styles/roadmap.css`, at least for type.
+   - Verify with `grep -nE "font(-size)?:[^;]*[0-9.]+px|(padding|margin|gap)[a-z-]*:[^;]*[0-9]+px" src/blog/styles/{components,layout,home}.css`. It should only hit hairlines and icon sizes, with a comment on each.
+6. **Text that is too small to read.** 8.5 to 10 px text is used for the 88x31 badge, `.board-next b`, `.stats dt`, `.board-k`, the neon on the phone (9.5 px), bottom-bar labels (10 px), the sheet-index counters, and in the roadmap `rv-crit-badge` (9 px), `rv-node-meta` (9.5 px) and `rm-card-*` (10 px). Raise `--t-micro` to 11 px, make it the floor for every UI label, and point these at it. Decorative gags can stay smaller if they are `aria-hidden`.
+7. **AA failure (box 9).** On the roadmap Map view, the `chip--decided` sitting on `.rm-card--decided` is 4.41:1. The cause is the gradient background in `styles/roadmap.css:395-399` plus the translucent chip fill. Give chips inside `.rm-card` an opaque background, for example `.rm-card .chip { background: var(--night-0); }`, or lighten that gradient, then remeasure to at least 4.5.
+8. **Public text that is really an authoring note.** The Autozam home shows "No services logged yet. List jobs in a post's `service:` frontmatter…" (`components/CarHome.tsx:170`). Leave the Service record section out when `rows.length === 0`, or show only "No services logged yet." Move the how-to to content/README.md, where it already is.
+9. **Gag shows A40 data on every car.** "SR20 powered" (`components/Gags.tsx:15`) appears on the Autozam and on new cars. Take it from car.json (for example an optional `badge` field, documented in content/README.md) or drop it.
+
+**Optional** (would improve consistency and polish, but no box depends on them):
+- At 1024 the breadcrumb is cut off ("Sheet 16 of …"), and the tags sit right against the title block because of `layout.css:268` `gap: 0`. Use `gap: var(--s-4)` and let the crumb shrink before it is cut.
+- The rail's right-hand "16 Rear Suspension…" label repeats the breadcrumb's last crumb (principle 1). Remove one of them.
+- The "A40 Build Log" crumb and the active mini bay are two links to the same car home.
+- The `/` key hint shows in the phone search panel, where it is no use. Hide it under `(hover: none)`.
+- `content/a40/rear-suspension.md:10-11` gives the DECISION callout body the bold lead "Decision (October 2026): …". Write it as `> [!decision] October 2026`, as the mockup and the guide do.
+- The roadmap Next up and Map cards and flags (`rm-card-defer`, `rv-crit-badge`, the mono caps "READY NOW" heading) still use a different card, chip and heading language from the car home (`.section-h`, chips, manila tags). Moving them onto the shared components would finish the "one card / one chip" goal.
+- The `/garage` morph lands on the shop-bar mini bay, not on the big lit hero bay that sits right under it. Putting the transition name on `BayHero` would read more naturally.
+- Print reliability: post images get `loading="lazy"` (`blogData.ts:30`). In Playwright `page.pdf()` without scrolling, figures came out blank or cropped (rear-suspension p. 4). Add a `beforeprint` handler in `postDom.ts` that sets `img.loading = 'eager'`, so printing straight from the top always includes the plots.
