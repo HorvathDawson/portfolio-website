@@ -739,6 +739,8 @@
   color: var(--ink-2);
   opacity: 1;
 }
+/* The rule above outranks the shared fade, so fade the leaving floor's description here. */
+.gs--tower .is-leaving .gs-bay-desc { opacity: 0; }
 .gs--tower .garage-tile-meta {
   justify-content: flex-start;
   gap: var(--s-1);

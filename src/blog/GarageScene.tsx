@@ -188,15 +188,17 @@ interface BayProps {
   open?: boolean;
   carRef: (el: HTMLDivElement | null) => void;
   onActivate: (e: React.MouseEvent<HTMLAnchorElement>, car: Car) => void;
+  /** Tower only: keyboard focus moves the elevator to this floor. */
+  onFocus?: () => void;
   renderMeta?: (car: Car) => React.ReactNode;
 }
 
-const Bay: React.FC<BayProps> = ({ car, href, state, floor, here, open, carRef, onActivate, renderMeta }) => {
+const Bay: React.FC<BayProps> = ({ car, href, state, floor, here, open, carRef, onActivate, onFocus, renderMeta }) => {
   const nameId = `gs-bay-${car.id}`;
   const cls = ['gs-bay', `is-${state}`, here && 'is-here', open && 'is-inview'].filter(Boolean).join(' ');
   return (
     <li className={cls} style={bayStyle(car)} data-bay={car.id}>
-      <a href={href} className="gs-bay-link" aria-labelledby={nameId} data-bay-link onClick={(e) => onActivate(e, car)}>
+      <a href={href} className="gs-bay-link" aria-labelledby={nameId} data-bay-link onClick={(e) => onActivate(e, car)} onFocus={onFocus}>
         <BayStage car={car} carRef={carRef} floor={floor} />
         <span className="gs-bay-name" id={nameId}>{car.name}</span>
       </a>
@@ -406,7 +408,8 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
           <ul className={`gs-bays gs-bays--${Math.min(cars.length, 2)}`} aria-label="Cars" onKeyDown={onKeyDown}>
             {cars.map((car, i) => (
               <Bay
-                key={car.id}
+                // Rebuild bays when the layout switches, so in-view marks from the side-by-side scene don't carry over.
+                key={tower ? `tower-${car.id}` : car.id}
                 car={car}
                 href={hrefFor(car)}
                 state={stateOf(car.id)}
@@ -415,6 +418,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
                 open={tower && touch && floor === i}
                 carRef={(el) => { if (el) carEls.current.set(car.id, el); else carEls.current.delete(car.id); }}
                 onActivate={onActivate}
+                onFocus={tower ? () => setFloor(i) : undefined}
                 renderMeta={renderMeta}
               />
             ))}
