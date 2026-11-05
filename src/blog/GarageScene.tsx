@@ -68,11 +68,11 @@ export interface GarageSceneProps {
   className?: string;
 }
 
-/** Sign treatments under review (GAR-013): a neon name sign, a porcelain enamel sign, or sign-writing painted on the wall. */
-type SignStyle = 'a' | 'b' | 'c';
-const SIGN_STYLES: SignStyle[] = ['a', 'b', 'c'];
+/** Sign treatments under review (GAR-013): a neon name sign, a porcelain enamel sign, sign-writing painted on the wall, or D: neon name over a small enamel plate. */
+type SignStyle = 'a' | 'b' | 'c' | 'd';
+const SIGN_STYLES: SignStyle[] = ['a', 'b', 'c', 'd'];
 const DEFAULT_SIGNS: SignStyle = 'a';
-/** Temporary switch while the owner picks: `?signs=a|b|c`. Remove with the unused styles once one is chosen. */
+/** Temporary switch while the owner picks: `?signs=a|b|c|d`. Remove with the unused styles once one is chosen. */
 const signStyle = (): SignStyle => {
   if (typeof window === 'undefined') return DEFAULT_SIGNS;
   const v = new URLSearchParams(window.location.search).get('signs') as SignStyle | null;

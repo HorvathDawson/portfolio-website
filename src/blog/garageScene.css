@@ -733,14 +733,17 @@
    name (the bay link's accessible label) and one short line.
    Everything else sits in one quiet note under the bay.
    Three treatments under review (GAR-013), switched by
-   .gs--signs-a|b|c (the temporary ?signs= URL switch):
+   .gs--signs-a|b|c|d (the temporary ?signs= URL switch):
    A neon name sign + lightbox, B porcelain enamel sign on chains,
-   C sign-writing painted on the wall. */
+   C sign-writing painted on the wall, D = A's neon name over a
+   small B-style enamel plate on chains. */
 
 .gs { --gs-band-h: var(--gs-band); }
 .gs--signs-b { --gs-band-h: var(--gs-band-enamel); }
 .gs--tower { --gs-band-h: calc(var(--s-8) + var(--s-1)); }
 .gs--tower.gs--signs-b { --gs-band-h: calc(var(--s-8) + var(--s-5)); }
+.gs--signs-d { --gs-band-h: var(--gs-band-enamel); }
+.gs--tower.gs--signs-d { --gs-band-h: calc(var(--s-8) + var(--s-5)); }
 
 .gs-signband {
   position: relative;
@@ -779,15 +782,15 @@
 }
 
 /* A: neon name sign — an unlit glass tube at rest, the car's colour with bloom when lit; a lightbox under it. */
-.gs--signs-a { --gs-sign-flicker: gs-flicker 0.7s step-end both; }
+:is(.gs--signs-a, .gs--signs-d) { --gs-sign-flicker: gs-flicker 0.7s step-end both; }
 .gs--signs-a .gs-signboard { gap: var(--s-1h); }
-.gs--signs-a .gs-bay-name {
+:is(.gs--signs-a, .gs--signs-d) .gs-bay-name {
   padding: 0 var(--s-3) var(--s-1h);
   font: italic 700 var(--gs-sign-neon) / 1.05 var(--f-display);
 }
-.gs--tower.gs--signs-a .gs-bay-name { font-size: var(--t-stat); }
-.gs--signs-a .gs-bay-name-text { color: var(--ink-3); }
-.gs--signs-a .gs-bay-name-lit {
+.gs--tower:is(.gs--signs-a, .gs--signs-d) .gs-bay-name { font-size: var(--t-stat); }
+:is(.gs--signs-a, .gs--signs-d) .gs-bay-name-text { color: var(--ink-3); }
+:is(.gs--signs-a, .gs--signs-d) .gs-bay-name-lit {
   color: var(--neon-ink);
   text-shadow:
     0 0 var(--bw) var(--lamp),
@@ -797,7 +800,7 @@
     0 0 var(--s-8) color-mix(in srgb, var(--g2) 55%, transparent);
 }
 /* The raceway the tubes are mounted on, with its two standoffs. */
-.gs--signs-a .gs-bay-name::after {
+:is(.gs--signs-a, .gs--signs-d) .gs-bay-name::after {
   content: '';
   position: absolute;
   left: var(--s-4);
@@ -809,7 +812,7 @@
   border-bottom: 0;
 }
 /* Its glow on the wall. */
-.gs--signs-a .gs-sign-sheen {
+:is(.gs--signs-a, .gs--signs-d) .gs-sign-sheen {
   inset: -55% -18%;
   background: radial-gradient(ellipse closest-side, color-mix(in srgb, var(--car-accent) 30%, transparent), color-mix(in srgb, var(--g2) 10%, transparent) 55%, transparent);
 }
@@ -890,6 +893,61 @@
     radial-gradient(ellipse 70% 110% at 50% 130%, color-mix(in srgb, var(--lamp) 30%, transparent), transparent 70%),
     linear-gradient(112deg, transparent 32%, color-mix(in srgb, var(--ink) 14%, transparent) 46%, transparent 58%);
   box-shadow: 0 0 var(--s-5) color-mix(in srgb, var(--car-accent) 38%, transparent), 0 0 var(--s-8) color-mix(in srgb, var(--lamp) 12%, transparent);
+}
+
+/* D: A's neon name is the hero; under it a small porcelain enamel plate (B) on two short chains for the one line. */
+.gs--signs-d .gs-signboard { gap: var(--s-3); }
+.gs--signs-d .gs-sign-line {
+  --enamel: color-mix(in srgb, var(--car-accent) 50%, var(--night-0));
+  position: relative;
+  padding: var(--s-0) var(--s-3) var(--s-1);
+  border: var(--bw-3) solid var(--ink-2);
+  border-radius: var(--r-2);
+  background:
+    radial-gradient(ellipse 110% 90% at 25% 0%, color-mix(in srgb, var(--ink) 8%, transparent), transparent 60%),
+    var(--enamel);
+  /* Inner border of the double border; lamp light (from below) and bloom join these when lit. */
+  box-shadow:
+    inset 0 0 0 var(--s-0) var(--enamel),
+    inset 0 0 0 calc(var(--s-0) + var(--bw)) var(--ink-2),
+    inset 0 0 0 0 transparent,
+    0 var(--s-0) var(--s-2) var(--night-deep),
+    0 0 0 0 transparent;
+  color: var(--ink);
+  font: 400 var(--t-ui) / 1.25 var(--f-body);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.1em;
+  transition: box-shadow 0.4s ease 0.2s;
+}
+/* Two short chains from the neon's raceway. */
+.gs--signs-d .gs-sign-line::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 22%;
+  right: 22%;
+  height: var(--s-3);
+  border-inline: var(--bw-2) dashed var(--steel-2);
+}
+/* Chipped enamel at the edges. */
+.gs--signs-d .gs-sign-line::after {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--bw-3));
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 3% 74%, var(--night-0) 0 var(--s-0), transparent calc(var(--s-0) + var(--bw))),
+    radial-gradient(circle at 95% 10%, var(--night-0) 0 calc(var(--s-0) + var(--bw)), transparent var(--s-1));
+}
+.gs--signs-d:not(.gs--touch) .gs-bay:not(.is-dim):is(:hover, :focus-within) .gs-sign-line,
+.gs--signs-d .gs-bay:not(.is-dim):is(.is-on, .is-leaving, .is-returning, .is-lit) .gs-sign-line {
+  box-shadow:
+    inset 0 0 0 var(--s-0) var(--enamel),
+    inset 0 0 0 calc(var(--s-0) + var(--bw)) var(--ink-2),
+    inset 0 calc(-1 * var(--s-3)) var(--s-3) calc(-1 * var(--s-1)) color-mix(in srgb, var(--lamp) 30%, transparent),
+    0 var(--s-0) var(--s-2) var(--night-deep),
+    0 0 var(--s-4) color-mix(in srgb, var(--car-accent) 40%, transparent);
 }
 
 /* C: sign-writing painted straight on the wall — big, weathered; brightens under the lamp when lit. */
