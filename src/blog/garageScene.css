@@ -765,14 +765,18 @@
 .gs-signboard {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, auto);
   justify-items: center;
+  min-width: 0;
   max-width: 100%;
   text-align: center;
 }
-.gs-bay-name { position: relative; display: grid; white-space: nowrap; }
+.gs-bay-name { position: relative; display: grid; max-width: 100%; white-space: nowrap; }
 .gs-bay-name > span { grid-area: 1 / 1; }
 .gs-bay-name-lit { opacity: 0; pointer-events: none; transition: opacity 0.3s ease 0.15s; }
-.gs-sign-line { display: block; white-space: nowrap; }
+.gs-sign-line { display: block; box-sizing: border-box; min-width: 0; max-width: 100%; }
+/* Last resort for a long line in a narrow bay: cut it with an ellipsis rather than spill into the next bay. */
+.gs-sign-line-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gs-sign-sheen {
   position: absolute;
   z-index: -1;
@@ -786,8 +790,10 @@
 .gs-bay-name {
   padding: 0 var(--s-3) var(--s-1h);
   font: italic 700 var(--gs-sign-neon) / 1.05 var(--f-display);
+  /* Fit the bay: about 0.53 em a letter (measured: 0.51–0.54), less the band's and the name's padding (the bay is an inline-size container). */
+  font-size: clamp(var(--t-micro), calc((100cqi - var(--s-7)) / (var(--name-len, 16) * 0.53)), var(--gs-sign-neon));
 }
-.gs--tower .gs-bay-name { font-size: var(--t-stat); }
+.gs--tower .gs-bay-name { font-size: clamp(var(--t-micro), calc((100cqi - var(--s-7)) / (var(--name-len, 16) * 0.53)), var(--t-stat)); }
 .gs-bay-name-text { color: var(--ink-3); }
 .gs-bay-name-lit {
   color: var(--neon-ink);
@@ -835,6 +841,8 @@
     0 0 0 0 transparent;
   color: var(--ink);
   font: 400 var(--t-ui) / 1.25 var(--f-body);
+  /* Fit the bay like the name: about 0.56 em a letter (measured 0.53–0.55), less band padding, borders and the plate's own padding. */
+  font-size: clamp(var(--t-micro), calc((100cqi - var(--s-7) - var(--s-2)) / (var(--line-len, 21) * 0.56)), var(--t-ui));
   font-variant-caps: all-small-caps;
   letter-spacing: 0.1em;
   transition: box-shadow 0.4s ease 0.2s;

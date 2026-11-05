@@ -48,8 +48,10 @@ const DEFAULT_RIG: CarRig = { lamps: [[0.3, 0.68], [0.7, 0.68]], drive: 0 };
 const ROLL_OUT_MS = 820;
 const ROLL_IN_MS = 1500;
 
-/** Desktop: bays per row of the building. */
+/** Desktop: bays per roofed row of the building — 3 from WIDE_QUERY up, 2 below it (so signs never get squeezed). */
 const ROW_BAYS = 3;
+const ROW_BAYS_NARROW = 2;
+const WIDE_QUERY = '(min-width: 800px)';
 
 export interface GarageSceneProps {
   cars: Car[];
@@ -288,6 +290,8 @@ const bayStyle = (car: Car) => ({
   '--car-accent': car.accent,
   '--ar': `${car.art.width} / ${car.art.height}`,
   '--drive': (RIGS[car.id] ?? DEFAULT_RIG).drive,
+  // The neon name is sized from its length so it always fits its bay (garageScene.css).
+  '--name-len': car.name.length,
 } as React.CSSProperties);
 
 interface BayProps {
@@ -315,7 +319,7 @@ const Bay: React.FC<BayProps> = ({ car, href, state, number, tower, pole, here, 
   const nameId = `gs-bay-${car.id}`;
   const cls = ['gs-bay', `is-${state}`, here && 'is-here', on && 'is-on', rowEnd && 'is-row-end', lowerRow && `is-row-${lowerRow}`].filter(Boolean).join(' ');
   return (
-    <li className={cls} style={bayStyle(car)} data-bay={car.id} onFocus={onLight} onClick={onLight}>
+    <li className={cls} style={{ ...bayStyle(car), '--line-len': signLine.length } as React.CSSProperties} data-bay={car.id} onFocus={onLight} onClick={onLight}>
       {/* Desktop, rows after the first: this bay's piece of that row's parapet. */}
       {lowerRow && <span className="gs-row-roof" aria-hidden="true"><span className="gs-parapet" /></span>}
       <a href={href} className="gs-bay-link" aria-labelledby={nameId} data-bay-link onClick={(e) => onActivate(e, car, false)}>
@@ -326,7 +330,7 @@ const Bay: React.FC<BayProps> = ({ car, href, state, number, tower, pole, here, 
               <span className="gs-bay-name-text">{car.name}</span>
               <span className="gs-bay-name-lit" aria-hidden="true">{car.name}</span>
             </span>
-            <span className="gs-sign-line">{signLine}</span>
+            <span className="gs-sign-line"><span className="gs-sign-line-text">{signLine}</span></span>
             <span className="gs-sign-sheen" aria-hidden="true" />
           </span>
         </span>
@@ -379,6 +383,7 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   const cabRef = useRef<HTMLDivElement>(null);
   const carEls = useRef(new Map<string, HTMLDivElement>());
   const tower = useMedia(TOWER_QUERY);
+  const wide = useMedia(WIDE_QUERY);
   // Touch: the media query, or any touch press seen on the page (robust on phones that misreport media features).
   const touchMedia = useMedia(TOUCH_QUERY);
   const [sawTouch, setSawTouch] = useState(false);
@@ -610,9 +615,9 @@ export const GarageScene: React.FC<GarageSceneProps> = ({
   const stateOf = (id: string): BayProps['state'] =>
     leaving === id ? 'leaving' : leaving ? 'dim' : parking === id ? 'returning' : 'rest';
 
-  // Desktop: up to ROW_BAYS bays side by side under one roof; more cars start another row with its own parapet.
-  // The pole sign stands beside the last bay of the first row.
-  const cols = Math.min(cars.length, ROW_BAYS);
+  // Desktop: up to ROW_BAYS bays side by side under one roof (2 on narrow windows); more cars start another
+  // row with its own parapet. The pole sign stands beside the last bay of the first row.
+  const cols = Math.min(cars.length, wide ? ROW_BAYS : ROW_BAYS_NARROW);
   const poleAt = cols - 1;
 
   return (

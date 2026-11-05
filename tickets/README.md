@@ -81,5 +81,5 @@ _Filled by the reviewer: what was checked, how, and the result._
 | [GAR-009](./GAR-009-visual-design-pass.md) | Visual design pass for the whole garage blog | D2 chosen → GAR-011 |
 | [GAR-010](./GAR-010-loader.md) | Slime-mould loading icon | done |
 | [GAR-011](./GAR-011-d2-implementation.md) | Build the D2 design (consistent, readable, easy to extend) | done (pending owner review) |
-| [GAR-012](./GAR-012-garage-mobile.md) | Garage on phones: a multi-storey garage tower | done (pending owner review) |
-| [GAR-013](./GAR-013-industrial-garage.md) | Industrial garage look and tap-to-light on phones | in-progress (review: 3-up signs clip at 601–760 px) |
+| [GAR-012](./GAR-012-garage-mobile.md) | Garage on phones: a multi-storey garage tower | done |
+| [GAR-013](./GAR-013-industrial-garage.md) | Industrial garage look and tap-to-light on phones | done |

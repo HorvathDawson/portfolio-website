@@ -171,6 +171,7 @@
 
   /* ── Garage scene (../garageScene.css) ── */
   --gs-max: 1160px;                          /* scene width */
+  --garage-head-max: 1100px;                 /* /garage page header (back link, lede) */
   --gs-rise: clamp(96px, 9.5vw, 136px);      /* sky over the bays: rooftop unit, pole sign */
   --gs-rise-tower: 116px;                    /* phones and the car-home hero: billboard on the roof */
   --gs-parapet-h: clamp(20px, 2.2vw, 30px);
