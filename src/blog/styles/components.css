@@ -124,17 +124,31 @@
 .neon-short { display: none; }
 .neon:hover { border-color: var(--ink); }
 
-/* ── Mini garage bays (car switcher) ── */
+/* ── Mini garage bays (car switcher) ──
+   The /garage service-station bay in miniature: cap flashing on
+   top, hazard-striped jambs, a steel roll-up door with a window
+   strip (half down unless it's the car being viewed). */
 .minibays ul { display: flex; gap: var(--s-2); list-style: none; }
 .minibay {
   display: grid;
   justify-items: center;
   gap: var(--s-0);
-  width: 58px;
+  width: var(--minibay-w);
   color: var(--ink-3) !important;
   font: 400 var(--t-micro) / 1.2 var(--f-mono);
   letter-spacing: 0.06em;
   text-decoration: none !important;
+}
+/* Cap flashing over the bay. */
+.minibay::before {
+  content: '';
+  width: calc(100% + var(--s-1));
+  height: var(--s-1);
+  margin-bottom: calc(-1 * var(--s-0));
+  box-sizing: border-box;
+  border: var(--bw-2) solid var(--line-3);
+  border-radius: var(--bw) var(--bw) 0 0;
+  background: var(--night-1);
 }
 .minibay-door {
   position: relative;
@@ -142,16 +156,35 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border: var(--bw-3) solid var(--line-2);
-  border-bottom-width: var(--bw-3);
+  box-sizing: border-box;
+  border: var(--bw-2) solid var(--line-3);
+  border-top: 0;
   background: linear-gradient(var(--night-0), var(--sheet));
 }
-.minibay-door img { position: absolute; left: 9%; bottom: 6%; width: 82%; height: auto; opacity: 0.75; }
+/* Hazard-striped jambs. */
+.minibay-door::before,
+.minibay-door::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: var(--z-raise);
+  width: var(--s-1);
+  background: repeating-linear-gradient(-45deg, var(--hazard) 0 var(--s-0), var(--hazard-dark) var(--s-0) var(--s-1));
+  opacity: 0.75;
+}
+.minibay-door::before { left: 0; }
+.minibay-door::after { right: 0; }
+.minibay-door img { position: absolute; left: 12%; bottom: 6%; width: 76%; height: auto; opacity: 0.75; }
 .minibay-slats {
   position: absolute;
-  inset: 0 0 48%;
-  border-bottom: var(--bw-2) solid var(--line-2);
-  background: repeating-linear-gradient(to bottom, var(--line-3) 0 1px, transparent 1px 5px), linear-gradient(var(--surface), var(--wall));
+  inset: 0 0 46%;
+  border-bottom: var(--bw-2) solid var(--line-3);
+  background:
+    /* the door's window strip */
+    repeating-linear-gradient(90deg, var(--line-3) 0 var(--bw), var(--night-0) var(--bw) var(--s-1h), var(--line-3) var(--s-1h) calc(var(--s-1h) + var(--bw)), transparent calc(var(--s-1h) + var(--bw)) var(--s-2h)) 50% 72% / 74% var(--s-1) no-repeat,
+    repeating-linear-gradient(to bottom, var(--line-2) 0 var(--bw), transparent var(--bw) var(--s-1)),
+    linear-gradient(var(--surface), var(--wall));
   transition: transform var(--dur-2) var(--ease);
 }
 .minibay-tube {
@@ -160,23 +193,27 @@
   left: 32%;
   right: 32%;
   z-index: var(--z-raise);
-  height: 3px;
-  border-radius: 3px;
+  height: var(--s-0);
+  border-radius: var(--r-1);
   background: var(--lamp);
-  box-shadow: 0 0 3px 1px var(--ink), 0 0 12px 3px color-mix(in srgb, var(--car-accent) 60%, transparent);
+  box-shadow: 0 0 var(--s-0) var(--bw) var(--ink), 0 0 var(--s-3) var(--s-0) color-mix(in srgb, var(--car-accent) 60%, transparent);
   opacity: 0;
 }
 .minibay-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .minibay:hover .minibay-slats { transform: translateY(-60%); }
 .minibay:hover { color: var(--ink) !important; }
 .minibay.is-on { color: var(--accent) !important; font-weight: 700; }
+.minibay.is-on::before,
+.minibay.is-on .minibay-door { border-color: var(--line-art); }
 .minibay.is-on .minibay-door {
-  border-color: var(--line-art);
   background: radial-gradient(ellipse 80% 95% at 50% 4%, color-mix(in srgb, var(--car-accent) 30%, transparent), transparent 72%), linear-gradient(var(--night-0), var(--sheet));
 }
+.minibay.is-on .minibay-door::before,
+.minibay.is-on .minibay-door::after { opacity: 1; }
 .minibay.is-on .minibay-slats { display: none; }
 .minibay.is-on .minibay-tube { opacity: 1; }
 .minibay.is-on img { opacity: 1; }
+.minibay:focus-visible { outline: var(--bw-3) solid var(--accent); outline-offset: var(--s-0); }
 
 /* ── Card: the one raised panel (boards, TOC, dialogs) ── */
 .card {

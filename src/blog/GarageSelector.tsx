@@ -2,38 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GarageScene } from './GarageScene';
 import { returningCar } from './garageSceneTransition';
-import { GARAGE_PATH, carPath, cars, postPath, type Car } from './cars';
-import { latestPost, postsFor } from './postIndex';
-import { formatDate, kindLabel, statusLabel } from './format';
+import { GARAGE_PATH, carPath, cars, type Car } from './cars';
+import { postsFor } from './postIndex';
+import { kindLabel } from './format';
 import { usePageMeta } from '../utils/usePageMeta';
 import './styles/garage.css';
 import './styles/selector.css';
 
-const lastUpdated = (car: string) => postsFor(car).reduce((m, p) => (p.date > m ? p.date : m), '');
-
-/** Status chips, post count and latest entry under a car's bay. */
-const TileMeta: React.FC<{ car: Car }> = ({ car }) => {
-  const posts = postsFor(car.id);
-  // Latest log entry; reference pages (car facts) only if there is nothing else.
-  const latest = posts.filter((p) => p.kind !== 'reference').at(-1) ?? latestPost(car.id);
-  const updated = lastUpdated(car.id);
-  return (
-    <>
-      <p className="garage-tile-meta">
-        <span className="chip chip--plain">{kindLabel[car.kind]}</span>
-        <span className={`chip chip--${car.status}`}>{statusLabel[car.status]}</span>
-      </p>
-      <p className="garage-tile-stats">
-        {posts.length} {posts.length === 1 ? 'post' : 'posts'}
-        {updated && <> · updated <time dateTime={updated}>{formatDate(updated)}</time></>}
-      </p>
-      {latest && (
-        <p className="garage-tile-latest">
-          Latest: <Link to={postPath(car.id, latest.slug)}>{latest.title}</Link>
-        </p>
-      )}
-    </>
-  );
+/** The one line on a bay's sign: what kind of log it is and how many sheets. */
+const signLine = (car: Car) => {
+  const n = postsFor(car.id).length;
+  return `${kindLabel[car.kind]} · ${n} ${n === 1 ? 'sheet' : 'sheets'}`;
 };
 
 /** /garage: the animated garage, one bay per car (arrow keys move between bays). */
@@ -56,7 +35,7 @@ export const GarageSelector: React.FC = () => {
         <p className="garage-select-lede">Build logs and maintenance logs. Pick a bay.</p>
       </header>
       <main>
-      <GarageScene cars={cars} returning={back} onEnter={(id) => navigate(carPath(id))} renderMeta={(car) => <TileMeta car={car} />} />
+      <GarageScene cars={cars} returning={back} onEnter={(id) => navigate(carPath(id))} signLine={signLine} />
       </main>
     </div>
   );
