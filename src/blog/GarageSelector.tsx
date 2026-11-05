@@ -6,8 +6,8 @@ import { GARAGE_PATH, carPath, cars, postPath, type Car } from './cars';
 import { latestPost, postsFor } from './postIndex';
 import { formatDate, kindLabel, statusLabel } from './format';
 import { usePageMeta } from '../utils/usePageMeta';
-import './blogStyles.css';
-import './garage.css';
+import './styles/garage.css';
+import './styles/selector.css';
 
 const lastUpdated = (car: string) => postsFor(car).reduce((m, p) => (p.date > m ? p.date : m), '');
 
@@ -19,10 +19,10 @@ const TileMeta: React.FC<{ car: Car }> = ({ car }) => {
   const updated = lastUpdated(car.id);
   return (
     <>
-      <div className="garage-tile-meta">
-        <span className="blog-status blog-status--kind">{kindLabel[car.kind]}</span>
-        <span className={`blog-status blog-status--${car.status}`}>{statusLabel[car.status]}</span>
-      </div>
+      <p className="garage-tile-meta">
+        <span className="chip chip--plain">{kindLabel[car.kind]}</span>
+        <span className={`chip chip--${car.status}`}>{statusLabel[car.status]}</span>
+      </p>
       <p className="garage-tile-stats">
         {posts.length} {posts.length === 1 ? 'post' : 'posts'}
         {updated && <> · updated <time dateTime={updated}>{formatDate(updated)}</time></>}
@@ -48,15 +48,16 @@ export const GarageSelector: React.FC = () => {
   const [back] = useState(returningCar);
 
   return (
-    <div className="blog-page garage-page">
-      <header className="garage-header">
-        <Link to="/" className="blog-back-link">&larr; Portfolio</Link>
+    <div className="garage garage-select">
+      <header className="garage-select-head">
+        <Link to="/" className="back-link">&larr; Portfolio</Link>
         {/* The scene draws its own neon sign; the heading stays for screen readers. */}
-        <h1 className="garage-title sr-only">The Garage</h1>
-        <p className="garage-lede">Build logs and maintenance logs. Pick a bay.</p>
-        <div className="blog-sidebar-divider" aria-hidden="true" />
+        <h1 className="sr-only">The Garage</h1>
+        <p className="garage-select-lede">Build logs and maintenance logs. Pick a bay.</p>
       </header>
+      <main>
       <GarageScene cars={cars} returning={back} onEnter={(id) => navigate(carPath(id))} renderMeta={(car) => <TileMeta car={car} />} />
+      </main>
     </div>
   );
 };

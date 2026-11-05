@@ -1,8 +1,7 @@
 /* ============================================================
    Post page DOM helpers: heading anchors + TOC entries, scroll
-   hints, and scroll memory for Back. The HTML from blogData.ts
-   is decorated here, after conversion, so the Markdown
-   converter stays untouched.
+   hints, and scroll memory for Back. The HTML from markdown.ts
+   is decorated here (numbering needs the whole post).
    ============================================================ */
 
 import type React from 'react';
@@ -12,7 +11,8 @@ import { useLocation, useNavigationType } from 'react-router-dom';
 /** Posts with at least this many h2/h3 headings get a table of contents. */
 export const TOC_MIN = 4;
 
-export interface TocEntry { id: string; level: 2 | 3; text: string }
+/** A TOC line. `no` is the two-digit section number (h2 only). */
+export interface TocEntry { id: string; level: 2 | 3; text: string; no?: string }
 
 const ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
 const toText = (html: string) =>
@@ -27,19 +27,43 @@ const toText = (html: string) =>
 const escapeAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 /**
- * Adds a `#` copy-link anchor to each h2–h4, wraps tables in a sideways
- * scroll box, and lists the h2/h3 headings for the table of contents.
+ * Decorates rendered post HTML: a `#` copy-link anchor on each h2–h4, a
+ * dimension-line divider (`02 / 07`) above each h2, tables wrapped in a
+ * sideways scroll box, figures numbered with a zoom button. Returns the
+ * h2/h3 headings for the table of contents.
  */
 export function decoratePost(html: string, path: string): { html: string; toc: TocEntry[] } {
   const toc: TocEntry[] = [];
+  const h2Total = (html.match(/<h2 id=/g) ?? []).length;
+  let h2 = 0;
+  let fig = 0;
   const out = html
     .replace(/<h([234]) id="([^"]+)">([\s\S]*?)<\/h\1>/g, (_, level: string, id: string, inner: string) => {
       const text = toText(inner);
-      if (level !== '4') toc.push({ id, level: Number(level) as 2 | 3, text });
-      return `<h${level} id="${id}">${inner}<a class="heading-anchor" href="${escapeAttr(path)}#${id}" aria-label="Copy link to “${escapeAttr(text)}”">#</a></h${level}>`;
+      const anchor = `<a class="heading-anchor" href="${escapeAttr(path)}#${id}" aria-label="Copy link to “${escapeAttr(text)}”">#</a>`;
+      if (level === '2') {
+        h2++;
+        const no = String(h2).padStart(2, '0');
+        toc.push({ id, level: 2, text, no });
+        const dim = `<div class="dimline" aria-hidden="true"><span>${no} <em>/ ${String(h2Total).padStart(2, '0')}</em></span></div>`;
+        return `${dim}<h2 id="${id}">${inner}${anchor}</h2>`;
+      }
+      if (level === '3') toc.push({ id, level: 3, text });
+      return `<h${level} id="${id}">${inner}${anchor}</h${level}>`;
     })
-    .replace(/<table>/g, '<div class="scroll-x" role="region" aria-label="Table, scrolls sideways" tabindex="0"><table>')
-    .replace(/<\/table>/g, '</table></div>');
+    .replace(/<table class="sheet-table">/g, '<div class="scroll-x" role="region" aria-label="Table, scrolls sideways" tabindex="0"><table class="sheet-table">')
+    .replace(/<table>/g, '<div class="scroll-x" role="region" aria-label="Table, scrolls sideways" tabindex="0"><table class="sheet-table">')
+    .replace(/<\/table>/g, '</table></div>')
+    // Figures: inline styles from older posts are dropped (the figure component sets the frame).
+    .replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/g, (_, attrs: string, inner: string) => {
+      fig++;
+      const cls = attrs.match(/class="([^"]*)"/)?.[1];
+      const body = inner
+        .replace(/\sstyle="[^"]*"/g, '')
+        .replace(/(<img[^>]*>)/, `<span class="fig-card">$1<button type="button" class="fig-zoom" data-zoom aria-label="Enlarge figure ${fig}">Zoom</button></span>`)
+        .replace(/<figcaption>/, `<figcaption><span class="fig-no">Fig. ${fig}</span> `);
+      return `<figure class="fig${cls ? ` fig--${cls}` : ''}">${body}</figure>`;
+    });
   return { html: out, toc };
 }
 
@@ -69,49 +93,47 @@ export function useOverflowHints(root: React.RefObject<HTMLElement | null>, html
   }, [root, html]);
 }
 
-/* ── Scroll memory ─────────────────────────────────── */
+/* ── Scroll memory (window) ────────────────────────── */
 
-/** Scroll offset of each history entry's scroller, by location.key. */
+/** Window scroll offset of each history entry, by location.key. */
 const positions = new Map<string, number>();
 
 /**
- * For an inner scroll container: remembers its offset per history entry,
- * restores it on Back/Forward, jumps to #hash targets, starts new pages at
- * the top, and focuses the scroller so Page Down / Space scroll it.
- * `ready` is anything that changes once the content is in the DOM.
+ * Garage pages scroll the window. Remembers the offset per history entry,
+ * restores it on Back/Forward, jumps to #hash targets, and starts new pages
+ * at the top. `ready` is anything that changes once the content is in the DOM.
  */
-export function useScrollMemory(ref: React.RefObject<HTMLElement | null>, ready: unknown, focus = true) {
+export function useScrollMemory(ready: unknown) {
   const location = useLocation();
   const navType = useNavigationType();
   const lastPath = useRef<string | null>(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
     const key = location.key;
-    const onScroll = () => positions.set(key, el.scrollTop);
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, [ref, location.key, ready]);
+    const onScroll = () => positions.set(key, window.scrollY);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [location.key]);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el || !ready) return;
+    if (!ready) return;
     const newPage = lastPath.current !== location.pathname;
     lastPath.current = location.pathname;
-    if (newPage && focus && !el.contains(document.activeElement)) el.focus({ preventScroll: true });
     const saved = positions.get(location.key);
     if (navType === 'POP' && saved !== undefined) {
-      el.scrollTop = saved;
+      window.scrollTo(0, saved);
       // Lazy images above the fold can still change height; re-apply once.
-      requestAnimationFrame(() => { el.scrollTop = saved; });
+      requestAnimationFrame(() => window.scrollTo(0, saved));
       return;
     }
     const hash = decodeURIComponent(location.hash.slice(1));
     const target = hash ? document.getElementById(hash) : null;
-    if (target && el.contains(target)) target.scrollIntoView();
-    else if (newPage) el.scrollTo(0, 0);
+    if (target) target.scrollIntoView();
+    else if (newPage) window.scrollTo(0, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs per history entry / content, not per render
   }, [ready, location.key]);
 }
 
+/** True when the user asked for less motion. */
+export const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

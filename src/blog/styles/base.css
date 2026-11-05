@@ -1,0 +1,98 @@
+/* ==========================================================
+   Garage base: page shell, type, links, focus, utilities.
+   Scoped to .garage (every garage page's root) so the
+   portfolio's own styles are untouched.
+   ========================================================== */
+
+html:has(.garage) {
+  background: var(--bench);
+  scroll-behavior: auto;
+  scroll-padding-top: calc(var(--bar-h) + var(--rail-h) + var(--s-4));
+}
+html:has(.garage) body { background: var(--bench); }
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.garage--sheet) { scroll-behavior: smooth; }
+}
+
+.garage {
+  min-height: 100vh;
+  color: var(--ink-2);
+  background-color: var(--bench);
+  font: 400 var(--t-ui) / var(--lh-ui) var(--f-mono);
+  -webkit-font-smoothing: antialiased;
+}
+.garage *, .garage *::before, .garage *::after { box-sizing: border-box; }
+
+/* The drafting grid: minor 24 px, major 120 px. */
+.grid-bg,
+.bench {
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+}
+
+/* Board siding of the bay wall. */
+.siding {
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 13px, var(--tint) 13px 14px),
+    var(--wall);
+}
+
+/* Element defaults use :where() so any component class overrides them. */
+.garage :where(a) { color: var(--link); font-weight: 400; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.garage :where(a):hover { color: var(--accent); }
+.garage :where(h1, h2, h3, h4, p, ul, ol, dl, dd, figure) { margin: 0; }
+.garage :where(ul, ol) { padding: 0; }
+.garage :where(img) { max-width: 100%; }
+.garage code, .garage kbd, .garage pre { font-family: var(--f-mono); }
+.garage :focus-visible { outline: var(--bw-3) solid var(--accent); outline-offset: 3px; }
+.garage [tabindex='-1']:focus { outline: none; }
+
+/* Reset the portfolio's global button look. */
+.garage :where(button) {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: none;
+}
+.garage :where(button):hover { border-color: inherit; }
+.garage :where(label) { margin: 0; font-weight: inherit; display: inline; }
+
+.garage .skip-link { background: var(--accent); color: var(--accent-ink); }
+
+.icon { width: 16px; height: 16px; flex: none; }
+.muted { color: var(--ink-3); }
+
+/* ── Labels ── */
+.kicker {
+  font: 700 var(--t-meta) / 1.3 var(--f-mono);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.kicker b { margin: 0 var(--s-1); color: var(--ink-4); font-weight: 400; }
+
+/* Section heading on the car home: "01 Next up  ready now…  Open roadmap →" */
+.section-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-3);
+  margin-bottom: var(--s-5);
+  font: 700 var(--t-h2) / 1.2 var(--f-display);
+  color: var(--ink);
+}
+.section-h .section-no { font: 700 var(--t-ui) var(--f-mono); color: var(--accent); }
+.section-h small { font: 400 var(--t-meta) var(--f-mono); color: var(--ink-3); }
+.section-h a { margin-left: auto; font: 400 var(--t-meta) var(--f-mono); }
+
+@media (max-width: 600px) {
+  .section-h small { order: 5; flex-basis: 100%; }
+}

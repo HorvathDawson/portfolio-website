@@ -14,6 +14,10 @@ import { PageLoader } from './components/SlimeLoader.tsx'
 const GarageSelector = lazy(() => import('./blog/GarageSelector.tsx').then((m) => ({ default: m.GarageSelector })))
 const GarageBlog = lazy(() => import('./blog/GarageBlog.tsx').then((m) => ({ default: m.GarageBlog })))
 const CarRoadmap = lazy(() => import('./blog/A40RoadmapViews.tsx').then((m) => ({ default: m.CarRoadmap })))
+// Dev-only component and token reference; not routed (or bundled) in production.
+const StyleGuide = import.meta.env.DEV
+  ? lazy(() => import('./blog/StyleGuide.tsx').then((m) => ({ default: m.StyleGuide })))
+  : null
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -23,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/garage" element={<GarageSelector />} />
+            {StyleGuide && <Route path="/garage/_styleguide" element={<StyleGuide />} />}
             <Route path="/garage/:car" element={<GarageBlog />} />
             <Route path="/garage/:car/roadmap" element={<CarRoadmap />} />
             <Route path="/garage/:car/:slug" element={<GarageBlog />} />

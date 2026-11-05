@@ -92,7 +92,7 @@ const TaskPicker: React.FC<{ focus: RoadmapTask; onPick: (id: TaskId) => void }>
                   if (e.key === 'Escape') { setOpen(false); document.getElementById('rv-picker-input')?.focus(); }
                 }}
               >
-                <span className={`sb-status-dot sb-dot--${t.status}`} aria-hidden="true" />
+                <span className={`dot dot--${t.status}`} aria-hidden="true" />
                 <span className="rv-picker-title">{t.title}</span>
                 <span className="rv-picker-id">{t.id}</span>
               </button>
@@ -168,7 +168,7 @@ const TreeNode: React.FC<{
           {task.title}
         </span>
         <span className="rv-node-meta">
-          <span className={`sb-status-dot sb-dot--${task.status}`} aria-hidden="true" />
+          <span className={`dot dot--${task.status}`} aria-hidden="true" />
           {statusLabel[task.status]}
           <span className="rv-dim"> · {epicTitle.get(task.epic) ?? task.epic}</span>
         </span>

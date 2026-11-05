@@ -1,5 +1,6 @@
 {
   "name": "Austin A40 Devon",
+  "code": "A40",
   "logTitle": "A40 Build Log",
   "year": "1950",
   "make": "Austin",
@@ -17,11 +18,22 @@
   },
   "roadmap": true,
   "epics": [
-    { "id": "project",     "title": "Project Overview",              "status": "in-progress", "order": 0 },
-    { "id": "research",    "title": "Research & Initial Decisions",  "status": "complete",    "order": 1 },
-    { "id": "narrowing",   "title": "Narrowing & Geometry Analysis", "status": "in-progress", "order": 2 },
-    { "id": "design",      "title": "Pre-Build Design",              "status": "in-progress", "order": 3 },
-    { "id": "fabrication", "title": "Fabrication",                   "status": "in-progress", "order": 4 },
-    { "id": "finishing",   "title": "Finishing & Interior",          "status": "planning",    "order": 5 }
+    { "id": "project", "title": "Project Overview", "status": "in-progress", "order": 0},
+    { "id": "research", "title": "Research & Initial Decisions", "status": "complete", "order": 1},
+    { "id": "narrowing", "title": "Narrowing & Geometry Analysis", "status": "in-progress", "order": 2},
+    { "id": "design", "title": "Pre-Build Design", "status": "in-progress", "order": 3},
+    { "id": "fabrication", "title": "Fabrication", "status": "in-progress", "order": 4},
+    { "id": "finishing", "title": "Finishing & Interior", "status": "planning", "order": 5}
+  ],
+  "constantsPost": "build-constants",
+  "keyNumbers": [
+    { "label": "Wheelbase", "constants": ["wheelbase"] },
+    { "label": "Track F / R", "constants": ["front_track", "rear_track"] },
+    { "label": "Operating mass", "constants": ["operating_mass"] },
+    { "label": "Weight F / R", "constants": ["front_weight_fraction", "rear_weight_fraction"] },
+    { "label": "CG height", "constants": ["cg_height"] },
+    { "label": "Tyres", "constants": ["tyre_size"] },
+    { "label": "Narrowing / side", "constants": ["front_narrowing"] },
+    { "label": "Final drive", "constants": ["final_drive"] }
   ]
 }

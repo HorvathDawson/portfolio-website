@@ -1,0 +1,175 @@
+/* ==========================================================
+   Garage design tokens — the only place colours, type sizes,
+   spacing, radii, borders, shadows, motion and z-index are set
+   for the garage, log, roadmap and scene CSS. Everything else
+   uses var(--…). Imported once, through styles/garage.css.
+
+   Palette: the /garage night scene (navy layers, white line art,
+   neon), drafting cyan for rules and labels, gold for UI accent
+   and the site gradient for car art and progress. Text pairs are
+   WCAG AA on every surface below (ink-4 ≥ 4.9:1 on --surface-2).
+   Prefixes are unique to the garage so nothing clashes with the
+   portfolio's App.css.
+   ========================================================== */
+
+:root {
+  /* ── Night layers (darkest → lightest) ── */
+  --night-0: #070b1b;     /* openings, inputs, code */
+  --night-1: #0c1124;     /* bars, roof board */
+  --bench: #0e1430;       /* page background (the drafting bench) */
+  --wall: #111831;        /* bay wall siding */
+  --sheet: #121a3a;       /* drafting sheet */
+  --surface: #18214a;     /* cards, boards, tabs */
+  --surface-2: #1e2958;   /* raised / hover */
+
+  /* ── Ink ── */
+  --ink: #fcf7f0;         /* headings, strong text */
+  --ink-2: #d9d6e4;       /* body text */
+  --ink-3: #a3abc9;       /* meta, labels */
+  --ink-4: #8f99bd;       /* faint labels (still AA) */
+  --link: #a9c8ff;
+  --line: rgba(252, 247, 240, 0.13);
+  --line-2: rgba(252, 247, 240, 0.26);
+  --line-3: rgba(252, 247, 240, 0.45);
+  --line-art: rgba(252, 247, 240, 0.82);  /* 2 px white line art */
+  --tint: rgba(252, 247, 240, 0.035);     /* zebra rows, siding slats */
+  --tint-2: rgba(252, 247, 240, 0.07);
+
+  /* ── Accent, drafting, gradient ── */
+  --accent: #f3de40;                      /* gold: current, primary action, focus */
+  --accent-ink: #1d1806;                  /* text on gold */
+  --accent-soft: rgba(243, 222, 64, 0.1);
+  --cyan: #7cc4ff;                        /* drafting labels and rules */
+  --cyan-soft: rgba(124, 196, 255, 0.05);
+  --grid-minor: rgba(124, 196, 255, 0.05);
+  --grid-major: rgba(124, 196, 255, 0.09);
+  --g1: #f65e79;
+  --g2: #8a3ab9;
+  --g3: #4978f4;
+  --grad: linear-gradient(90deg, var(--g1), var(--g2) 50%, var(--g3));
+  --haze: #361c7d;                        /* night haze behind the building */
+  --neon-ink: #ffeef3;
+  --neon-glow: 0 0 1px #fff, 0 0 5px var(--g1), 0 0 12px var(--g1), 0 0 24px var(--g2), 0 0 42px rgba(73, 120, 244, 0.55);
+  --lamp: #fffaf0;                        /* strip-light tube */
+
+  /* ── Status (chips, dots, callouts) ── */
+  --st-locked: #7fdcaa;
+  --st-complete: #7fdcaa;
+  --st-working: #8ab8ff;
+  --st-in-progress: #8ab8ff;
+  --st-target: #6fe0e0;
+  --st-measure: #f3de40;
+  --st-verify: #f3de40;
+  --st-open: #ff9fb2;
+  --st-decided: #cfa8ff;
+  --st-planning: #a3abc9;
+  --st-safety: #ffcf3a;
+  --st-note: #a9c8ff;
+  --st-crit: #ff8c5a;                     /* roadmap critical path */
+  --st-purchase: #ffb45a;                 /* roadmap: things to buy */
+  --st-upstream: #ff4dd2;                 /* roadmap map: upstream highlight */
+  --st-blocker: #ff5a5a;                  /* roadmap map: top blockers */
+  --hazard-dark: #14110a;
+
+  /* ── Paper (work orders, tags, plots) ── */
+  --manila: #ead8a6;
+  --manila-2: #dcc58a;
+  --manila-edge: #c7ad6d;
+  --manila-ink: #2b2112;
+  --manila-ink-2: #4a3c22;
+  --stamp-red: #94202a;
+  --stamp-violet: #5a2a96;
+  --stamp-green: #1f5a36;
+  --stamp-grey: #4b4b55;
+  --paper: #f7f2e8;
+  --steel: #c9ccd8;                       /* pegs and clips */
+  --steel-2: #7f8396;
+
+  /* ── Print ── */
+  --print-ink: #111;
+  --print-line: #999;
+  --print-link: #0b4fa8;
+  --print-paper: #fff;
+  --print-code: #f3f3f3;
+  --print-code-line: #ccc;
+  --print-muted: #444;
+
+  /* ── Type ── */
+  --f-display: 'Playfair Display', Georgia, serif;
+  --f-body: 'Lora', Georgia, serif;
+  --f-mono: 'Space Mono', ui-monospace, monospace;
+  --t-micro: 10.5px;   /* chips, stamps */
+  --t-meta: 12px;      /* labels, kickers */
+  --t-ui: 13px;        /* UI text, captions */
+  --t-small: 15px;     /* tables, callouts on phones */
+  --t-body: 18px;      /* long-form text */
+  --t-lede: 19.5px;
+  --t-h3: 21px;
+  --t-h2: 30px;
+  --t-h1: 52px;
+  --t-hero: 60px;
+  --lh-body: 1.7;
+  --lh-ui: 1.45;
+  --lh-tight: 1.12;
+  --track-label: 0.14em;  /* letter-spacing of mono caps labels */
+  --measure: 70ch;
+
+  /* ── Space ── */
+  --s-0: 2px;
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --gutter: 40px;        /* bench padding; 16px on phones */
+
+  /* ── Shape ── */
+  --r-1: 3px;
+  --r-2: 6px;
+  --r-3: 10px;
+  --r-pill: 999px;
+  --bw: 1px;
+  --bw-2: 1.5px;
+  --bw-3: 2px;
+
+  /* ── Depth ── */
+  --shadow-1: 0 10px 24px rgba(0, 0, 0, 0.4);    /* cards, boards */
+  --shadow-2: 0 20px 60px rgba(0, 0, 0, 0.5);    /* dialogs, the sheet */
+  --shadow-hard: 3px 3px 0 rgba(0, 0, 0, 0.5);   /* stickers, gold buttons */
+  --scrim: rgba(3, 5, 14, 0.66);
+
+  /* ── Motion ── */
+  --dur-1: 120ms;
+  --dur-2: 220ms;
+  --dur-3: 450ms;
+  --ease: cubic-bezier(0.3, 0.7, 0.2, 1);
+
+  /* ── Layout ── */
+  --bar-h: 60px;
+  --rail-h: 36px;
+  --page-max: 1240px;
+
+  /* ── Layers ── */
+  --z-raise: 1;
+  --z-sticky: 10;
+  --z-rail: 19;
+  --z-bar: 20;
+  --z-pop: 22;
+  --z-bbar: 25;
+  --z-dialog: 30;
+  --z-toast: 40;
+}
+
+@media (max-width: 991px) {
+  :root {
+    --t-body: 17px;
+    --t-h2: 25px;
+    --t-h1: 36px;
+    --t-hero: 40px;
+    --gutter: 16px;
+    --bar-h: 56px;
+  }
+}

@@ -32,6 +32,10 @@ export interface PostMeta {
   cost?: string;
   /** Garage cars: service items this post records, for the service table. */
   service: string[];
+  /** Optional override: put this post at this sheet number (1-based) in the car's sheet order. */
+  sheet?: number;
+  /** Optional override for the drawing number shown in the title block (e.g. `A40-FAB-02`). */
+  drawing?: string;
 }
 
 /** Parse YAML-ish frontmatter (one `key: value` per line) from a Markdown string. */
@@ -77,6 +81,8 @@ export function toPostMeta(meta: Record<string, string>, car: string, slug: stri
     parts: parseList(meta.parts),
     cost: meta.cost || undefined,
     service: parseList(meta.service),
+    sheet: /^\d+$/.test(meta.sheet ?? '') ? Number(meta.sheet) : undefined,
+    drawing: meta.drawing || undefined,
   };
 }
 

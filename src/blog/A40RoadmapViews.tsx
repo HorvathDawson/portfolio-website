@@ -9,8 +9,9 @@ import { NextUpView } from './RoadmapNextUp';
 import { TreeView } from './RoadmapTree';
 import { useBreakpoint } from '../utils/useBreakpoint';
 import { usePageMeta } from '../utils/usePageMeta';
-import './blogStyles.css';
-import './roadmapViews.css';
+import { ShopBar } from './components/ShopBar';
+import './styles/garage.css';
+import './styles/roadmap.css';
 
 /* ============================================================
    /garage/<car>/roadmap — view switcher
@@ -128,15 +129,15 @@ export const A40Roadmap: React.FC = () => {
   return (
     <div
       className={[
-        'blog-page',
+        'garage',
         'rm-page',
         'rv-root',
         isMobile ? 'rm-page--mobile' : '',
         drawerTask && !isMobile ? 'rm-page--drawer-open' : '',
       ].join(' ').trim()}
     >
+      <ShopBar car={roadmapCar} crumbs={[{ label: roadmapCar.logTitle, to: carPath(roadmapCar.id) }, { label: 'Roadmap' }]} />
       <header className="rm-topbar">
-        <Link to={carPath(roadmapCar.id)} className="blog-back-link">&larr; {roadmapCar.logTitle}</Link>
         <h1 className="rm-topbar-title">Roadmap</h1>
         {switcher}
       </header>

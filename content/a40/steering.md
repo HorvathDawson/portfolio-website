@@ -52,7 +52,8 @@ If assist is chosen, this is the cheapest and simplest EPAS path. The motor and 
 4. **Any fault fails to manual:** the column keeps its mechanical shaft, so losing power, CAN or the gateway leaves unassisted steering (bench-check that the unpowered column turns freely).
 5. **If the gateway stops:** unknown until bench-tested. The column may hold, drop to fixed or no assist, or latch a fault until a key cycle. The gateway's loss policy (hold the last speed, ramp to low assist, never to 0) is in the gateway post.
 
-**Engine-off assist is not promised.** A Prius steers with its engine stopped, so the column probably doesn't need rpm > 0, but it may use `ENGINE_RUNNING` or other frames. Check on the bench what it does with ignition on and the engine off.
+> [!verify]
+> **Engine-off assist is not promised.** A Prius steers with its engine stopped, so the column probably doesn't need rpm > 0, but it may use `ENGINE_RUNNING` or other frames. Check on the bench what it does with ignition on and the engine off.
 
 ### Options I ruled out
 

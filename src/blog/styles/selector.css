@@ -1,0 +1,16 @@
+/* /garage: the animated garage scene page (scene styles in ../garageScene.css). */
+
+.garage-select { padding: var(--s-6) var(--s-5) var(--s-8); overflow-x: hidden; }
+.garage-select-head { max-width: 1100px; margin: 0 auto var(--s-2); }
+.garage .back-link { color: var(--ink-3); font-size: var(--t-meta); letter-spacing: 0.04em; text-decoration: none; }
+.garage .back-link:hover { color: var(--accent); text-decoration: underline; }
+.garage-select-lede { margin-top: var(--s-2); color: var(--cyan); font-size: var(--t-meta); }
+
+.garage-tile-meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: var(--s-3); }
+.garage-tile-stats { margin-top: var(--s-2); color: var(--ink-3); font-size: 11.5px; text-align: center; }
+.garage-tile-latest { margin-top: var(--s-1); padding: 0 var(--s-3); font-size: var(--t-meta); text-align: center; }
+.garage-tile-latest a { color: var(--accent); }
+
+@media (max-width: 479px) {
+  .garage-select { padding: var(--s-5) var(--s-4) var(--s-7); }
+}

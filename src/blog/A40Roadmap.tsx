@@ -19,7 +19,9 @@ import {
 import { computeLayout } from './roadmapLayout';
 import { useBreakpoint } from '../utils/useBreakpoint';
 import { usePageMeta } from '../utils/usePageMeta';
-import './blogStyles.css';
+import { ShopBar } from './components/ShopBar';
+import './styles/garage.css';
+import './styles/roadmap.css';
 
 const statusLabel: Record<Status, string> = {
   planning: 'Planning',
@@ -151,7 +153,7 @@ const TaskCard: React.FC<CardProps> = React.memo(({
         </span>
       )}
       <div className="rm-card-row">
-        <span className={`sb-status-dot sb-dot--${task.status}`} aria-hidden="true" />
+        <span className={`dot dot--${task.status}`} aria-hidden="true" />
         {kind === 'purchase' && <span className="rm-card-kind rm-card-kind--purchase" aria-label="Purchase">$</span>}
         {kind === 'decision' && <span className="rm-card-kind rm-card-kind--decision" aria-label="Decision">?</span>}
         {(isComplete || isDecided) && <span className="rm-card-check" aria-label={isDecided ? 'Decided' : 'Complete'}>✓</span>}
@@ -163,7 +165,7 @@ const TaskCard: React.FC<CardProps> = React.memo(({
         </div>
       )}
       <div className="rm-card-meta">
-        <span className={`sb-epic-badge sb-badge--${task.status}`}>
+        <span className={`chip chip--${task.status}`}>
           {statusLabel[task.status]}
         </span>
         {task.deferrable && (
@@ -332,13 +334,13 @@ export const TaskDrawer: React.FC<{
   return (
     <div className={`rm-drawer${isMobile ? ' rm-drawer--mobile' : ''}`} role="dialog" aria-label={`Task: ${task.title}`}>
       <div className="rm-drawer-header">
-        <span className={`sb-status-dot sb-dot--${task.status}`} aria-hidden="true" />
+        <span className={`dot dot--${task.status}`} aria-hidden="true" />
         <h2 className="rm-drawer-title">{task.title}</h2>
         <button type="button" className="rm-drawer-close" ref={closeRef} onClick={onClose} aria-label="Close">✕</button>
       </div>
 
       <div className="rm-drawer-meta">
-        <span className={`sb-epic-badge sb-badge--${task.status}`}>{statusLabel[task.status]}</span>
+        <span className={`chip chip--${task.status}`}>{statusLabel[task.status]}</span>
         {kind === 'purchase' && <span className="rm-drawer-kind rm-drawer-kind--purchase">Purchase</span>}
         {kind === 'decision' && <span className="rm-drawer-kind rm-drawer-kind--decision">Decision</span>}
         {task.deferrable && (
@@ -426,7 +428,7 @@ export const TaskDrawer: React.FC<{
                     className="rm-drawer-tasklink"
                     onClick={() => onSelectTask(e.from)}
                   >
-                    <span className={`sb-status-dot sb-dot--${t.status}`} aria-hidden="true" />
+                    <span className={`dot dot--${t.status}`} aria-hidden="true" />
                     {t.title}
                   </button>
                   <span className={`rm-edge-pill rm-edge-pill--${e.kind}`}>{e.kind}</span>
@@ -452,7 +454,7 @@ export const TaskDrawer: React.FC<{
                     className="rm-drawer-tasklink"
                     onClick={() => onSelectTask(e.to)}
                   >
-                    <span className={`sb-status-dot sb-dot--${t.status}`} aria-hidden="true" />
+                    <span className={`dot dot--${t.status}`} aria-hidden="true" />
                     {t.title}
                   </button>
                   <span className={`rm-edge-pill rm-edge-pill--${e.kind}`}>{e.kind}</span>
@@ -1052,14 +1054,14 @@ export const RoadmapMap: React.FC<{ toolbar?: React.ReactNode }> = ({ toolbar })
   return (
     <div
       className={[
-        'blog-page',
+        'garage',
         'rm-page',
         isMobile ? 'rm-page--mobile' : '',
         activeTask && !isMobile ? 'rm-page--drawer-open' : '',
       ].join(' ').trim()}
     >
+      <ShopBar car={roadmapCar} crumbs={[{ label: roadmapCar.logTitle, to: carPath(roadmapCar.id) }, { label: 'Roadmap' }]} />
       <header className="rm-topbar">
-        <Link to={carPath(roadmapCar.id)} className="blog-back-link">&larr; {roadmapCar.logTitle}</Link>
         <h1 className="rm-topbar-title">Roadmap</h1>
         {toolbar}
 
@@ -1105,7 +1107,7 @@ export const RoadmapMap: React.FC<{ toolbar?: React.ReactNode }> = ({ toolbar })
               onClick={() => toggleStatus(s)}
               aria-pressed={statusFilter.has(s)}
             >
-              <span className={`sb-status-dot sb-dot--${s}`} aria-hidden="true" />
+              <span className={`dot dot--${s}`} aria-hidden="true" />
               {statusLabel[s]}
             </button>
           ))}
@@ -1206,7 +1208,7 @@ export const RoadmapMap: React.FC<{ toolbar?: React.ReactNode }> = ({ toolbar })
               className="rm-lane-header"
               style={{ gridRow: i + 1, gridColumn: 1 }}
             >
-              <span className={`sb-status-dot sb-dot--${epic.status}`} aria-hidden="true" />
+              <span className={`dot dot--${epic.status}`} aria-hidden="true" />
               <span className="rm-lane-title">{epic.title}</span>
             </div>
           ))}

@@ -98,7 +98,7 @@ const ReadyCard: React.FC<{
           {task.title}
         </span>
         <span className="rv-card-meta">
-          <span className={`sb-status-dot sb-dot--${task.status}`} aria-hidden="true" />
+          <span className={`dot dot--${task.status}`} aria-hidden="true" />
           <span>{statusLabel[task.status]}</span>
           <span className="rv-dim">· {epicTitle.get(task.epic) ?? task.epic}</span>
         </span>
@@ -233,14 +233,14 @@ export const NextUpView: React.FC<Props> = ({ onOpen, onShowTree, activeId }) =>
             {(expanded.has('near') ? near : near.slice(0, NEAR_LIMIT)).map(({ task, blocker }) => (
               <li key={task.id} className={`rv-near-row${critIds.has(task.id) ? ' rv-near-row--crit' : ''}`}>
                 <button type="button" className="rv-near-task" onClick={() => onOpen(task.id)}>
-                  <span className={`sb-status-dot sb-dot--${task.status}`} aria-hidden="true" />
+                  <span className={`dot dot--${task.status}`} aria-hidden="true" />
                   <KindIcon kind={kindOf(task)} />
                   {task.title}
                 </button>
                 <span className="rv-near-wait">
                   <span className="rv-dim">waits on</span>
                   <button type="button" className="rv-near-blocker" onClick={() => onOpen(blocker.id)}>
-                    <span className={`sb-status-dot sb-dot--${blocker.status}`} aria-hidden="true" />
+                    <span className={`dot dot--${blocker.status}`} aria-hidden="true" />
                     {blocker.title}
                   </button>
                 </span>

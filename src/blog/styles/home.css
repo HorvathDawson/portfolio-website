@@ -1,0 +1,143 @@
+/* ==========================================================
+   Car home (/garage/:car): lit bay hero, stats, Next up tags,
+   the wall (one board per epic) and key numbers.
+   ========================================================== */
+
+.home { max-width: var(--page-max); margin: 0 auto; }
+
+.home-hero { display: grid; grid-template-columns: minmax(0, 540px) minmax(0, 1fr); gap: var(--s-7); align-items: center; }
+.gs.gs--hero { max-width: 540px; padding: 0; }
+.home-hero-text h1 { margin: var(--s-3) 0 14px; color: var(--ink); font: 700 var(--t-hero) / 1.02 var(--f-display); }
+.home-lede { max-width: 52ch; margin-bottom: var(--s-5) !important; color: var(--ink-2); font: 400 var(--t-body) / var(--lh-body) var(--f-body); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: var(--bw); margin-bottom: var(--s-5) !important; border: var(--bw-2) solid var(--line-3); background: var(--line-2); }
+.stats > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: var(--s-0); padding: 10px var(--s-3); background: var(--night-0); }
+.stats dt { color: var(--ink-3); font: 400 10px / 1.2 var(--f-mono); letter-spacing: var(--track-label); text-transform: uppercase; }
+.stats dd { color: var(--accent); font: 700 22px / 1.1 var(--f-mono); }
+.stats dd small { color: var(--ink-3); font-size: var(--t-ui); font-weight: 400; }
+.stats .stats-word { font-size: 18px; line-height: 1.35; }
+.home-cta { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.home-section { margin-top: var(--s-7); }
+
+/* Pegboard: hardboard with holes; holds the tags and the boards. */
+.pegboard {
+  position: relative;
+  display: grid;
+  gap: var(--s-5);
+  list-style: none;
+  padding: var(--s-6) var(--s-5) var(--s-5);
+  border: var(--bw-3) solid var(--line-art);
+  border-radius: var(--r-1);
+  background:
+    radial-gradient(circle, var(--night-0) 2.6px, var(--tint-2) 3.4px, transparent 4px) 0 0 / 30px 30px,
+    var(--surface);
+}
+.pegboard--tags { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pegboard--boards { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+
+/* Next-up tag: manila, hung on a peg. */
+.garage .tag-card {
+  position: relative;
+  display: grid;
+  gap: var(--s-2);
+  align-content: start;
+  height: 100%;
+  padding: 26px var(--s-4) 14px;
+  color: var(--manila-ink);
+  font: 400 var(--t-meta) / 1.45 var(--f-mono);
+  text-decoration: none;
+  background:
+    radial-gradient(color-mix(in srgb, var(--manila-ink) 7%, transparent) 1px, transparent 1.2px) 0 0 / 7px 7px,
+    linear-gradient(180deg, var(--manila), var(--manila-2));
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%, 0 18px);
+  transition: transform var(--dur-2) var(--ease);
+}
+.tag-card::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 13px;
+  height: 13px;
+  margin-left: -6.5px;
+  border-radius: 50%;
+  background: var(--steel);
+  box-shadow: inset -2px -2px 0 var(--steel-2), 0 0 0 3px color-mix(in srgb, var(--manila-ink) 18%, transparent);
+}
+.garage .tag-card:hover { color: var(--manila-ink); transform: translateY(-3px); }
+.tag-card-k { display: flex; justify-content: space-between; color: var(--stamp-red); font-size: var(--t-micro); font-weight: 700; letter-spacing: var(--track-label); text-transform: uppercase; }
+.tag-card-k span { color: var(--manila-ink-2); letter-spacing: 0.06em; }
+.tag-card-t { font: 700 15px / 1.3 var(--f-mono); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--manila-ink) 30%, transparent); text-underline-offset: 3px; }
+.tag-card-e { color: var(--manila-ink-2); font-size: 11px; }
+.tag-card-m { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: auto; padding-top: var(--s-2); border-top: var(--bw-2) dashed color-mix(in srgb, var(--manila-ink) 30%, transparent); color: var(--manila-ink-2); font-size: 11px; }
+
+/* Board: one epic (or category) clipped to the wall. Same card as everywhere. */
+.board {
+  position: relative;
+  display: grid;
+  gap: var(--s-2);
+  align-content: start;
+  padding: 26px 18px 14px;
+  border: var(--bw-2) solid var(--line-3);
+  border-radius: var(--r-2);
+  background: var(--sheet);
+  box-shadow: var(--shadow-1);
+  font: 400 var(--t-meta) / 1.4 var(--f-mono);
+}
+.board.is-on { border-color: var(--accent); }
+.board-clip {
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  width: 76px;
+  height: 22px;
+  margin-left: -38px;
+  border-radius: 5px 5px 3px 3px;
+  background: linear-gradient(var(--steel), var(--steel-2));
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--night-0) 50%, transparent);
+}
+.board-clip::after { content: ''; position: absolute; left: 30px; right: 30px; top: 5px; height: 6px; border-radius: 3px; background: var(--night-1); }
+.board-k { display: flex; align-items: center; justify-content: space-between; color: var(--cyan); font-size: 10px; }
+.board h3 { color: var(--ink); font: 700 var(--t-h3) / 1.2 var(--f-display); }
+.board-progress { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; color: var(--ink-3); font-size: 11px; }
+.board-sheets { list-style: none; border-top: var(--bw) solid var(--line); }
+.board-sheets li { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: var(--s-2); padding: 6px var(--s-0); border-bottom: var(--bw) solid var(--line); }
+.garage .board-sheets a { color: var(--ink-2); text-decoration: none; }
+.garage .board-sheets a:hover { color: var(--accent); text-decoration: underline; }
+.garage .board-sheets .is-on a { color: var(--accent); }
+.board-sheets .is-on .sheet-row-no { color: var(--accent); font-weight: 700; }
+.board-empty { padding: 6px 0; border-top: var(--bw) solid var(--line); color: var(--ink-3); }
+.board details > summary { padding: 6px 0; border-top: var(--bw) solid var(--line); color: var(--cyan); cursor: pointer; }
+.board details[open] > summary { display: none; }
+.garage .board-next { display: block; margin-top: var(--s-1); padding: 7px 10px; border-radius: var(--r-1); background: var(--manila); color: var(--manila-ink); font-size: 11.5px; font-weight: 700; line-height: 1.35; text-decoration: none; }
+.garage a.board-next:hover { background: var(--paper); color: var(--manila-ink); }
+.board-next b { display: block; color: var(--stamp-red); font-size: 9.5px; letter-spacing: var(--track-label); text-transform: uppercase; }
+.board-next--blocked { background: var(--tint-2) !important; color: var(--ink-2) !important; }
+.board-next--blocked b { color: var(--ink-3); }
+
+/* Key numbers: a title block of values. */
+.keynumbers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--bw); border: var(--bw-2) solid var(--line-3); background: var(--line-2); font-family: var(--f-mono); }
+.keynumbers .tb-cell { padding: 10px var(--s-3); }
+.keynumbers dd { display: grid; gap: 6px; justify-items: start; margin-top: var(--s-1); }
+.kn-v { color: var(--ink); font-size: var(--t-small); font-weight: 700; font-variant-numeric: tabular-nums; }
+.kn-v .u { color: var(--ink-3); font-size: 11px; font-weight: 400; }
+
+@media (max-width: 1280px) {
+  .home-hero { grid-template-columns: 1fr 1fr; gap: var(--s-6); }
+  .pegboard--tags { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pegboard--boards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 991px) {
+  .home-hero { grid-template-columns: 1fr; gap: var(--s-2); }
+  .gs.gs--hero { margin: 0 auto; }
+  .keynumbers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .keynumbers > div:last-child:nth-child(odd) { grid-column: span 2; }
+  .bench:has(.home) { padding: 0 var(--s-4) var(--s-7); }
+}
+@media (max-width: 600px) {
+  .pegboard { padding: 30px var(--s-3) var(--s-4); gap: 26px; }
+  .pegboard--tags, .pegboard--boards { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats > div:last-child:nth-child(odd) { grid-column: span 2; }
+}
